@@ -20,5 +20,5 @@ profiles:
     content: about_rssh.md
     image_circular: false # crops the image to make it circular
     more_info: >
-      Blockchain Architect
+      PhD, Software Architect, Compiler Engineer
 ---

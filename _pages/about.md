@@ -8,18 +8,22 @@ selected_papers: false # includes a list of papers marked as "selected={true}"
 social: true # includes social icons at the bottom of the page
 ---
 
-## Lantr is a blockchain R&D lab
+<div class="mb-5">
+<h1>Lantr is a blockchain R&D lab</h1>
+</div>
 
-We are experts in
+### Our expertise
 
 - Cardano and Bitcoin blockchains
-- protocols and smart contracts design and development
+- protocols design and robust smart contracts development
 - zero-knowledge cryptography and L2 scaling solutions
+- Scala, Haskell, Rust, TypeScript, Aiken
 
-### Contact us if you need
+### Services
 
-- Cardano DApp, protocol or business solution
-- Smart contracts development for Cardano using Scalus, Aiken, Marlowe, Solidity, or other languages
-- Cardano Smart contracts security audit
-- Bitcoin solution that requires Discreet Log Contracts, partially signed Bitcoin transactions PSBTs, Taproot, Schnorr signatures, or other Bitcoin protocol features
-- Ethereum DApp, protocol or business solution
+- Cardano DApp, protocols and business solutions design and development
+- Cardano smart contracts development
+- smart contracts security audit
+- Bitcoin and Lightning solutions
+
+### Contact Us
