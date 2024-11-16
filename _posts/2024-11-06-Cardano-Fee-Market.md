@@ -1,105 +1,100 @@
 ---
 layout: post
-title: Cardano Fee Market
-description:
-tags: cardano
-categories:
+title: Why Cardano Needs a Fee Market
+description: An analysis of Cardano's transaction ordering system and a proposal for improvement
+tags: cardano blockchain
+categories: blockchain
 ---
-## Why Cardano Needs A Fee Market
 
-Remember that [Cardano DDoS attack](https://forum.cardano.org/t/cardano-triumphs-against-ddos-attack/134768) in June 2024?
-The one IOG had to release a quick fix for the root cause?
+## The Current Challenge
 
-The thing is that they didn't fix the actual root cause.
+Remember the [Cardano DDoS attack](https://forum.cardano.org/t/cardano-triumphs-against-ddos-attack/134768) in June 2024? While IOG released a quick fix, they didn't address the fundamental issue.
 
-I’ve made a calculation of Cardano DDoS attacks budget and it’s not that big.
-According to current protocol parameters, maximum transaction size is 16KB and `minfee` for such transaction is 0.8 ADA.
+I've analyzed the potential cost of DDoS attacks on Cardano, and the numbers are concerning. Under current protocol parameters, the maximum transaction size is 16KB with a minimum fee (`minfee`) of 0.8 ADA. This means an attacker could potentially flood the network with 16KB transactions for approximately $7,000 per day, filling blocks and significantly degrading network performance.
 
-This means that attacker can spam the network with regular 16kb transactions, spending $7k a day to potentially fill all the blocks with his transactions and significantly slow down the network.
+The core issue? Cardano lacks transaction prioritization. We need a fee market to allow higher-priority transactions to bypass network congestion through increased fees.
 
-Because currently there is no way to give priority to transactions. That's why we need a fee market – to give priority to transactions with higher fees.
+![Cardano DDoS attack cost calculation](/assets/img/cardano-ddos-calculation.png)
 
-![alt text](/assets/img/cardano-ddos-calculation.png)
+## Current Transaction Ordering System
 
-## How It Works Right Now
+An important distinction: transaction ordering isn't part of Cardano's consensus protocol. This means we can implement improvements without requiring a hard fork!
 
-What's important to understand is that transaction ordering is not a part of the consensus protocol.
-This means we can change it without hardforking the network!
+Currently, transactions wait in the mempool queue and are processed first-in-first-out (FIFO), based on when relay nodes receive them. While this approach provides basic fairness and allows for backpressure during high activity, it has two significant limitations:
 
-Currently, transactions are ordered by the order they are received by the relay nodes.
-This implements a first-come-first-serve policy and 'pull' approach.
-The transactions are held in the mempool queue until they are included in a block, first in first out.
+1. No transaction prioritization
+2. Suboptimal script execution budgeting
 
-This approach if 'fair' and allows for backpressure on the network.
+### The Script Execution Problem
 
-But it's not ideal as there is no transaction prioritization.
+Consider this scenario with four transactions in the queue:
 
-Also, it's not optimal in terms of script execution budgeting.
+1. Transaction A: 70% block execution budget, 20% block size
+2. Transaction B: 50% block execution budget, 20% block size
+3. Transaction C: 30% block execution budget, 20% block size
+4. Transaction D: 50% block execution budget, 20% block size
 
-Say, you have 4 transactions in the queue:
+The current system would only include Transaction A in the block, as Transaction B would exceed the remaining execution budget. This creates suboptimal blocks - we recently saw this issue during a token launch.
 
-1. 70% of block execution budget, 20% of block size
-2. 50% of block execution budget, 20% of block size
-3. 30% of block execution budget, 20% of block size
-4. 0% of block execution budget, 20% of block size
+A more efficient approach would be to include Transactions A and C in one block, followed by B and D in the next block.
 
-Current implementation will include only the first transaction in a block, because including the second one would exceed the block execution budget.
-This produces a suboptimal block.
+## The Three-Dimensional Challenge
 
-This happened recently with SNEK token launch.
+Optimizing block creation requires balancing three key constraints:
 
-More optimally would be to include transactions 1, 3, and 4 in the block.
-
-We have 3 dimensions to consider:
-
-- block size
+- Block size
 - CPU budget
-- memory budget
+- Memory budget
 
-And we need to optimize the block filling while maximizing the fees, respecting the transactions interdependencies and be fair. That's a challenging task!
+We need a solution that optimizes block filling while:
 
-## What We Propose
+- Maximizing fee collection
+- Respecting transaction dependencies
+- Maintaining fairness
 
-We propose to implement an alternative version of transaction ordering in the Cardano node mempool, based on transaction fees and execution budgets.
+## Our Proposal: A Flexible Fee Market
 
-Key points of the proposal:
+We're proposing an alternative transaction ordering system for the Cardano node mempool, based on both transaction fees and execution budgets.
 
-Flexible Configuration: SPOs will be able to switch between the current First-In-First-Out (FIFO) and the new Generous-In-First-Out (GIFO) ranking mempool.
+### Key Features
 
-### Mempool Behavior
+1. **Flexible Configuration**: Stake Pool Operators (SPOs) can choose between:
+   - Current FIFO system
+   - New Generous-In-First-Out (GIFO) ranking system
 
-The mempool will collect and hold $$N*BlockSize$$ of transactions needed for a block.
-A portion of these transactions will be ordered by fees, with lower execution budgets used as a tiebreaker for equal fees.
+2. **Enhanced Mempool Management**:
+   - Holds N transactions before implementing backpressure
+   - Orders a portion of transactions by fees
+   - Uses execution budget as a tiebreaker for equal fees
 
-### Fairness Parameter
+3. **Configurable Fairness Parameter**:
+   - 100% = Pure FIFO (current system)
+   - 0% = Full fee-based ordering
+   - SPOs can optimize based on their preferences
 
-A configurable "Fairness" parameter will determine the balance between fee-ordered and FIFO transactions.
-100% fairness means pure FIFO ordering (current system).
-0% fairness means full fee-based ordering.
-SPOs can adjust this parameter to find an optimal balance.
+### Expected Benefits
 
-### Benefits
+- Higher throughput for priority transactions
+- Natural deprioritization of resource-heavy transactions
+- More efficient block utilization
+- Increased rewards for all ecosystem participants
 
-Improved throughput for high-priority (high-fee) transactions.
-Deprioritization of transactions with overly high execution budgets.
-More optimal block filling.
+It's important to note that on Cardano, transaction fees go into the Rewards pot, which is then distributed between the Treasury, Stake Pool Operators (SPOs), and stakers as rewards. This means that higher fees from priority transactions don't just help with network efficiency – they directly benefit everyone in the Cardano ecosystem by increasing rewards distribution.
 
-### Implementation
+![Preservation of Value](/assets/img/value-preservation.png){: width="750" }
 
-This mempool transaction ordering functionality is not part of Cardano consensus.
-No hardfork will be required for implementation.
-This solution aims to create a more dynamic and efficient transaction processing system while allowing SPOs to maintain a desired level of fairness in transaction ordering.
+## Support the Initiative
 
-## What's Next
+### Vote for Our Proposal
 
-Vote for our [Cardano Fee Market](https://cardano.ideascale.com/c/cardano/idea/131153) Catalyst proposal.
+Support our [Cardano Fee Market](https://cardano.ideascale.com/c/cardano/idea/131153) proposal in Catalyst.
 
-## Delegate
+Look for "LANTR" when voting on Catalyst proposals.
 
-Support my work by delegating your voting power.
+### Delegate Your Voting Power
 
-CIP-105: [drep1k4h4cd5jknvcfeq5uuzqthpl7sdjxrwf9gn25tdk49qxyfhusgm](https://gov.tools/connected/drep_directory/drep1k4h4cd5jknvcfeq5uuzqthpl7sdjxrwf9gn25tdk49qxyfhusgm)
+Help advance Cardano's development by delegating your voting power:
 
-[Here is how to do that](https://learncardano.io/how-to-delegate-drep-eternl-wallet-mobile/)
+CIP-105 DRep ID: `drep1k4h4cd5jknvcfeq5uuzqthpl7sdjxrwf9gn25tdk49qxyfhusgm`
 
-Vote for our Catalyst proposals - search "LANTR".
+[Learn how to delegate using Eternl Wallet](https://learncardano.io/how-to-delegate-drep-eternl-wallet-mobile/)
