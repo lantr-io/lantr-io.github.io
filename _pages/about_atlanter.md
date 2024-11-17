@@ -4,4 +4,4 @@ Alexander has a robust professional background, having worked for prominent fina
 
 Alexander Nemish is a former engineer at [IOG](https://iohk.io), the engineering company behind the Cardano blockchain. He worked on the design and implementation of [Marlowe](https://marlowe.iohk.io/) – a new financial smart contracts programming language for Cardano.
 
-Alexander is a Cardano DRep: [drep1y26k7hpkj26dnp8yznnsgpwu8l6pkgcdey4zd23dk655qcse26y3g](https://cardanoscan.io/drep/drep1y26k7hpkj26dnp8yznnsgpwu8l6pkgcdey4zd23dk655qcse26y3g)
+Alexander is a Cardano DRep: [drep1k4h4cd5jknvcfeq5uuzqthpl7sdjxrwf9gn25tdk49qxyfhusgm](https://gov.tools/connected/drep_directory/drep1k4h4cd5jknvcfeq5uuzqthpl7sdjxrwf9gn25tdk49qxyfhusgm)
