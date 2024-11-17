@@ -1,7 +1,8 @@
 ---
 layout: post
 title: Cardano Treasury
-description:
+description: A sustainable strategy for Cardano Treasury withdrawals
+author: Alexander Nemish
 tags: cardano
 categories:
 ---

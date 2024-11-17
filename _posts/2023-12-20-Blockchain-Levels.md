@@ -1,7 +1,8 @@
 ---
 layout: post
 title: Blockchain Levels
-description:
+description: Bitcoin, Cardano, and the future of blockchains
+author: Alexander Nemish
 tags: bitcoin cardano
 categories:
 ---

@@ -2,6 +2,7 @@
 layout: post
 title: Why Cardano Needs a Fee Market
 description: An analysis of Cardano's transaction ordering system and a proposal for improvement
+author: Alexander Nemish
 tags: cardano blockchain
 categories: blockchain
 ---
