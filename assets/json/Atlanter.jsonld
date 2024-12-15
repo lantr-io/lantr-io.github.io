@@ -1,0 +1,132 @@
+{
+  "@context": {
+    "@language": "en-us",
+    "CIP100": "https://github.com/cardano-foundation/CIPs/blob/master/CIP-0100/README.md#",
+    "CIP119": "https://github.com/cardano-foundation/CIPs/blob/master/CIP-0119/README.md#",
+    "hashAlgorithm": "CIP100:hashAlgorithm",
+    "body": {
+      "@id": "CIP119:body",
+      "@context": {
+        "references": {
+          "@id": "CIP119:references",
+          "@container": "@set",
+          "@context": {
+            "GovernanceMetadata": "CIP100:GovernanceMetadataReference",
+            "Identity": "CIP119:IdentityReference",
+            "Link": "CIP119:LinkReference",
+            "Other": "CIP100:OtherReference",
+            "label": "CIP100:reference-label",
+            "uri": "CIP100:reference-uri",
+            "referenceHash": {
+              "@id": "CIP119:referenceHash",
+              "@context": {
+                "hashDigest": "CIP119:hashDigest",
+                "hashAlgorithm": "CIP100:hashAlgorithm"
+              }
+            }
+          }
+        },
+        "paymentAddress": "CIP119:paymentAddress",
+        "givenName": "CIP119:givenName",
+        "image": "CIP119:image",
+        "objectives": "CIP119:objectives",
+        "motivations": "CIP119:motivations",
+        "qualifications": "CIP119:qualifications",
+        "doNotList": "CIP119:doNotList"
+      }
+    },
+    "authors": {
+      "@id": "CIP100:authors",
+      "@container": "@set",
+      "@context": {
+        "name": "http://xmlns.com/foaf/0.1/name",
+        "witness": {
+          "@id": "CIP100:witness",
+          "@context": {
+            "witnessAlgorithm": "CIP100:witnessAlgorithm",
+            "publicKey": "CIP100:publicKey",
+            "signature": "CIP100:signature"
+          }
+        }
+      }
+    }
+  },
+  "authors": [],
+  "hashAlgorithm": {
+    "@value": "blake2b-256"
+  },
+  "body": {
+    "doNotList": false,
+    "givenName": {
+      "@value": "Atlanter"
+    },
+    "motivations": {
+      "@value": "As a former IOHK engineer and the developer of Marlowe and Scalus, I've been deeply involved in Cardano's technical evolution. \nMy motivation stems from a desire to ensure Cardano's governance decisions are informed by both technical expertise and practical business experience. Having built products for Cardano and understanding its technical foundations, I can evaluate proposals' technical merits and their broader ecosystem impact. \nMy experience as a business owner adds a practical perspective to governance decisions, ensuring they serve both technical excellence and real-world utility."
+    },
+    "objectives": {
+      "@value": "To contribute to Cardano's governance by:\n* Advocating for technical excellence and sustainable development practices\n* Promoting solutions that enhance privacy, self-sovereignty, and equal access\n* Evaluating proposals through the lens of both technical feasibility and practical impact\n* Supporting initiatives that strengthen Cardano's infrastructure while maintaining its core principles\n* Ensuring proposals align with long-term ecosystem sustainability\n* Fostering innovation while maintaining system integrity and security"
+    },
+    "paymentAddress": {
+      "@value": "addr1qy7trhkx8al8w8f59u09ns842mmm44wkfae2wn449vzccxr8ngq9x7suvthw7eg3uf9edj2fljwxq6794mnlsea3xggqm47qvm"
+    },
+    "qualifications": {
+      "@value": "Former IOHK compiler engineer.\nDeveloper of Marlowe interpreter.\nCreator of Scalus – platform for Cardano DApp development, Scala to UPLC compiler.\nCo-author of \"Marlowe: implementing and analysing financial contracts on blockchain\" paper.\nDeep expertise in Cardano ecosystem, blockchain technology, and cryptocurrencies.\nExtensive experience in system architecture and compiler development.\nBusiness owner with practical experience in operations and finance management.\nSpeaker at international conferences on technical topics.\nAdvanced understanding of Bitcoin, Lightning Network, Hydra, and state channels."
+    },
+    "references": [
+      {
+        "@type": "Link",
+        "label": {
+          "@value": "X/Twitter"
+        },
+        "uri": {
+          "@value": "https://x.com/atlanter"
+        }
+      },
+      {
+        "@type": "Link",
+        "label": {
+          "@value": "Lantr R&D lab"
+        },
+        "uri": {
+          "@value": "https://lantr.io/"
+        }
+      },
+      {
+        "@type": "Link",
+        "label": {
+          "@value": "Scalus - DApps Development Platform for Cardano"
+        },
+        "uri": {
+          "@value": "https://scalus.org/"
+        }
+      },
+      {
+        "@type": "Link",
+        "label": {
+          "@value": "Marlowe"
+        },
+        "uri": {
+          "@value": "https://marlowe.iohk.io/"
+        }
+      },
+      {
+        "@type": "Identity",
+        "label": {
+          "@value": "X/Twitter"
+        },
+        "uri": {
+          "@value": "https://x.com/atlanter"
+        }
+      },
+      {
+        "@type": "Identity",
+        "label": {
+          "@value": "Lantr R&D lab"
+        },
+        "uri": {
+          "@value": "https://lantr.io/team/"
+        }
+      }
+    ]
+  }
+}
