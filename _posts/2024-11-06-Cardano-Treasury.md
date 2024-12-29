@@ -1,9 +1,9 @@
 ---
 layout: post
-title: Cardano Treasury
+title: Cardano Treasury Withdrawal Strategy
 description: A sustainable strategy for Cardano Treasury withdrawals
 author: Alexander Nemish
-tags: cardano
+tags: cardano, treasury, governance, drep
 categories:
 ---
 ## Treasury Withdrawal Strategy
@@ -21,10 +21,25 @@ I think @radioastro made good arguments why this is OK during Cardano Summit pre
 It's easier to plan, to vote, to hedge against the price volatility, etc.
 2. I'm **against** the idea of **random withdrawals** from the current Treasury.
 Treasury withdrawals should be **sustainable**. Thus we need a **strategy**.
-3. I suggest a **maximum** yearly governance budget to be all the **Treasury yearly income + 10%** of the current Treasury.
-   The exact percentage can be debated but this approach is sustainable and allows for the Treasury to decrease forever.
-4. We can adjust the **Treasury expenditure percent** from 10% to -10% and it will go with the surplus.
-5. Right now I think we can spend some of the accrued Treasury as an **investment** into Cardano adoption. Maybe even 20% a year if it's well argumented. As price goes up we can change to surplus. Think of this treasury expenditure percent as a meta-protocol parameter.
+3. The Treasury withdrawals **should not be staked**.
+4. **No voting** with Treasury withdrawals
+
+## Treasury Withdrawal Boundaries
+
+I propose defining **Treasury Withdrawal Boundaries** for Cardano's spending model.
+The budget would be constrained by:
+
+$$Budget \in [50\%⋅TreasuryIncome, TreasuryIncome + 20\% \cdot Treasury]$$
+
+This approach ensures:
+
+* A flexible budget that adapts to Cardano's evolving needs and market conditions
+* Opportunity for Treasury growth during favorable periods
+* Sustainable long-term Treasury management with built-in safeguards
+
+Based on current projections, this would make **150M–600M ADA** available for the 2025 budget.
+
+The parameters (50% and 20%) are adjustable based on community consensus – for example, a 70%/10% ratio could also be viable.
 
 {::nomarkdown}
 {% jupyter_notebook "/notebooks/2024-Treasury.ipynb" %}
