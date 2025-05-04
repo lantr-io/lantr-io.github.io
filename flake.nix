@@ -10,6 +10,13 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
+        pythonEnv = pkgs.python3.withPackages (ps: with ps; [
+          jupyter
+          numpy
+          matplotlib
+          pandas
+          ipykernel
+        ]);
       in
       {
         devShells.default = pkgs.mkShell {
@@ -17,7 +24,7 @@
             ruby
             bundler
             jekyll
-            jupyter
+            pythonEnv
             # Add any other dependencies you might need
           ];
 
