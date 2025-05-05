@@ -8,7 +8,7 @@ categories:
 ---
 ## Cardano Voting Power Distribution
 
-Basically, 24 DReps control 51% of the voting power in Cardano.
+Basically, 11 DReps control 51% of the voting power in Cardano.
 
 {::nomarkdown}
 {% jupyter_notebook "/notebooks/DReps.ipynb" %}
