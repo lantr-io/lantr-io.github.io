@@ -25,6 +25,7 @@
             bundler
             jekyll
             pythonEnv
+            git
             # Add any other dependencies you might need
           ];
 
