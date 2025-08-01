@@ -1,0 +1,39 @@
+---
+layout: post
+title: Cardano Budget 2025 – What Drives Our Budgeting Choice?
+description: Current voting power distribution in Cardano
+author: Alexander Nemish
+tags: cardano, treasury, governance, drep, voting
+categories:
+---
+## Cardano Budget 2025: What Drives Our Budgeting Choice?
+
+According to Article IV, Section 1 of the Cardano Constitution, the primary objective of community budgeting is to ensure the continuous operation, maintenance, and future development of the ecosystem. This mandate carries a dual responsibility: sustaining the present while investing in the future.
+
+While it is crucial to use funds responsibly, the ultimate goal is not to cut costs at all costs—it’s to provide appropriate funding, in a timely manner, to enable the ecosystem’s growth.
+
+We recognise and share the frustrations that have built up throughout the budgeting process. Despite these challenges, the following steps have been completed:
+
+* Proposals were submitted via GovTool for socialisation, received public feedback, and underwent revisions.
+
+* Ekklesia voting allowed over 70% of the stake to participate and cast votes.
+
+* Final curation resulted in 39 proposals, totalling a ₳275M budget.
+
+* The Budget Info Action was supported by the majority of voting power.
+
+We believe the process has been good enough to produce a viable, representative, and balanced funding package. Reviewing the final list, we see a reasonable distribution across:
+
+* operations and innovation
+
+* technical and ecosystem-wide work
+
+* established vendors and newer players
+
+The suggested budget remains within the Net Change Limit (NCL, ₳350M), which was previously approved with 73.35% support.
+
+On top of this, Intersect, acting as Administrator, has introduced strong post-withdrawal safeguards: milestone-based contracts, smart contract-controlled fund releases, independent audits, and stop-payment mechanisms.
+
+We have decided to honour our previous stance on bundling—voting in favour of all Treasury Withdrawal proposals that received 67%+ support in Ekklesia (₳250M) and supporting the remaining proposals selectively, based on the outcomes of the ongoing review sessions.
+
+At this stage, we believe our responsibility is to ensure that these proposals receive funding, delivery can progress, and Cardano continues to advance—avoiding unnecessary stagnation in progress and innovation.
