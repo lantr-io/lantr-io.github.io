@@ -1,0 +1,249 @@
+---
+
+layout: post
+title: Blockchains Technical Comparison: Why Cardano is the answer?
+description: A comparative systems analysis of Cardano versus Bitcoin, Ethereum, Solana and others.
+author: Alexander Nemish
+tags: cardano, blockchain, consensus, architecture
+categories:
+
+---
+
+## 1. Why Blockchains
+
+A blockchain is a replicated state machine operating in an adversarial network: nodes must preserve **safety** (agreement on state) and **liveness** (continued progress) without central control.
+
+If the goal is to support the **global financial system**—billions of users, diverse jurisdictions, and trillions in daily settlement—the base protocol must scale both technically and institutionally.
+Such a system must ensure:
+
+* **Permissionless participation** – anyone can validate or transact.
+* **Censorship-resistance** – no authority can block valid transactions.
+* **Decentralization** – control distributed across many operators and jurisdictions.
+* **Verifiable state transitions** – transparent, checkable rules.
+* **Deterministic security** – predictable guarantees under formal assumptions.
+* **Governance and sustainability** – a protocol that can evolve without trusted intermediaries.
+
+The following sections analyze how **Bitcoin, Ethereum, Solana, and Cardano** implement these principles.
+
+---
+
+## 2. Evaluation Axes
+
+1. Consensus and finality
+2. Proof-of-resource model (PoW/PoS)
+3. Staking liquidity
+4. State model (UTxO vs account)
+5. Decentralization
+6. Performance and scalability
+7. Finality speed
+8. Monetary policy and token supply
+9. Native token support
+10. Fees and economic model
+11. Smart contracts
+12. Governance and treasury
+13. Conclusion
+
+---
+
+## 3. Consensus Foundations
+
+### 3.1 BFT vs Nakamoto
+
+**Bitcoin** – pure Nakamoto consensus (PoW). Probabilistic finality; open participation.
+**Ethereum** – hybrid Gasper (LMD-GHOST fork choice + Casper FFG finality).
+**Solana** – Tower BFT built on Proof of History; PBFT-like voting with lockouts.
+**Cardano** – Ouroboros family (Praos → Genesis → Leios/Peras). Longest-chain design with verifiable random leaders; *Peras* adds fast-settlement voting.
+
+**Trade-off:**
+Nakamoto-style systems handle dynamic participation and partial asynchrony but give only probabilistic finality.
+BFT systems finalize deterministically under partial synchrony but require fixed validator sets and can halt if >1/3 fail.
+Cardano’s Peras and Ethereum’s Gasper mix both—probabilistic base, BFT-style finality.
+
+---
+
+### 3.2 Proof of Work vs Proof of Stake
+
+**PoW (Bitcoin)** – Sybil resistance via externalized resource (energy). Cost per block real and ongoing.
+**PoS (Ethereum, Cardano, Solana)** – resistance via internalized resource (stake). Capital replaces energy.
+
+Differences:
+
+* PoS introduces **weak subjectivity**, **long-range**, and **grinding** risks.
+* PoW’s cost is continuous; PoS cost is opportunity/risk-based.
+* PoS security depends on economic finality and checkpointing.
+
+Cardano’s Ouroboros uses verifiable random functions (VRFs) and epoch-based randomness; Ethereum checkpoints finalized states.
+Thus, both secure consensus via scarce resources, but the economics and failure modes differ.
+
+---
+
+### 3.3 Liquid Staking
+
+| Chain        | Staking Model    | Lockup  | Slashing | Liquidity                       |
+| ------------ | ---------------- | ------- | -------- | ------------------------------- |
+| **Ethereum** | Bonded validator | 27h–36d | Yes      | Via derivatives (stETH, rETH)   |
+| **Solana**   | Bonded           | ~2 days | Yes      | Via derivatives (mSOL, jitoSOL) |
+| **Cardano**  | Delegation       | None    | None     | Native liquid                   |
+| **Tezos**    | Delegation       | None    | None     | Native liquid                   |
+
+Liquid staking means funds stay spendable while participating in consensus. Cardano and Tezos achieve this natively, while most others require derivatives.
+
+---
+
+## 4. State Models: UTxO vs Account
+
+| Chain        | Model            | Characteristics                                       |
+| ------------ | ---------------- | ----------------------------------------------------- |
+| **Bitcoin**  | UTxO             | Deterministic, parallelizable, limited expressivity   |
+| **Ethereum** | Account          | Global shared state, flexible, easier composability   |
+| **Solana**   | Program accounts | Parallelizable but global                             |
+| **Cardano**  | Extended UTxO    | Deterministic, local contract state, predictable fees |
+
+UTxO allows parallel validation and easier auditability; account models simplify shared global state.
+EUTxO suits deterministic smart contracts and off-chain proofs but can be cumbersome for global liquidity pools.
+
+---
+
+## 5. Decentralization
+
+| Chain        | Node Count   | Hardware Profile               | Observations                 |
+| ------------ | ------------ | ------------------------------ | ---------------------------- |
+| **Bitcoin**  | ~15,000      | Commodity                      | Highly decentralized         |
+| **Ethereum** | ~10,000      | Modest                         | Widely distributed           |
+| **Solana**   | ~1,000       | 256–512 GB RAM, high bandwidth | Hardware-heavy, centralizing |
+| **Cardano**  | ~3,000 pools | Consumer-grade VPS             | Low entry barrier            |
+
+Cardano’s design enables lower-cost participation, maintaining practical decentralization.
+The **Edinburgh Decentralization Index (EDI)** provides a quantitative view, though its methodology is still debated.
+
+---
+
+## 6. Performance and Scalability
+
+| Chain        | TPS (L1)         | Block Time | Notes                                  |
+| ------------ | ---------------- | ---------- | -------------------------------------- |
+| **Bitcoin**  | ~7               | 10 min     | Base layer only                        |
+| **Ethereum** | 15–20            | 12 s       | Rollups for scale                      |
+| **Solana**   | 4 000+ sustained | 0.4 s      | High throughput, high hardware         |
+| **Cardano**  | ~100 (target)    | 20 s       | Input Endorsers (Leios) in development |
+
+**Scaling strategies:**
+
+* **Bitcoin:** L2 channels (Lightning).
+* **Ethereum:** Rollups (Optimistic, ZK).
+* **Solana:** Sealevel parallelism.
+* **Cardano:** Layered roadmap — **Leios** (L1 parallelization), **Hydra/Hydrozoa** (state channels), **Midgard** (optimistic rollup).
+
+Cardano’s approach favors layered modular scaling rather than monolithic throughput increases.
+
+---
+
+## 7. Finality
+
+| Chain        | Finality Type                                  | Time to Finality | Remarks        |
+| ------------ | ---------------------------------------------- | ---------------- | -------------- |
+| **Bitcoin**  | Probabilistic                                  | ~60 min          | Based on depth |
+| **Ethereum** | Deterministic (FFG)                            | ~12 min          | Two epochs     |
+| **Solana**   | PBFT                                           | 2–3 s            | Lockout votes  |
+| **Cardano**  | Probabilistic (Praos), fast-settlement (Peras) | ~2 min (planned) | Hybrid model   |
+
+Peras introduces weighted vote certificates to reach rapid settlement under honest-majority conditions without sacrificing decentralization.
+
+---
+
+## 8. Monetary Policy and Token Supply
+
+| Chain        | Supply Model       | Inflation                 | Notes                                       |
+| ------------ | ------------------ | ------------------------- | ------------------------------------------- |
+| **Bitcoin**  | Fixed 21 M cap     | Halving every 4 years     | Scarce; long-term fees must replace subsidy |
+| **Ethereum** | Variable           | ~0.5–1 % minus burn       | Deflationary under load                     |
+| **Solana**   | Infinite, decaying | 8 % → 1.5 %               | Perpetual inflation funds staking           |
+| **Cardano**  | Fixed 45 B cap     | Decaying emissions + fees | Treasury receives portion of rewards        |
+
+Fixed caps strengthen monetary predictability but may reduce validator income as issuance ends. Continuous inflation sustains rewards but dilutes holders.
+
+---
+
+## 9. Native Tokens and Asset Layer
+
+| Chain        | Native Multi-Asset | Mechanism                 | Remarks                                    |
+| ------------ | ------------------ | ------------------------- | ------------------------------------------ |
+| **Bitcoin**  | No                 | Overlays (Ordinals, Omni) | Off-chain logic                            |
+| **Ethereum** | Yes                | ERC standards             | Contract risk per token                    |
+| **Solana**   | Yes                | SPL program               | Efficient, centralized control             |
+| **Cardano**  | Yes (ledger-level) | Multi-Asset Ledger        | Tokens first-class citizens, deterministic |
+
+Cardano’s multi-asset ledger integrates token logic directly in the ledger, eliminating smart-contract dependency for simple assets and lowering fees.
+
+---
+
+## 10. Fees and Economic Model
+
+| Chain        | Fee Model                | Variability           | Notes                                         |
+| ------------ | ------------------------ | --------------------- | --------------------------------------------- |
+| **Bitcoin**  | Per-byte                 | High under congestion | Auctions for limited blockspace               |
+| **Ethereum** | Gas (EIP-1559)           | Dynamic               | Burns base fee, stabilizes somewhat           |
+| **Solana**   | Fixed micro-fee          | Low                   | Throughput subsidizes cost                    |
+| **Cardano**  | Deterministic cost model | Stable                | Based on bytes + script cost; Hydra amortizes |
+
+Cardano favors predictability and composable fee accounting, aligning with deterministic execution.
+
+---
+
+## 11. Smart Contract Architectures
+
+| Chain        | VM / Language           | Determinism   | Verification Potential |
+| ------------ | ----------------------- | ------------- | ---------------------- |
+| **Bitcoin**  | Script                  | Deterministic | Limited                |
+| **Ethereum** | EVM / Solidity          | Partially     | Medium                 |
+| **Solana**   | eBPF / Rust             | High          | Good                   |
+| **Cardano**  | UPLC / Plutus (Haskell) | Strict        | High                   |
+
+Plutus enables purely functional, resource-bounded contracts compiled to UPLC.
+Emerging: **RISC-V (BitVMX)** for cross-chain execution, and **Milkomeda** for EVM compatibility.
+Determinism simplifies audit and static analysis, at cost of convenience.
+
+---
+
+## 12. Governance and Treasury
+
+| Chain        | Governance Model                    | Treasury       | Notes                                   |
+| ------------ | ----------------------------------- | -------------- | --------------------------------------- |
+| **Bitcoin**  | Off-chain (social consensus)        | None           | Minimalist                              |
+| **Ethereum** | Off-chain via core devs & EIPs      | None           | Community coordination                  |
+| **Solana**   | Foundation-led                      | Controlled     | Semi-centralized                        |
+| **Cardano**  | On-chain Voltaire (DReps, CC, SPOs) | Yes (Catalyst) | Milestone funding, audits, stop-payment |
+
+Cardano formalizes on-chain governance via a ratified **Constitution**, distributed representation, and a treasury that supports continuous development through stake-weighted voting.
+
+---
+
+## 13. Conclusion
+
+Technically:
+
+* **Bitcoin** maximizes simplicity and immutability, but lacks scalability and programmability.
+* **Ethereum** emphasizes developer flexibility and rapid evolution, trading off simplicity and low fees.
+* **Solana** optimizes performance and latency at the expense of accessibility and hardware centralization.
+* **Cardano** emphasizes formal verification, modular scaling, predictable economics, and structured governance.
+
+Cardano’s architecture positions it as a long-term research-grade base layer: slower to evolve, but methodically designed for global financial-grade infrastructure.
+
+---
+
+## Bibliography
+
+1. Cardano.org Blog – *Ouroboros Peras* (2025).
+2. IOG Blog – *The Next Step in Cardano’s Protocol* (2024).
+3. *Cardano Scaling Roadmap* – peras.cardano-scaling.org.
+4. *Nervos Knowledge Base*: Parallel vs Sequential Execution (2023).
+5. *Solana Validator Requirements*, docs.solanalabs.com.
+6. *Maxing Out the SVM: Performance Impact of Memory*, arXiv 2505.04129 (2025).
+7. *CIPS-0021 – Randomness Manipulation*, Cardano Improvement Process (2025).
+8. *Ouroboros: A Provably Secure Proof-of-Stake Blockchain Protocol*, Kiayias et al. (2017).
+9. *Ethereum’s Gasper Specification* (2022).
+10. *Cardano Ledger Specification*, IOG (2023).
+
+---
+
+Would you like me to add inline cross-links (e.g., `[Cardano Leios](https://peras.cardano-scaling.org)`) for publication readability?
