@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { CustomMDX } from 'app/components/mdx'
 import { formatDate, getBlogPosts } from 'app/blog/utils'
 import { baseUrl } from 'app/sitemap'
+import { Breadcrumb } from 'app/components/breadcrumb'
 
 export async function generateStaticParams() {
   let posts = getBlogPosts()
@@ -84,6 +85,11 @@ export default async function Blog({ params }) {
           }),
         }}
       />
+      <Breadcrumb items={[
+        { label: 'Home', href: '/' },
+        { label: 'Blog', href: '/blog' },
+        { label: post.metadata.title }
+      ]} />
       <h1 className="title font-semibold text-2xl tracking-tighter">
         {post.metadata.title}
       </h1>

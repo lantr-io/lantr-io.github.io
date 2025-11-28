@@ -20,7 +20,7 @@ export default function Page() {
         Recent posts
       </h2>
       <div className="my-4">
-        <BlogPosts />
+        <BlogPosts limit={2} />
       </div>
     </section>
   )
