@@ -3,6 +3,7 @@ import Image from 'next/image'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import { highlight } from 'sugar-high'
 import React from 'react'
+import { JupyterNotebook } from './jupyter-notebook'
 
 function Table({ data }) {
   let headers = data.headers.map((header, index) => (
@@ -53,6 +54,15 @@ function Code({ children, ...props }) {
   return <code dangerouslySetInnerHTML={{ __html: codeHTML }} {...props} />
 }
 
+function Video({ src, width = '800', ...props }) {
+  return (
+    <video controls width={width} {...props}>
+      <source src={src} type="video/mp4" />
+      Your browser doesn't support HTML5 video
+    </video>
+  )
+}
+
 function slugify(str) {
   return str
     .toString()
@@ -97,6 +107,8 @@ let components = {
   a: CustomLink,
   code: Code,
   Table,
+  JupyterNotebook,
+  Video,
 }
 
 export function CustomMDX(props) {
