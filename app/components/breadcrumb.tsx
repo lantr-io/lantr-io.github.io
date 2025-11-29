@@ -7,7 +7,7 @@ interface BreadcrumbItem {
 
 export function Breadcrumb({ items }: { items: BreadcrumbItem[] }) {
   return (
-    <nav className="mb-4 text-sm text-neutral-600 dark:text-neutral-400">
+    <nav aria-label="Breadcrumb" className="mb-4 text-sm text-neutral-600 dark:text-neutral-400">
       {items.map((item, index) => (
         <span key={index}>
           {item.href ? (

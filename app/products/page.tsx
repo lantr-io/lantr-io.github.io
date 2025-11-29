@@ -47,14 +47,16 @@ export default function Page() {
         {products.map((product) => (
           <div key={product.name} className="flex flex-col space-y-1 mb-4">
             <div className="w-full flex flex-col space-y-1">
-              <Link
-                href={product.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-neutral-900 dark:text-neutral-100 tracking-tight font-medium hover:underline w-fit"
-              >
-                {product.name}
-              </Link>
+              <h2>
+                <Link
+                  href={product.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-neutral-900 dark:text-neutral-100 tracking-tight font-medium hover:underline w-fit"
+                >
+                  {product.name}
+                </Link>
+              </h2>
               <p className="text-neutral-600 dark:text-neutral-400 text-sm">
                 {product.description}
               </p>

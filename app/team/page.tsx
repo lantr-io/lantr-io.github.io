@@ -56,10 +56,10 @@ export default function Page() {
         {teamMembers.map((member) => (
           <div key={member.name} className="flex flex-col space-y-1 mb-4">
             <div className="w-full flex flex-col space-y-1">
-              <p className="text-neutral-900 dark:text-neutral-100 tracking-tight">
+              <h2 className="text-neutral-900 dark:text-neutral-100 tracking-tight">
                 <span className="font-medium">{member.name}</span>
                 <span className="text-neutral-600 dark:text-neutral-400 text-sm"> — {member.position}</span>
-              </p>
+              </h2>
               {/* <p className="text-neutral-600 dark:text-neutral-400 text-sm">
                 {member.bio}
               </p> */}

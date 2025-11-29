@@ -24,6 +24,14 @@ export function Navbar() {
           className="flex flex-row items-center relative px-0 pb-0 fade md:overflow-auto scroll-pr-6 md:relative"
           id="nav"
         >
+          <Link href="/" className="mr-4">
+            <Image
+              src="/img/lantr-icon.png"
+              alt="Lantr Engineering"
+              width={40}
+              height={40}
+            />
+          </Link>
           <div className="flex flex-row space-x-0 pr-10">
             {Object.entries(navItems).map(([path, { name }]) => {
               return (

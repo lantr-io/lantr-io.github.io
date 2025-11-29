@@ -3,6 +3,7 @@ import { formatDate, getBlogPosts } from 'app/blog/utils'
 
 export function BlogPosts({ limit }: { limit?: number } = {}) {
   let allBlogs = getBlogPosts()
+  const TitleTag = limit ? 'p' : 'h2'
 
   return (
     <div>
@@ -26,9 +27,9 @@ export function BlogPosts({ limit }: { limit?: number } = {}) {
               <p className="text-neutral-600 dark:text-neutral-100 md:w-[120px]">
                 {formatDate(post.metadata.publishedAt, false)}
               </p>
-              <p className="text-neutral-900 dark:text-neutral-100 tracking-tight">
+              <TitleTag className="text-neutral-900 dark:text-neutral-100 tracking-tight">
                 {post.metadata.title}
-              </p>
+              </TitleTag>
             </div>
           </Link>
         ))}
