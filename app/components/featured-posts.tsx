@@ -19,12 +19,12 @@ function sortByDate(posts: Post[]) {
 function FeaturedPost({ post }: { post: Post }) {
   return (
     <Link
-      className="flex flex-col space-y-2 mb-6 group"
+      className="flex flex-col space-y-2 mb-8 p-4 rounded-lg bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 group"
       href={`/blog/${post.slug}`}
     >
       <div className="w-full flex flex-col space-y-1">
         <p className="text-sm text-neutral-500 dark:text-neutral-500">
-          {formatDate(post.metadata.publishedAt, false)}
+          {formatDate(post.metadata.publishedAt, false)} · 5 min read
         </p>
         <h2 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100 tracking-tight group-hover:text-[#FF8C00] transition-colors">
           {post.metadata.title}

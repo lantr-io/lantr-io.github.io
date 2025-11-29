@@ -52,18 +52,18 @@ export default function Page() {
         { label: 'Team' }
       ]} />
       <h1 className="font-semibold text-4xl mb-8 tracking-tighter">Our Team</h1>
-      <div>
+      <div className="space-y-6">
         {teamMembers.map((member) => (
-          <div key={member.name} className="flex flex-col space-y-1 mb-2">
-            <div className="w-full flex flex-col space-y-1">
-              <h2 className="text-neutral-900 dark:text-neutral-100 tracking-tight">
-                <span className="font-medium">{member.name}</span>
-                <span className="text-neutral-600 dark:text-neutral-400"> — {member.position}</span>
-              </h2>
-              {/* <p className="text-neutral-600 dark:text-neutral-400 text-sm">
-                {member.bio}
-              </p> */}
-            </div>
+          <div key={member.name}>
+            <h2 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100 tracking-tight mb-1">
+              {member.name}
+            </h2>
+            <p className="text-neutral-500 dark:text-neutral-500">
+              {member.position}
+            </p>
+            {/* <p className="text-neutral-600 dark:text-neutral-400 text-sm">
+              {member.bio}
+            </p> */}
           </div>
         ))}
       </div>
