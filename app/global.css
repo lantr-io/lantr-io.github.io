@@ -33,6 +33,10 @@ html {
   min-width: 360px;
 }
 
+body {
+  @apply text-base leading-relaxed;
+}
+
 .prose .anchor {
   @apply absolute invisible no-underline;
 

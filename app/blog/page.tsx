@@ -13,7 +13,7 @@ export default function Page() {
         { label: 'Home', href: '/' },
         { label: 'Blog' }
       ]} />
-      <h1 className="font-semibold text-2xl mb-8 tracking-tighter">Our Blog</h1>
+      <h1 className="font-semibold text-4xl mb-8 tracking-tighter">Our Blog</h1>
       <BlogPosts />
     </section>
   )

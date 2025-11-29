@@ -51,7 +51,7 @@ export default function Page() {
         { label: 'Home', href: '/' },
         { label: 'Team' }
       ]} />
-      <h1 className="font-semibold text-2xl mb-8 tracking-tighter">Our Team</h1>
+      <h1 className="font-semibold text-4xl mb-8 tracking-tighter">Our Team</h1>
       <div>
         {teamMembers.map((member) => (
           <div key={member.name} className="flex flex-col space-y-1 mb-4">

@@ -42,7 +42,7 @@ export default function Page() {
         { label: 'Home', href: '/' },
         { label: 'Products' }
       ]} />
-      <h1 className="font-semibold text-2xl mb-8 tracking-tighter">Our Products</h1>
+      <h1 className="font-semibold text-4xl mb-8 tracking-tighter">Our Products</h1>
       <div>
         {products.map((product) => (
           <div key={product.name} className="flex flex-col space-y-1 mb-4">
