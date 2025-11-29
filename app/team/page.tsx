@@ -54,11 +54,11 @@ export default function Page() {
       <h1 className="font-semibold text-4xl mb-8 tracking-tighter">Our Team</h1>
       <div>
         {teamMembers.map((member) => (
-          <div key={member.name} className="flex flex-col space-y-1 mb-4">
+          <div key={member.name} className="flex flex-col space-y-1 mb-2">
             <div className="w-full flex flex-col space-y-1">
               <h2 className="text-neutral-900 dark:text-neutral-100 tracking-tight">
                 <span className="font-medium">{member.name}</span>
-                <span className="text-neutral-600 dark:text-neutral-400 text-sm"> — {member.position}</span>
+                <span className="text-neutral-600 dark:text-neutral-400"> — {member.position}</span>
               </h2>
               {/* <p className="text-neutral-600 dark:text-neutral-400 text-sm">
                 {member.bio}
