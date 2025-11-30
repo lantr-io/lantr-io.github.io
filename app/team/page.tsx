@@ -1,5 +1,6 @@
 import { Breadcrumb } from 'app/components/breadcrumb'
 import Image from 'next/image'
+import Link from 'next/link'
 
 export const metadata = {
   title: 'Team',
@@ -61,17 +62,17 @@ export default function Page() {
         { label: 'Team' }
       ]} />
       <h1 className="font-semibold text-2xl mb-8 tracking-tighter">Our Team</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-4">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-4">
         {teamMembers.map((member) => (
-          <div key={member.name} className="flex items-center gap-4">
-            <div className="flex-shrink-0 w-16 h-16 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center overflow-hidden border-2 border-orange-500">
+          <div key={member.name} className="flex flex-col items-center gap-3">
+            <div className="flex-shrink-0 w-24 h-24 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center overflow-hidden border-2 border-orange-500">
               {member.photo ? (
                 <Image
                   src={member.photo}
                   alt={member.name}
-                  width={64}
-                  height={64}
-                  className="w-full h-full object-cover"
+                  width={96}
+                  height={96}
+                  className="w-full h-full object-cover grayscale"
                 />
               ) : (
                 <span className="text-lg font-medium text-neutral-500 dark:text-neutral-400">
@@ -79,13 +80,26 @@ export default function Page() {
                 </span>
               )}
             </div>
-            <div className="flex-1">
+            <div className="text-center">
               <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-400 tracking-tight">
                 {member.name}
               </h2>
             </div>
           </div>
         ))}
+      </div>
+
+      <div className="mt-12 p-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-center">
+        <h2 className="text-2xl font-semibold mb-4 tracking-tight">Join Us</h2>
+        <p className="text-neutral-600 dark:text-neutral-400 mb-6 max-w-2xl mx-auto">
+          We're always looking for talented individuals to join our team. If you're passionate about building innovative solutions, we'd love to hear from you.
+        </p>
+        <Link
+          href="mailto:contact@lantr.io"
+          className="inline-block px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors"
+        >
+          Get in Touch
+        </Link>
       </div>
     </section>
   )

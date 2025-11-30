@@ -81,6 +81,19 @@ export default function Page() {
           </div>
         ))}
       </div>
+
+      <div className="mt-12 p-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-center">
+        <h2 className="text-2xl font-semibold mb-4 tracking-tight">Interested in our Products?</h2>
+        <p className="text-neutral-600 dark:text-neutral-400 mb-6 max-w-2xl mx-auto">
+          Have questions about our products or want to collaborate? We'd love to discuss how we can work together.
+        </p>
+        <Link
+          href="mailto:contact@lantr.io"
+          className="inline-block px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors"
+        >
+          Contact Us
+        </Link>
+      </div>
     </section>
   )
 }
