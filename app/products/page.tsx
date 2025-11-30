@@ -58,7 +58,7 @@ export default function Page() {
                     href={product.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-neutral-900 dark:text-neutral-100 text-m font-semibold tracking-tight border-b-2 border-[#FF8C00] inline-block"
+                    className="text-neutral-900 dark:text-neutral-100 text-lg font-semibold tracking-tight border-b-2 border-[#FF8C00] inline-block"
                   >
                     {product.name}
                   </Link>

@@ -26,7 +26,7 @@ function FeaturedPost({ post }: { post: Post }) {
         <p className="text-sm text-neutral-500 dark:text-neutral-500">
           {formatDate(post.metadata.publishedAt, false)} · 5 min read
         </p>
-        <h2 className="text-l font-semibold text-neutral-900 dark:text-neutral-100 tracking-tight group-hover:text-[#FF8C00] transition-colors">
+        <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 tracking-tight group-hover:text-[#FF8C00] transition-colors">
           {post.metadata.title}
         </h2>
         {post.metadata.summary && (
