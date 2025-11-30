@@ -47,10 +47,10 @@ export default function Page() {
         { label: 'Home', href: '/' },
         { label: 'Products' }
       ]} />
-      <h1 className="font-semibold text-4xl mb-8 tracking-tighter">Our Products</h1>
+      <h1 className="font-semibold text-2xl mb-8 tracking-tighter">Our Products</h1>
       <div>
         {products.map((product) => (
-          <div key={product.name} className="flex flex-col space-y-1 mb-4">
+          <div key={product.name} className="flex flex-col space-y-1 mb-6">
             <div className="w-full flex flex-col space-y-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <h2>
@@ -58,7 +58,7 @@ export default function Page() {
                     href={product.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-neutral-900 dark:text-neutral-100 text-xl font-semibold tracking-tight border-b-2 border-[#FF8C00] inline-block"
+                    className="text-neutral-900 dark:text-neutral-100 text-m font-semibold tracking-tight border-b-2 border-[#FF8C00] inline-block"
                   >
                     {product.name}
                   </Link>

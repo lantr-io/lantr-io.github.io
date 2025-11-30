@@ -10,7 +10,7 @@ export default function Page() {
         Blockchain R&D lab
       </h2>
       <p className="mb-4">
-        Lantr Engineering is a blockchain R&D lab specialising in Cardano, Bitcoin and Midnight. We design protocols, build robust smart-contracts and mission-critical systems. Our team has deep expertise in zero-knowledge cryptography and L2 scaling, working with languages such as Scala, Haskell, Rust, TypeScript and Aiken.
+        Lantr Engineering is a blockchain R&D lab specialising in Cardano, Bitcoin and Midnight. We design and build robust smart-contracts, web3 protocols, mission-critical applications and blockchain infrastructure. Our team has deep expertise in zero-knowledge cryptography and L2 scaling, working with languages such as Scala, Haskell, Rust, TypeScript and Aiken.
       </p>
       <div className="mb-4">
         <h2 className="mb-4 text-xl font-semibold tracking-tighter border-b-2 border-[#FF8C00] inline-block">

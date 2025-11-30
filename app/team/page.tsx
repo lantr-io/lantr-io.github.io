@@ -8,39 +8,32 @@ export const metadata = {
 type TeamMember = {
   name: string
   position: string
-  bio: string
 }
 
 const teamMembers: TeamMember[] = [
   {
     name: 'Oleksandr (Alex) Nemish',
     position: 'Founder, CTO',
-    bio: 'A brief bio describing Alex\'s background, expertise, and role at the company.',
   },
   {
     name: 'Oleksii Khodakivskyi',
-    position: 'Co-founder, Very nice guy',
-    bio: 'A brief bio describing Oleksii\'s background, expertise, and role at the company.',
+    position: 'Co-founder',
   },
   {
     name: 'Ruslan Shevchenko',
     position: 'Ph.D., Software Architect',
-    bio: 'A brief bio describing Ruslan\'s background, expertise, and role at the company.',
   },
   {
     name: 'Roman Hulenko',
     position: 'Senior Software Engineer',
-    bio: 'A brief bio describing Roman\'s background, expertise, and role at the company.',
   },
   {
     name: 'Serhii Lekariev',
     position: 'Senior Software Engineer',
-    bio: 'A brief bio describing Serhii\'s background, expertise, and role at the company.',
   },
   {
     name: 'Sergii Shcherbyna',
     position: 'Senior Software Engineer',
-    bio: 'A brief bio describing Sergii\'s background, expertise, and role at the company.',
   },
 ]
 
@@ -51,11 +44,11 @@ export default function Page() {
         { label: 'Home', href: '/' },
         { label: 'Team' }
       ]} />
-      <h1 className="font-semibold text-4xl mb-8 tracking-tighter">Our Team</h1>
-      <div className="space-y-6">
+      <h1 className="font-semibold text-2xl mb-8 tracking-tighter">Our Team</h1>
+      <div className="flex flex-col space-y-4 mb-4">
         {teamMembers.map((member) => (
           <div key={member.name}>
-            <h2 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100 tracking-tight mb-1">
+            <h2 className="text-l font-semibold text-neutral-900 dark:text-neutral-100 tracking-tight">
               {member.name}
             </h2>
             <p className="text-neutral-500 dark:text-neutral-500">
