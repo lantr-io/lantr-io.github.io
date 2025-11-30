@@ -11,20 +11,11 @@ export const metadata = {
     description: 'World-class team of blockchain developers, Ph.D. software architects, and senior engineers with deep expertise in Cardano, Bitcoin, and cutting-edge decentralized technologies.',
     url: `${baseUrl}/team`,
     type: 'website',
-    images: [
-      {
-        url: `${baseUrl}/og?title=${encodeURIComponent('Our Team')}`,
-        width: 1200,
-        height: 630,
-        alt: 'Lantr Engineering Team',
-      },
-    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Lantr Engineering Team',
     description: 'World-class blockchain developers and architects with expertise in Cardano, Bitcoin, ZK cryptography, and L2 scaling.',
-    images: [`${baseUrl}/og?title=${encodeURIComponent('Our Team')}`],
   },
 }
 

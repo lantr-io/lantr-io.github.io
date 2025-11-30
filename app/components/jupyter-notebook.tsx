@@ -26,7 +26,7 @@ function getCellSource(source: string | string[]): string {
   return Array.isArray(source) ? source.join('') : source
 }
 
-function renderOutput(output: NotebookCell['outputs'][0], index: number) {
+function renderOutput(output: NonNullable<NotebookCell['outputs']>[number], index: number) {
   if (!output) return null
 
   if (output.output_type === 'execute_result' || output.output_type === 'display_data') {

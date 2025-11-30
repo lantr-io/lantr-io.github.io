@@ -10,20 +10,11 @@ export const metadata = {
     description: 'Deep technical insights on blockchain development, Cardano smart contracts, Bitcoin infrastructure, and cutting-edge web3 protocols from our expert R&D team.',
     url: `${baseUrl}/blog`,
     type: 'website',
-    images: [
-      {
-        url: `${baseUrl}/og?title=${encodeURIComponent('Blog')}`,
-        width: 1200,
-        height: 630,
-        alt: 'Lantr Engineering Blog',
-      },
-    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Lantr Engineering Blog',
     description: 'Deep technical insights on blockchain development, Cardano smart contracts, and web3 protocols from our expert team.',
-    images: [`${baseUrl}/og?title=${encodeURIComponent('Blog')}`],
   },
 }
 

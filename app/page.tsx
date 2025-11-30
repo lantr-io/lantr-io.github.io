@@ -2,27 +2,18 @@ import { BlogPosts } from 'app/components/posts'
 import { baseUrl } from './sitemap'
 
 export const metadata = {
-  title: 'Home',
+  //title: 'Home',
   description: 'Expert blockchain R&D lab specializing in Cardano, Bitcoin, and Midnight. Build secure smart contracts, web3 protocols, and mission-critical blockchain infrastructure with deep expertise in ZK cryptography and L2 scaling.',
   openGraph: {
     title: 'Lantr Engineering - Blockchain R&D Lab',
     description: 'Transform your blockchain vision into reality. Expert team specializing in Cardano smart contracts, Bitcoin infrastructure, and cutting-edge web3 protocols.',
     url: baseUrl,
     type: 'website',
-    images: [
-      {
-        url: `${baseUrl}/og?title=${encodeURIComponent('Blockchain R&D Lab')}`,
-        width: 1200,
-        height: 630,
-        alt: 'Lantr Engineering - Blockchain R&D Lab',
-      },
-    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Lantr Engineering - Blockchain R&D Lab',
     description: 'Transform your blockchain vision into reality. Expert team specializing in Cardano smart contracts, Bitcoin infrastructure, and web3 protocols.',
-    images: [`${baseUrl}/og?title=${encodeURIComponent('Blockchain R&D Lab')}`],
   },
 }
 
@@ -58,7 +49,7 @@ export default function Page() {
         Lantr Engineering
       </h1>
       <h2 className='mb-4 text-2xl font-semibold tracking-tighter  inline-block'>
-        Blockchain R&D lab
+      Blockchain Infrastructure & Solutions
       </h2>
       <p className="mb-4">
         Lantr Engineering is a blockchain R&D lab specialising in Cardano, Bitcoin and Midnight. We design and build robust smart-contracts, web3 protocols, mission-critical applications and blockchain infrastructure. Our team has deep expertise in zero-knowledge cryptography and L2 scaling, working with languages such as Scala, Haskell, Rust, TypeScript and Aiken.
