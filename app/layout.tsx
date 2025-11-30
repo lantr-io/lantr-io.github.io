@@ -11,17 +11,33 @@ import { baseUrl } from './sitemap'
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: 'Next.js Portfolio Starter',
-    template: '%s | Next.js Portfolio Starter',
+    default: 'Lantr R&D Labs - Blockchain Infrastructure & Solutions',
+    template: '%s | Lantr R&D Labs',
   },
-  description: 'This is my portfolio.',
+  description: 'Building innovative blockchain infrastructure and solutions. Specializing in Cardano, Bitcoin and Midnight development tools, cross-chain bridges, and decentralized applications.',
   openGraph: {
-    title: 'My Portfolio',
-    description: 'This is my portfolio.',
+    title: 'Lantr R&D Labs - Blockchain Infrastructure & Solutions',
+    description: 'Building innovative blockchain infrastructure and solutions. Specializing in Cardano, Bitcoin and Midnight development tools, cross-chain bridges, and decentralized applications.',
     url: baseUrl,
-    siteName: 'My Portfolio',
+    siteName: 'Lantr.io',
     locale: 'en_US',
     type: 'website',
+    images: [
+      {
+        url: `${baseUrl}/og?title=${encodeURIComponent('Lantr R&D Labs')}`,
+        width: 1200,
+        height: 630,
+        alt: 'Lantr Engineering - Blockchain Infrastructure & Solutions',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Lantr R&D Labs - Blockchain Infrastructure & Solutions',
+    description: 'Building innovative blockchain infrastructure and solutions. Specializing in Cardano, Bitcoin and Midnight development tools, cross-chain bridges, and decentralized applications.',
+    images: [`${baseUrl}/og?title=${encodeURIComponent('Lantr R&D Labs')}`],
+    creator: '@lantr_io',
+    site: '@lantr_io',
   },
   robots: {
     index: true,

@@ -1,10 +1,31 @@
 import { Breadcrumb } from 'app/components/breadcrumb'
 import Image from 'next/image'
 import Link from 'next/link'
+import { baseUrl } from 'app/sitemap'
 
 export const metadata = {
   title: 'Team',
-  description: 'Meet our team.',
+  description: 'Meet our world-class blockchain engineering team. Expert developers and architects specializing in Cardano smart contracts, Bitcoin infrastructure, ZK cryptography, and L2 scaling solutions.',
+  openGraph: {
+    title: 'Lantr Engineering Team',
+    description: 'World-class team of blockchain developers, Ph.D. software architects, and senior engineers with deep expertise in Cardano, Bitcoin, and cutting-edge decentralized technologies.',
+    url: `${baseUrl}/team`,
+    type: 'website',
+    images: [
+      {
+        url: `${baseUrl}/og?title=${encodeURIComponent('Our Team')}`,
+        width: 1200,
+        height: 630,
+        alt: 'Lantr Engineering Team',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Lantr Engineering Team',
+    description: 'World-class blockchain developers and architects with expertise in Cardano, Bitcoin, ZK cryptography, and L2 scaling.',
+    images: [`${baseUrl}/og?title=${encodeURIComponent('Our Team')}`],
+  },
 }
 
 type TeamMember = {

@@ -79,8 +79,8 @@ export default async function Blog({ params }) {
               : `/og?title=${encodeURIComponent(post.metadata.title)}`,
             url: `${baseUrl}/blog/${post.slug}`,
             author: {
-              '@type': 'Person',
-              name: 'My Portfolio',
+              '@type': 'Organization',
+              name: 'Lantr Engineering',
             },
           }),
         }}

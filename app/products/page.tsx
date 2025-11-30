@@ -1,9 +1,30 @@
 import Link from 'next/link'
 import { Breadcrumb } from 'app/components/breadcrumb'
+import { baseUrl } from 'app/sitemap'
 
 export const metadata = {
   title: 'Products',
-  description: 'Explore our products.',
+  description: 'Explore cutting-edge blockchain solutions: Scalus for Cardano dApps, Binocular/Bifrost Bitcoin-Cardano bridge, Cosmex L2 DEX, and Adastream decentralized storage. Open-source tools powering the next generation of web3.',
+  openGraph: {
+    title: 'Lantr Engineering Products',
+    description: 'Open-source blockchain solutions: Scalus (Cardano dApp platform), Binocular/Bifrost (trustless BTC-ADA bridge), Cosmex (L2 orderbook DEX), and Adastream (decentralized storage).',
+    url: `${baseUrl}/products`,
+    type: 'website',
+    images: [
+      {
+        url: `${baseUrl}/og?title=${encodeURIComponent('Our Products')}`,
+        width: 1200,
+        height: 630,
+        alt: 'Lantr Engineering Products',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Lantr Engineering Products',
+    description: 'Open-source blockchain tools: Scalus, Binocular/Bifrost, Cosmex, and Adastream powering Cardano and Bitcoin ecosystems.',
+    images: [`${baseUrl}/og?title=${encodeURIComponent('Our Products')}`],
+  },
 }
 
 type Product = {
