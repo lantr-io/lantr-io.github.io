@@ -26,10 +26,18 @@ export function Navbar() {
         >
           <Link href="/">
             <Image
-              src="/img/lantr-logo.png"
+              src="/lantr-logo.png"
               alt="Lantr Engineering"
               width={120}
-              height={120}
+              height={40}
+              className="dark:hidden"
+            />
+            <Image
+              src="/lantr-logo-dark.png"
+              alt="Lantr Engineering"
+              width={120}
+              height={40}
+              className="hidden dark:block"
             />
           </Link>
           <div className="flex flex-row space-x-0">
