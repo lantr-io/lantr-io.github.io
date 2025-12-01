@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+  <rss version="2.0">
+    <channel>
+        <title>Lantr Engineering Blog</title>
+        <link>https://lantr.io</link>
+        <description>Insights and updates on blockchain development, smart contracts, and decentralized infrastructure from Lantr Engineering</description>
+        <item>
+          <title>Cardano Budget 2025 – What Drives Our Budgeting Choice?</title>
+          <link>https://lantr.io/blog/2025-voting-rational</link>
+          <description>An explanation of our decision to support Cardano's 2025 budget, balancing responsible funding with the need to sustain operations and drive ecosystem innovation.</description>
+          <pubDate>Thu, 31 Jul 2025 00:00:00 GMT</pubDate>
+        </item>
+<item>
+          <title>Cardano Voting Power Distribution</title>
+          <link>https://lantr.io/blog/2025-cardano-voting-power</link>
+          <description>Current voting power distribution in Cardano.</description>
+          <pubDate>Sun, 04 May 2025 00:00:00 GMT</pubDate>
+        </item>
+<item>
+          <title>Cardano Treasury Withdrawal Strategy</title>
+          <link>https://lantr.io/blog/2024-cardano-treasury</link>
+          <description>A sustainable strategy for Cardano Treasury withdrawals</description>
+          <pubDate>Wed, 06 Nov 2024 00:00:00 GMT</pubDate>
+        </item>
+<item>
+          <title>Why Cardano Needs a Fee Market</title>
+          <link>https://lantr.io/blog/2024-cardano-fee-market</link>
+          <description>An analysis of Cardano's transaction ordering system and a proposal for improvement</description>
+          <pubDate>Tue, 05 Nov 2024 00:00:00 GMT</pubDate>
+        </item>
+<item>
+          <title>Why Scalus, Technically?</title>
+          <link>https://lantr.io/blog/2024-scalus</link>
+          <description>Why Scalus is a great choice for Cardano DApp development</description>
+          <pubDate>Thu, 31 Oct 2024 00:00:00 GMT</pubDate>
+        </item>
+<item>
+          <title>Blockchain Levels</title>
+          <link>https://lantr.io/blog/2023-blockchain-levels</link>
+          <description>Bitcoin, Cardano, and the future of blockchains</description>
+          <pubDate>Wed, 20 Dec 2023 00:00:00 GMT</pubDate>
+        </item>
+    </channel>
+  </rss>
