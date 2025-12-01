@@ -47,6 +47,11 @@ const teamMembers: TeamMember[] = [
     photo: '/photo/rh.jpeg',
   },
   {
+    name: 'Lucía Fernández',
+    position: 'Senior Software Engineer',
+    photo: '/photo/lf.jpeg',
+  },
+  {
     name: 'Serhii Lekariev',
     position: 'Senior Software Engineer',
     photo: '/photo/sl.jpeg',
@@ -55,6 +60,11 @@ const teamMembers: TeamMember[] = [
     name: 'Sergii Shcherbyna',
     position: 'Senior Software Engineer',
     photo: '/photo/ss.jpeg',
+  },
+  {
+    name: 'Minh Nguyen',
+    position: 'Senior Software Engineer',
+    photo: '/photo/cn.jpg',
   },
 ]
 
