@@ -7,4 +7,5 @@
 :HL["/img/midnight-foundation-logo.svg","image"]
 :HL["/img/al-logo.png","image"]
 :HL["/img/no-witness-labs-logo.png","image"]
-0:{"buildId":"_H21WY2Sy0eAwhuBJiIhm","tree":{"name":"","paramType":null,"paramKey":"","hasRuntimePrefetch":false,"slots":{"children":{"name":"__PAGE__","paramType":null,"paramKey":"__PAGE__","hasRuntimePrefetch":false,"slots":null,"isRootLayout":false}},"isRootLayout":true},"staleTime":300}
+:HL["/img/utxo-logo.png","image"]
+0:{"buildId":"NxOjH4X-IG5lBV_7McQMG","tree":{"name":"","paramType":null,"paramKey":"","hasRuntimePrefetch":false,"slots":{"children":{"name":"__PAGE__","paramType":null,"paramKey":"__PAGE__","hasRuntimePrefetch":false,"slots":null,"isRootLayout":false}},"isRootLayout":true},"staleTime":300}
