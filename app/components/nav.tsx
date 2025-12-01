@@ -3,7 +3,7 @@ import Image from 'next/image'
 
 const navItems = {
   '/': {
-    name: 'about',
+    name: 'home',
   },
   '/blog': {
     name: 'blog',

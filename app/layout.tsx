@@ -9,12 +9,12 @@ import { baseUrl } from './sitemap'
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: 'Lantr R&D Labs - Blockchain Infrastructure & Solutions',
-    template: '%s | Lantr R&D Labs - Blockchain Infrastructure & Solutions',
+    default: 'Lantr Engineering | Blockchain Infrastructure & Solutions',
+    template: '%s | Lantr Engineering | Blockchain Infrastructure & Solutions',
   },
   description: 'Building innovative blockchain infrastructure and solutions. Specializing in Cardano, Bitcoin and Midnight development tools, cross-chain bridges, and decentralized applications.',
   openGraph: {
-    title: 'Lantr R&D Labs - Blockchain Infrastructure & Solutions',
+    title: 'Lantr Engineering | Blockchain Infrastructure & Solutions',
     description: 'Building innovative blockchain infrastructure and solutions. Specializing in Cardano, Bitcoin and Midnight development tools, cross-chain bridges, and decentralized applications.',
     url: baseUrl,
     siteName: 'Lantr.io',
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Lantr R&D Labs - Blockchain Infrastructure & Solutions',
+    title: 'Lantr Engineering | Blockchain Infrastructure & Solutions',
     description: 'Building innovative blockchain infrastructure and solutions. Specializing in Cardano, Bitcoin and Midnight development tools, cross-chain bridges, and decentralized applications.',
     creator: '@lantr_io',
     site: '@lantr_io',
