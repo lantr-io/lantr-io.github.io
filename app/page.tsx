@@ -3,17 +3,17 @@ import { baseUrl } from './sitemap'
 
 export const metadata = {
   //title: 'Home',
-  description: 'Expert blockchain R&D lab specializing in Cardano, Bitcoin, and Midnight. Build secure smart contracts, web3 protocols, and mission-critical blockchain infrastructure with deep expertise in ZK cryptography and L2 scaling.',
+  description: 'Blockchain R&D lab specialising in Cardano, Bitcoin and Midnight. We design and build robust smart-contracts, web3 protocols, mission-critical applications and blockchain infrastructure. Deep expertise in zero-knowledge cryptography and L2 scaling.',
   openGraph: {
-    title: 'Lantr Engineering - Blockchain R&D Lab',
-    description: 'Transform your blockchain vision into reality. Expert team specializing in Cardano smart contracts, Bitcoin infrastructure, and cutting-edge web3 protocols.',
+    title: 'Lantr Engineering - Blockchain Infrastructure & Solutions',
+    description: 'Blockchain R&D lab specialising in Cardano, Bitcoin and Midnight. We design and build robust smart-contracts, web3 protocols, mission-critical applications and blockchain infrastructure.',
     url: baseUrl,
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Lantr Engineering - Blockchain R&D Lab',
-    description: 'Transform your blockchain vision into reality. Expert team specializing in Cardano smart contracts, Bitcoin infrastructure, and web3 protocols.',
+    title: 'Lantr Engineering - Blockchain Infrastructure & Solutions',
+    description: 'Blockchain R&D lab specialising in Cardano, Bitcoin and Midnight. We design and build robust smart-contracts, web3 protocols, and blockchain infrastructure.',
   },
 }
 
