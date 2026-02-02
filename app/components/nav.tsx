@@ -11,9 +11,6 @@ const navItems = {
   '/products': {
     name: 'products',
   },
-  '/team': {
-    name: 'team',
-  },
 }
 
 export function Navbar() {

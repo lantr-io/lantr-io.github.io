@@ -4,23 +4,23 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "deploy": "npm run build && gh-pages -d out -b gh-pages --nojekyll --cname lantr.io"
+    "deploy": "pnpm run build && gh-pages -d out -b gh-pages --nojekyll --cname lantr.io"
   },
   "dependencies": {
-    "@tailwindcss/postcss": "4.0.0-alpha.13",
-    "@types/node": "20.11.17",
-    "geist": "1.2.2",
-    "next": "^16.0.6",
+    "@tailwindcss/postcss": "4.1.18",
+    "@types/node": "25.2.0",
+    "geist": "1.5.1",
+    "next": "^16.1.6",
     "next-mdx-remote": "^5.0.0",
     "postcss": "^8.4.35",
-    "react": "19.2.0",
-    "react-dom": "19.2.0",
-    "sugar-high": "^0.6.0",
-    "tailwindcss": "4.0.0-alpha.13",
-    "typescript": "5.3.3"
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "sugar-high": "^0.9.5",
+    "tailwindcss": "4.1.18",
+    "typescript": "5.9.3"
   },
   "devDependencies": {
-    "@types/react": "19.2.7",
+    "@types/react": "19.2.10",
     "@types/react-dom": "19.2.3",
     "gh-pages": "^6.3.0"
   }

@@ -65,6 +65,7 @@ export default function Page() {
           <li>— Bitcoin & Lightning infrastructure solutions</li>
         </ul>
       </div>
+      {/* Trusted by section - hidden, restore by uncommenting
       <div className="mb-4">
         <h2 className="mb-4 text-xl font-semibold tracking-tighter border-b-2 border-[#FF8C00] inline-block">
           Trusted by:
@@ -93,6 +94,7 @@ export default function Page() {
           </div>
         </div>
       </div>
+      */}
       <h2 className="mb-2 text-xl font-semibold tracking-tighter border-b-2 border-[#FF8C00] inline-block">
         Recent posts:
       </h2>
