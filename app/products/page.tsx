@@ -3,23 +3,24 @@ import { Breadcrumb } from 'app/components/breadcrumb'
 import { baseUrl } from 'app/sitemap'
 
 export const metadata = {
-  title: 'Products',
+  title: 'Cardano dApp Tools & Bitcoin Bridge Solutions',
   description: 'Explore cutting-edge blockchain solutions: Scalus for Cardano dApps, Binocular/Bifrost Bitcoin-Cardano bridge, Cosmex L2 DEX, and Adastream decentralized storage. Open-source tools powering the next generation of web3.',
   openGraph: {
-    title: 'Lantr Engineering Products',
+    title: 'Cardano dApp Tools & Bitcoin Bridge Solutions',
     description: 'Open-source blockchain solutions: Scalus (Cardano dApp platform), Binocular/Bifrost (trustless BTC-ADA bridge), Cosmex (L2 orderbook DEX), and Adastream (decentralized storage).',
     url: `${baseUrl}/products`,
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Lantr Engineering Products',
+    title: 'Cardano dApp Tools & Bitcoin Bridge Solutions',
     description: 'Open-source blockchain tools: Scalus, Binocular/Bifrost, Cosmex, and Adastream powering Cardano and Bitcoin ecosystems.',
   },
 }
 
 type Product = {
   name: string
+  subtitle: string
   description: string
   url: string
   tags: string[]
@@ -28,24 +29,28 @@ type Product = {
 const products: Product[] = [
   {
     name: 'Scalus',
+    subtitle: 'Cardano Smart Contract & dApps Platform',
     description: 'A Scala 3-based Cardano dApps development platform that enables developers to write smart contracts and dApps using modern functional programming practices with native Plutus support.',
     url: 'https://scalus.org',
     tags: ['Cardano', 'Smart contracts', 'Dev tooling'],
   },
   {
     name: 'Binocular / Bifrost',
+    subtitle: 'Trustless Bitcoin-Cardano Bridge',
     description: 'A trustless Bitcoin-Cardano bridge infrastructure secured by Cardano Stake Pool Operators (SPOs), enabling seamless cross-chain asset transfers between Bitcoin and Cardano networks.',
     url: 'https://github.com/lantr-io/binocular',
     tags: ['Bitcoin', 'Cardano', 'Bridge'],
   },
   {
     name: 'Cosmex',
+    subtitle: 'Cardano Layer 2 Order Book DEX',
     description: 'A high-performance Cardano Layer 2 Order Book Exchange that provides fast, low-cost trading while maintaining security through Cardano blockchain settlement.',
     url: 'https://github.com/lantr-io/cosmex',
     tags: ['L2', 'Orderbook', 'Cardano'],
   },
   {
     name: 'Adastream',
+    subtitle: 'Decentralized File Storage on Cardano',
     description: 'A decentralized file hosting and streaming service incentivized through Cardano Ada payments, offering censorship-resistant storage with native cryptocurrency integration.',
     url: 'https://github.com/lantr-io/adastream',
     tags: ['Cardano', 'Storage', 'Availability'],
@@ -59,7 +64,7 @@ export default function Page() {
         { label: 'Home', href: '/' },
         { label: 'Products' }
       ]} />
-      <h1 className="font-semibold text-2xl mb-8 tracking-tighter">Our Products</h1>
+      <h1 className="font-semibold text-2xl mb-8 tracking-tighter">Our Cardano & Bitcoin Products</h1>
       <div>
         {products.map((product) => (
           <div key={product.name} className="flex flex-col space-y-1 mb-6">
@@ -74,6 +79,7 @@ export default function Page() {
                   >
                     {product.name}
                   </Link>
+                  <span className="sr-only"> - {product.subtitle}</span>
                 </h2>
                 <div className="flex gap-1.5">
                   {product.tags.map((tag) => (
@@ -86,6 +92,9 @@ export default function Page() {
                   ))}
                 </div>
               </div>
+              <p className="text-sm text-neutral-500 dark:text-neutral-400" aria-hidden="true">
+                {product.subtitle}
+              </p>
               <p className="text-neutral-600 dark:text-neutral-400">
                 {product.description}
               </p>

@@ -77,9 +77,16 @@ export default async function Blog({ params }) {
               ? `${baseUrl}${post.metadata.image}`
               : `${baseUrl}/opengraph-image.png`,
             url: `${baseUrl}/blog/${post.slug}`,
+            keywords: post.metadata.tags?.split(/,\s*|[\s]+/).filter(Boolean).join(', '),
+            articleSection: 'Cardano Development',
             author: {
+              '@type': 'Person',
+              name: post.metadata.author || 'Lantr Engineering',
+            },
+            publisher: {
               '@type': 'Organization',
               name: 'Lantr Engineering',
+              url: baseUrl,
             },
           }),
         }}

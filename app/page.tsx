@@ -5,14 +5,14 @@ export const metadata = {
   //title: 'Home',
   description: 'Blockchain R&D lab specialising in Cardano, Bitcoin and Midnight. We design and build robust smart-contracts, web3 protocols, mission-critical applications and blockchain infrastructure. Deep expertise in zero-knowledge cryptography and L2 scaling.',
   openGraph: {
-    title: 'Lantr Engineering - Blockchain Infrastructure & Solutions',
+    title: 'Blockchain R&D Lab | Cardano, Bitcoin & Midnight | Lantr Engineering',
     description: 'Blockchain R&D lab specialising in Cardano, Bitcoin and Midnight. We design and build robust smart-contracts, web3 protocols, mission-critical applications and blockchain infrastructure.',
     url: baseUrl,
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Lantr Engineering - Blockchain Infrastructure & Solutions',
+    title: 'Blockchain R&D Lab | Cardano, Bitcoin & Midnight | Lantr Engineering',
     description: 'Blockchain R&D lab specialising in Cardano, Bitcoin and Midnight. We design and build robust smart-contracts, web3 protocols, and blockchain infrastructure.',
   },
 }
@@ -42,15 +42,27 @@ export default function Page() {
               email: 'contact@lantr.io',
               contactType: 'Business Development',
             },
+            knowsAbout: [
+              'Cardano',
+              'Plutus',
+              'Smart Contracts',
+              'Blockchain',
+              'Bitcoin',
+              'Midnight',
+              'Zero-Knowledge Cryptography',
+              'DeFi',
+              'Web3',
+            ],
           }),
         }}
       />
       <h1 className='mb-8 text-4xl font-semibold tracking-tighter'>
         Lantr Engineering
+        <span className="sr-only"> - Blockchain R&D Lab | Cardano, Bitcoin & Midnight</span>
       </h1>
-      <h2 className='mb-4 text-2xl font-semibold tracking-tighter  inline-block'>
-      Blockchain Infrastructure & Solutions
-      </h2>
+      <p className='mb-4 text-2xl font-semibold tracking-tighter inline-block'>
+        Blockchain Infrastructure & Solutions
+      </p>
       <p className="mb-4">
         Lantr Engineering is a blockchain R&D lab specialising in Cardano, Bitcoin and Midnight. We design and build robust smart-contracts, web3 protocols, mission-critical applications and blockchain infrastructure. Our team has deep expertise in zero-knowledge cryptography and L2 scaling, working with languages such as Scala, Haskell, Rust, TypeScript and Aiken.
       </p>
