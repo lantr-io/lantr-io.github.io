@@ -4,6 +4,7 @@ import { MDXRemote } from 'next-mdx-remote/rsc'
 import { highlight } from 'sugar-high'
 import React from 'react'
 import { JupyterNotebook } from './jupyter-notebook'
+import { ZoomableImage } from './zoomable-image'
 
 function Table({ data }) {
   let headers = data.headers.map((header, index) => (
@@ -109,6 +110,7 @@ let components = {
   Table,
   JupyterNotebook,
   Video,
+  ZoomableImage,
 }
 
 export function CustomMDX(props) {
