@@ -2,43 +2,76 @@
 title: 'Scalus Intersect Budget Update – Milestone 2 Delivered'
 author: 'Oleksii Khodakivskyi'
 tags: cardano, scalus, intersect, governance, budget
-publishedAt: '2025-12-05'
+publishedAt: '2025-12-15'
 summary: "Progress update on Lantr's Intersect-funded Scalus project. Milestone 2 delivers comprehensive documentation, design patterns, smart contract templates, and growing developer adoption."
 ---
 
-As part of our commitment to transparency in Cardano's decentralized governance, we're sharing progress on our Intersect-funded project: **Scalus – DApps Development Platform** (EC-0020-25).
+As part of our commitment to transparency in Cardano's decentralized governance, we're sharing progress on our Intersect-funded project: **Scalus - DApps Development Platform** (EC-0020-25).
 
-<ZoomableImage src="/lantr-scalus-roadmap-122025.jpg" alt="Scalus Roadmap" />
+<ZoomableImage src="/lantr-scalus-roadmap-122025.jpg" alt="Scalus Roadmap - December 2025" />
 
-Milestone 2 focused on adoption and onboarding—making Scalus accessible to more developers and providing the resources needed to build production-ready smart contracts.
+Milestone 2 focused on **adoption and onboarding** - making Scalus accessible to more developers and providing the resources needed to build production-ready smart contracts.
 
 ## What We Delivered
 
-**Documentation & Onboarding**
+### Documentation & Onboarding
 
-We completely reorganised [scalus.org](https://scalus.org/docs) with tailored learning paths for both Cardano developers transitioning to Scala and Scala developers entering Cardano. The [Language Guide](https://scalus.org/docs/language-guide) now includes detailed examples for every concept, and the [Smart Contracts Guide](https://scalus.org/docs/smart-contract) walks through the full development workflow—from writing to testing to deployment.
+We reorganised [Scalus documentation](https://scalus.org/docs) providing:
+- Tailored learning paths for [Cardano developers](https://scalus.org/docs/get-started/for-cardano-developers) starting with Scalus and [Scala developers](https://scalus.org/docs/get-started/for-scala-developers) entering Cardano
+- [Language Guide](https://scalus.org/docs/language-guide) now includes detailed examples for every concept
+- [Smart Contracts Guide](https://scalus.org/docs/smart-contract) walks through the full development workflow - from writing to testing and integration.
 
-**Design Patterns & Security**
+<ZoomableImage src="/scalus-documentation.png" alt="Scalus Documentation" />
 
-We implemented 6 of 9 design patterns from Anastasia Labs' catalogue, including Stake Validator, UTxO Indexer, and Transaction Level Minter patterns. Each comes with documentation, examples, and tests. We also added a [Plutus Vulnerabilities](https://scalus.org/docs/learning/plutus-vulnerabilities) guide to help developers avoid common security pitfalls.
+### Rosetta Blueprints
 
-**Rosetta Blueprints**
+We delivered 7 of 21 Rosetta smart contract blueprints - practical implementations of common use cases like **Betting**, **HTLC**, **Vesting**, **Vault**, and **Payment Splitter**. 
+These serve as starting point references for developers building similar functionality.
 
-We delivered 7 of 21 Rosetta smart contract blueprints—practical implementations of common use cases like HTLC, Vesting, Vault, and Payment Splitter. These serve as production-ready references for developers building similar functionality.
+The reference implementations are available in the [Scalus examples repository](https://github.com/scalus3/scalus/tree/master/scalus-examples/jvm/src/main/scala/scalus/examples). 
 
-**Developer Templates**
+Note: In the upcoming milestones, we will contribute the finalised blueprints to the "Rosetta Blueprints" and "Cardano Blueprint and Ecosystem Monitoring" projects.
+
+### Design Patterns & Security
+
+We implemented 1st part of the design patterns from Anastasia Labs' catalogue, including **Stake Validator (Withdraw Zero Trick)**, **UTxO Indexer**, **Validity Range Normalization**, and **Transaction Level Minter** patterns. Each comes with documentation, examples, and tests. 
+
+Check out the [Design Patterns](https://github.com/scalus3/scalus/tree/master/scalus-design-patterns) repository for more details.
+
+We also added a [Plutus Vulnerabilities](https://scalus.org/docs/security/common-vulnerabilities) guide to help developers avoid common security pitfalls.
+
+### Developer Templates
 
 New command-line templates let developers scaffold projects instantly:
-- `sbt new scalus3/hello.g8` – starter template
-- `sbt new scalus3/validator.g8` – empty validator template
+- `sbt new scalus3/hello.g8`  Hello World template
+- `sbt new scalus3/validator.g8` - Starter validator template
 
-**Platform Improvements**
+Read more in our:
+- [Getting Started Guide](https://scalus.org/docs/get-started)
+- [Build your first Smart Contract](https://scalus.org/docs/smart-contracts/developing-smart-contracts)
 
-Based on community feedback, we refined the smart contract syntax, enhanced the standard library with new math utilities and optimised operations, and improved the test kit for better developer experience.
+### Ongoing Platform Improvements
+
+Based on community feedback, we made numerous improvements to the Scalus platform: refined the smart contract syntax, enhanced the standard library with new math utilities and optimised operations, and improved the test kit for better developer experience.
+
+**Scalus public releases**:
+- 0.13.0 (2025-10-22)
+- 0.12.1 (2025-10-08) 
+- 0.12.0 (2025-09-27)
+
+Complete changelog: [GitHub](https://github.com/scalus3/scalus/blob/master/CHANGELOG.md#0130-2025-10-22) 
+
+<Tweet id="1983436949932429814" />
+
 
 ## Growing Adoption
 
-We launched [Scalus Club](https://lu.ma/scalus)—a community of 30+ experienced Cardano developers meeting every 2-4 weeks for early access to features and direct input on the roadmap. Recent sessions covered [Smart Contract Development](https://www.youtube.com/watch?v=jSh97myCJwM) and [Transaction Building](https://www.youtube.com/watch?v=soE7ExXu_vI).
+We launched [Scalus Club](https://lu.ma/scalus) - a community of 30+ experienced Cardano developers meeting every 2-4 weeks for early access to features and direct input on the roadmap.
+
+Recent sessions covered **Smart Contract Development**: 
+
+<YouTubeEmbed videoid="jSh97myCJwM" />
+
 
 Scalus is now consistently listed among the most actively developed projects on Cardano by [Proof of Cardano](https://x.com/ProofOfCardano).
 
@@ -46,11 +79,15 @@ Scalus is now consistently listed among the most actively developed projects on 
 
 Cardano needs robust developer tooling to grow. Scalus enables full-stack dApp development in a single language—smart contracts, transaction building, backend, and frontend—all in Scala 3. The resources delivered in this milestone lower the barrier to entry and give developers production-ready patterns to build on.
 
+<ZoomableImage src="/lantr-scalus-full-stack-development.jpg" alt="Scalus Full Stack Development" />
+
 The milestone was reviewed and approved by No Witness Labs as third-party assurer, confirming deliverables align with scope and demonstrating that Intersect's milestone-based funding model works.
+
+Treasury reports can be found in the [Intersect Treasury Dashboard](https://treasury.sundae.fi/instances/9e65e4ed7d6fd86fc4827d2b45da6d2c601fb920e8bfd794b8ecc619/project/EC-0020-25).
 
 ## What's Next
 
-Milestone 3 will continue expanding the documentation, complete the remaining design patterns and Rosetta blueprints, and focus on deeper integrations and advanced tutorials.
+Milestone 3 will continue expanding the documentation, complete the remaining design patterns and next pack of Rosetta blueprints, and focus on providing extensive off-chain library for transaction building and testing.
 
 ---
 
@@ -58,4 +95,4 @@ Follow our progress on [X (@Scalus3)](https://x.com/Scalus3) and [X (@lantr_io)]
 
 Join [Scalus Club](https://lu.ma/scalus) for early access and to shape the roadmap.
 
-Questions or feedback? Reach out on [Discord](https://discord.gg/B6tXmBzhTn) or email us at contact@lantr.io.
+Questions or feedback? Reach out on [Discord](https://discord.gg/B6tXmBzhTn) or email us at [contact@lantr.io](mailto:contact@lantr.io).

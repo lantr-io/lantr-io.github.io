@@ -56,21 +56,21 @@ export default function Page() {
           }),
         }}
       />
-      <h1 className='mb-8 text-4xl font-semibold tracking-tighter'>
+      <h1 className='mb-6 text-3xl md:text-4xl font-bold tracking-tight'>
         Lantr Engineering
         <span className="sr-only"> - Blockchain R&D Lab | Cardano, Bitcoin & Midnight</span>
       </h1>
-      <p className='mb-4 text-2xl font-semibold tracking-tighter inline-block'>
+      <p className='mb-6 text-xl md:text-2xl font-medium tracking-tight text-neutral-600 dark:text-neutral-400'>
         Blockchain Infrastructure & Solutions
       </p>
-      <p className="mb-4">
+      <p className="mb-8 leading-7 text-neutral-700 dark:text-neutral-300">
         Lantr Engineering is a blockchain R&D lab specialising in Cardano, Bitcoin and Midnight. We design and build robust smart-contracts, web3 protocols, mission-critical applications and blockchain infrastructure. Our team has deep expertise in zero-knowledge cryptography and L2 scaling, working with languages such as Scala, Haskell, Rust, TypeScript and Aiken.
       </p>
-      <div className="mb-4">
-        <h2 className="mb-4 text-xl font-semibold tracking-tighter border-b-2 border-[#FF8C00] inline-block">
+      <div className="mb-8">
+        <h2 className="mb-4 text-xl font-semibold tracking-tight border-b-2 border-[#FF8C00] inline-block">
           We can help with:
         </h2>
-        <ul className="mb-4">
+        <ul className="mb-4 space-y-2 text-neutral-700 dark:text-neutral-300">
           <li>— blockchain dApp architecture and development</li>
           <li>— protocol, business-solution design and implementation</li>
           <li>— Cardano & Midnight smart-contract development and security audits</li>
@@ -107,7 +107,7 @@ export default function Page() {
         </div>
       </div>
       */}
-      <h2 className="mb-2 text-xl font-semibold tracking-tighter border-b-2 border-[#FF8C00] inline-block">
+      <h2 className="mb-2 text-xl font-semibold tracking-tight border-b-2 border-[#FF8C00] inline-block">
         Recent posts:
       </h2>
       <div className="my-2">

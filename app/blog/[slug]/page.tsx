@@ -96,10 +96,10 @@ export default async function Blog({ params }) {
         { label: 'Blog', href: '/blog' },
         { label: post.metadata.title }
       ]} />
-      <h1 className="title font-semibold text-2xl tracking-tighter">
+      <h1 className="title font-bold text-3xl md:text-4xl tracking-tight leading-tight">
         {post.metadata.title}
       </h1>
-      <div className="flex justify-between items-center mt-2 mb-8 text-sm">
+      <div className="flex justify-between items-center mt-2 mb-6 text-sm">
         <p className="post-date text-sm text-neutral-600 dark:text-neutral-400">
           {formatDate(post.metadata.publishedAt)}
         </p>

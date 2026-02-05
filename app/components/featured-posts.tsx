@@ -19,18 +19,18 @@ function sortByDate(posts: Post[]) {
 function FeaturedPost({ post }: { post: Post }) {
   return (
     <Link
-      className="flex flex-col space-y-2 mb-8 p-4 rounded-lg bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 group"
+      className="flex flex-col space-y-3 mb-10 p-5 rounded-lg bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 group"
       href={`/blog/${post.slug}`}
     >
-      <div className="w-full flex flex-col space-y-1">
+      <div className="w-full flex flex-col space-y-2">
         <p className="text-sm text-neutral-500 dark:text-neutral-500">
-          {formatDate(post.metadata.publishedAt, false)} · 5 min read
+          {formatDate(post.metadata.publishedAt, false)}
         </p>
-        <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 tracking-tight group-hover:text-[#FF8C00] transition-colors">
+        <h2 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100 tracking-tight group-hover:text-[#FF8C00] transition-colors">
           {post.metadata.title}
         </h2>
         {post.metadata.summary && (
-          <p className="text-neutral-600 dark:text-neutral-400 line-clamp-2">
+          <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed line-clamp-2">
             {post.metadata.summary}
           </p>
         )}
@@ -42,17 +42,15 @@ function FeaturedPost({ post }: { post: Post }) {
 function RegularPost({ post }: { post: Post }) {
   return (
     <Link
-      className="flex flex-col space-y-1 mb-2 group"
+      className="flex items-baseline py-3 group"
       href={`/blog/${post.slug}`}
     >
-      <div className="w-full flex flex-col md:flex-row space-x-0 md:space-x-3">
-        <p className="text-m text-neutral-500 dark:text-neutral-500 md:w-[120px]">
-          {formatDate(post.metadata.publishedAt, false)}
-        </p>
-        <p className="text-neutral-900 dark:text-neutral-100 tracking-tight group-hover:text-[#FF8C00] transition-colors">
-          {post.metadata.title}
-        </p>
-      </div>
+      <p className="text-neutral-500 dark:text-neutral-400 w-[130px] shrink-0">
+        {formatDate(post.metadata.publishedAt, false)}
+      </p>
+      <p className="text-neutral-900 dark:text-neutral-100 font-medium group-hover:text-[#FF8C00] transition-colors">
+        {post.metadata.title}
+      </p>
     </Link>
   )
 }
@@ -64,9 +62,11 @@ export function FeaturedPosts({ limit }: { limit?: number } = {}) {
   return (
     <div>
       {featuredPost && <FeaturedPost post={featuredPost} />}
-      {otherPosts.map((post) => (
-        <RegularPost key={post.slug} post={post} />
-      ))}
+      <div className="divide-y divide-neutral-200 dark:divide-neutral-800">
+        {otherPosts.map((post) => (
+          <RegularPost key={post.slug} post={post} />
+        ))}
+      </div>
     </div>
   )
 }

@@ -5,6 +5,8 @@ import { highlight } from 'sugar-high'
 import React from 'react'
 import { JupyterNotebook } from './jupyter-notebook'
 import { ZoomableImage } from './zoomable-image'
+import { Tweet } from 'react-tweet'
+import { YouTubeEmbed } from '@next/third-parties/google'
 
 function Table({ data }) {
   let headers = data.headers.map((header, index) => (
@@ -111,6 +113,8 @@ let components = {
   JupyterNotebook,
   Video,
   ZoomableImage,
+  Tweet,
+  YouTubeEmbed,
 }
 
 export function CustomMDX(props) {
