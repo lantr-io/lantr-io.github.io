@@ -8,6 +8,7 @@ import { ZoomableImage } from './zoomable-image'
 import { Tweet } from 'react-tweet'
 import { YouTubeEmbed } from '@next/third-parties/google'
 import remarkMath from 'remark-math'
+import remarkGfm from 'remark-gfm'
 import rehypeKatex from 'rehype-katex'
 
 function Table({ data }) {
@@ -126,7 +127,7 @@ export function CustomMDX(props) {
       components={{ ...components, ...(props.components || {}) }}
       options={{
         mdxOptions: {
-          remarkPlugins: [remarkMath],
+          remarkPlugins: [remarkGfm, remarkMath],
           rehypePlugins: [rehypeKatex],
         },
       }}

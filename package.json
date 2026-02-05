@@ -25,6 +25,7 @@
     "react-medium-image-zoom": "^5.4.0",
     "react-tweet": "^3.3.0",
     "rehype-katex": "^7.0.1",
+    "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
     "sugar-high": "^0.9.5",
     "tailwindcss": "4.1.18",
