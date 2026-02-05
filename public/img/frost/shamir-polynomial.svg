@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 380" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#888"/>
+    </marker>
+    <style>
+      text { font-size: 13px; fill: #333; }
+      .axis-label { font-size: 12px; fill: #888; }
+      .point-label { font-size: 13px; font-weight: 600; }
+      .math { font-style: italic; font-size: 14px; }
+      .caption { font-size: 12px; fill: #666; }
+      .secret-label { font-size: 13px; font-weight: 600; fill: #dc2626; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="520" height="380" fill="#fafafa" rx="8"/>
+
+  <!-- Grid -->
+  <g stroke="#eee" stroke-width="0.5">
+    <line x1="80" y1="40" x2="80" y2="310"/>
+    <line x1="180" y1="40" x2="180" y2="310"/>
+    <line x1="280" y1="40" x2="280" y2="310"/>
+    <line x1="380" y1="40" x2="380" y2="310"/>
+    <line x1="480" y1="40" x2="480" y2="310"/>
+    <line x1="60" y1="70" x2="490" y2="70"/>
+    <line x1="60" y1="130" x2="490" y2="130"/>
+    <line x1="60" y1="190" x2="490" y2="190"/>
+    <line x1="60" y1="250" x2="490" y2="250"/>
+  </g>
+
+  <!-- Axes -->
+  <line x1="60" y1="310" x2="495" y2="310" stroke="#999" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="80" y1="320" x2="80" y2="35" stroke="#999" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+  <!-- Axis labels -->
+  <text x="500" y="314" class="axis-label">x</text>
+  <text x="74" y="30" class="axis-label">f(x)</text>
+
+  <!-- Tick marks and labels on x-axis -->
+  <line x1="180" y1="306" x2="180" y2="314" stroke="#999" stroke-width="1"/>
+  <text x="177" y="328" class="axis-label">1</text>
+  <line x1="280" y1="306" x2="280" y2="314" stroke="#999" stroke-width="1"/>
+  <text x="277" y="328" class="axis-label">2</text>
+  <line x1="380" y1="306" x2="380" y2="314" stroke="#999" stroke-width="1"/>
+  <text x="377" y="328" class="axis-label">3</text>
+
+  <!-- Tick marks on y-axis -->
+  <line x1="76" y1="250" x2="84" y2="250" stroke="#999" stroke-width="1"/>
+  <text x="52" y="254" class="axis-label">16</text>
+  <line x1="76" y1="190" x2="84" y2="190" stroke="#999" stroke-width="1"/>
+  <text x="52" y="194" class="axis-label">22</text>
+  <line x1="76" y1="130" x2="84" y2="130" stroke="#999" stroke-width="1"/>
+  <text x="52" y="134" class="axis-label">28</text>
+  <line x1="76" y1="70" x2="84" y2="70" stroke="#999" stroke-width="1"/>
+  <text x="52" y="74" class="axis-label">34</text>
+
+  <!-- The line f(x) = 16 + 6x -->
+  <!-- At x=0: y=16, at x=1: y=22, at x=2: y=28, at x=3: y=34 -->
+  <!-- Mapping: x_svg = 80 + x*100, y_svg = 310 - (y-10)*10 -->
+  <!-- x=0: (80, 250), x=1: (180, 190), x=2: (280, 130), x=3: (380, 70), extended to x=4: (480, 10) -->
+  <line x1="50" y1="268" x2="480" y2="10" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" opacity="0.9"/>
+
+  <!-- Secret point f(0) = 16 -->
+  <circle cx="80" cy="250" r="7" fill="#dc2626" stroke="#fff" stroke-width="2"/>
+  <text x="90" y="264" class="secret-label">s = 16</text>
+  <!-- Dashed line from secret to y-axis -->
+  <line x1="80" y1="250" x2="80" y2="250" stroke="#dc2626" stroke-width="1" stroke-dasharray="4,3"/>
+
+  <!-- Share points -->
+  <!-- P1: (1, 22) -->
+  <circle cx="180" cy="190" r="6" fill="#16a34a" stroke="#fff" stroke-width="2"/>
+  <text x="190" y="184" class="point-label" fill="#16a34a">P&#x2081;</text>
+  <text x="190" y="200" class="axis-label" fill="#16a34a">s&#x2081; = 22</text>
+
+  <!-- P2: (2, 28) -->
+  <circle cx="280" cy="130" r="6" fill="#16a34a" stroke="#fff" stroke-width="2"/>
+  <text x="290" y="124" class="point-label" fill="#16a34a">P&#x2082;</text>
+  <text x="290" y="140" class="axis-label" fill="#16a34a">s&#x2082; = 28</text>
+
+  <!-- P3: (3, 34) -->
+  <circle cx="380" cy="70" r="6" fill="#16a34a" stroke="#fff" stroke-width="2"/>
+  <text x="390" y="64" class="point-label" fill="#16a34a">P&#x2083;</text>
+  <text x="390" y="80" class="axis-label" fill="#16a34a">s&#x2083; = 34</text>
+
+  <!-- Dashed lines from share points to x-axis -->
+  <line x1="180" y1="190" x2="180" y2="310" stroke="#16a34a" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>
+  <line x1="280" y1="130" x2="280" y2="310" stroke="#16a34a" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>
+  <line x1="380" y1="70" x2="380" y2="310" stroke="#16a34a" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>
+
+  <!-- Formula label -->
+  <text x="340" y="354" class="math" fill="#2563eb">f(x) = 16 + 6x</text>
+
+  <!-- Caption -->
+  <text x="260" y="372" text-anchor="middle" class="caption">Shamir (2,3) secret sharing: the secret s = f(0) is the y-intercept, shares are points on the line</text>
+</svg>

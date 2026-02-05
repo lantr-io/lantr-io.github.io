@@ -15,6 +15,10 @@
 # production
 /build
 
+# generated
+/_site/
+/.tweet-cache/
+
 # misc
 .DS_Store
 *.pem

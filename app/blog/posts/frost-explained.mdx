@@ -35,6 +35,8 @@ Before we can distribute a signature across multiple parties, we need to underst
 
 All the math happens in a **cyclic group** — think of it as a set of points on an elliptic curve. The group has a **generator** point $G$ and a prime **order** $q$ (the total number of points). We have one operation: **scalar multiplication** — multiplying $G$ by an integer $s$ to get a new point $s \cdot G$.
 
+<ZoomableImage src="/img/frost/elliptic-curve.svg" alt="Elliptic curve point addition: P + Q is found by drawing a line through P and Q, finding the third intersection, and reflecting it" />
+
 The critical property: given $s$ and $G$, computing $s \cdot G$ is trivial (milliseconds on a laptop). But given $s \cdot G$ and $G$, recovering $s$ is computationally infeasible — this is the **discrete logarithm problem**, and it's the foundation of elliptic curve cryptography.
 
 Think of it like mixing paint: combining yellow and blue to get green is easy, but looking at the green and figuring out the exact ratio of yellow and blue is practically impossible.
@@ -327,6 +329,8 @@ Compute the shares by evaluating $f$ at each participant's index:
 - $P_2$ gets $s_2 = f(2) = 16 + 12 = 28$
 - $P_3$ gets $s_3 = f(3) = 16 + 18 = 34$
 
+<ZoomableImage src="/img/frost/shamir-polynomial.svg" alt="Shamir (2,3) secret sharing: the secret s = 16 is the y-intercept, shares are points on the line f(x) = 16 + 6x" />
+
 **Why is this secure?** The shares are points on a line. Two points determine a line, so any 2 shares let you find $f$ and compute $f(0) = 16 = s$. But a single point, say $(1, 22)$, tells you nothing: for any possible secret $s'$, there's a line through $(1, 22)$ with $y$-intercept $s'$. One share is consistent with every possible secret.
 
 ### The dealer problem: who picks the polynomial?
@@ -523,6 +527,8 @@ The Lagrange recombination works both in the scalar world (secret numbers) and i
 
 We've built all the pieces. Now let's put them together into the actual FROST protocol: a two-round scheme where $t$ of $n$ participants cooperatively produce a standard Schnorr signature.
 
+<ZoomableImage src="/img/frost/frost-protocol-flow.svg" alt="FROST protocol flow: two rounds between participants and coordinator, producing a standard Schnorr signature" />
+
 ### Setup: Distributed Key Generation (done once)
 
 Before any signing can happen, the participants run the Pedersen DKG described above. Afterward, each participant $P_p$ holds:
@@ -713,15 +719,11 @@ The final signature is $(R, z) = (36G, 2)$ — a perfectly valid Schnorr signatu
 
 ### Summary of FROST properties
 
-| Property | Detail |
-| --- | --- |
-| **Output** | Standard Schnorr signature — indistinguishable from single-signer |
-| **Rounds** | 2 (or 1 with preprocessed nonces) |
-| **Threshold** | Any *t* of *n* — the rest can be offline |
-| **Concurrency** | Safe to run many parallel signing sessions |
-| **Robustness** | Identifiable abort: misbehaving signers are detected, but the protocol doesn't automatically recover — a new session must be started without them |
-| **Security** | EUF-CMA secure under the One-More Discrete Log assumption. An adversary controlling up to *t*−1 participants cannot forge signatures |
-| **Standard** | [RFC 9591](https://www.rfc-editor.org/rfc/rfc9591.html) (June 2024) with ciphersuites for Ed25519, Ed448, P-256, secp256k1 |
+FROST produces a **standard Schnorr signature** — the output is indistinguishable from one created by a single signer. The protocol completes in **2 rounds** (or just 1 if nonces are preprocessed). Any **$t$ of $n$** participants can sign; the rest can be offline. Multiple signing sessions can run **concurrently** without compromising security.
+
+If a participant misbehaves, the protocol provides **identifiable abort** — the cheater is detected, though a new session must be started without them. FROST is **EUF-CMA secure** under the One-More Discrete Log assumption: an adversary controlling up to $t-1$ participants cannot forge signatures.
+
+The protocol is standardized in [**RFC 9591**](https://www.rfc-editor.org/rfc/rfc9591.html) (June 2024), with ciphersuites for Ed25519, Ed448, P-256, and secp256k1.
 
 ## References
 
@@ -737,3 +739,4 @@ The final signature is $(R, z) = (36G, 2)$ — a perfectly valid Schnorr signatu
 - **Feldman VSS:** Feldman. "A Practical Scheme for Non-interactive Verifiable Secret Sharing." FOCS 1987. [IEEE](https://ieeexplore.ieee.org/document/4568297)
 - **Pedersen DKG:** Pedersen. "Non-Interactive and Information-Theoretic Secure Verifiable Secret Sharing." CRYPTO 1991. [Springer](https://link.springer.com/chapter/10.1007/3-540-46766-1_9)
 - **Zcash FROST implementation (Rust):** [github.com/ZcashFoundation/frost](https://github.com/ZcashFoundation/frost)
+- **FROST Interactive Explainer:** [romarq.github.io/FROST-Interactive-Explainer](https://romarq.github.io/FROST-Interactive-Explainer/)
