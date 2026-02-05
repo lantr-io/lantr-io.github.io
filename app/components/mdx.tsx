@@ -7,6 +7,8 @@ import { JupyterNotebook } from './jupyter-notebook'
 import { ZoomableImage } from './zoomable-image'
 import { Tweet } from 'react-tweet'
 import { YouTubeEmbed } from '@next/third-parties/google'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
 
 function Table({ data }) {
   let headers = data.headers.map((header, index) => (
@@ -122,6 +124,12 @@ export function CustomMDX(props) {
     <MDXRemote
       {...props}
       components={{ ...components, ...(props.components || {}) }}
+      options={{
+        mdxOptions: {
+          remarkPlugins: [remarkMath],
+          rehypePlugins: [rehypeKatex],
+        },
+      }}
     />
   )
 }

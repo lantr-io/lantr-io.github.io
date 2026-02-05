@@ -1,4 +1,5 @@
 import './global.css'
+import 'katex/dist/katex.min.css'
 import type { Metadata } from 'next'
 import { GeistMono } from 'geist/font/mono'
 import { Navbar } from './components/nav'

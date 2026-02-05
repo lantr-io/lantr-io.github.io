@@ -1,0 +1,739 @@
+---
+title: "FROST Explained"
+author: "Alexander Nemish"
+tags: "frost schnorr threshold cryptography bitcoin"
+publishedAt: '2026-02-05'
+summary: "A step-by-step guide to FROST threshold Schnorr signatures — from Schnorr basics through Shamir secret sharing to the full protocol, with concrete numeric examples."
+---
+
+## Introduction
+
+Imagine a Bitcoin wallet controlled by a company with five board members. You want a rule: any three of the five can authorize a transaction, but no one or two members can steal the funds. And when the transaction hits the blockchain, it should look exactly like any other — nobody can tell it was signed by a group.
+
+This is exactly what [FROST](https://eprint.iacr.org/2020/852) does. FROST stands for **Flexible Round-Optimized Schnorr Threshold Signatures**. It lets $t$ out of $n$ participants jointly produce a Schnorr signature — without any single party ever knowing the full secret key. The output is a standard Schnorr signature, indistinguishable from one created by a single signer.
+
+This is directly relevant to Bitcoin. Since the Taproot upgrade (2021), Bitcoin natively supports Schnorr signatures ([BIP-340](https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki)) for transaction authorization. FROST produces standard Schnorr signatures on the secp256k1 curve — exactly what Bitcoin expects. This makes FROST a natural fit for threshold signing of Bitcoin transactions: custody solutions, cross-chain bridges, or any setup where multiple parties must approve a spend, without revealing on-chain that a threshold scheme was used at all.
+
+Why not just use a regular private key? Because a single key is a single point of failure. Stolen key — all funds gone. Lost key — all funds locked forever. FROST distributes trust: no single participant can sign alone, and any $t$ of the $n$ participants can cooperate to sign. The rest can be offline, unreachable, or even compromised — as long as fewer than $t$ are malicious, the key is safe.
+
+To understand how FROST achieves this, we'll build up from its foundations, one step at a time:
+
+1. **Schnorr signatures** — the signature scheme FROST is built on
+2. **Nonce aggregation** — how multiple signers combine their randomness into one
+3. **Partial signature aggregation** — how individual contributions sum to a valid signature
+4. **Shamir secret sharing** — how to split a secret so that any $t$ of $n$ pieces can reconstruct it
+5. **Lagrange interpolation** — the mathematical tool that makes reconstruction work
+6. **The FROST protocol** — putting it all together
+
+Throughout the article, we'll use concrete numeric examples you can verify by hand. In real cryptography, all numbers are 256-bit integers and the math happens on elliptic curves, but the logic is identical.
+
+## Schnorr Signatures
+
+Before we can distribute a signature across multiple parties, we need to understand how a single-signer Schnorr signature works.
+
+### The setup: elliptic curve math in 30 seconds
+
+All the math happens in a **cyclic group** — think of it as a set of points on an elliptic curve. The group has a **generator** point $G$ and a prime **order** $q$ (the total number of points). We have one operation: **scalar multiplication** — multiplying $G$ by an integer $s$ to get a new point $s \cdot G$.
+
+The critical property: given $s$ and $G$, computing $s \cdot G$ is trivial (milliseconds on a laptop). But given $s \cdot G$ and $G$, recovering $s$ is computationally infeasible — this is the **discrete logarithm problem**, and it's the foundation of elliptic curve cryptography.
+
+Think of it like mixing paint: combining yellow and blue to get green is easy, but looking at the green and figuring out the exact ratio of yellow and blue is practically impossible.
+
+With that in mind, a signer has:
+
+- **Secret key:** a random number $s$ (a "scalar" — just a big integer modulo $q$)
+- **Public key:** $Y = s \cdot G$ (a point on the curve — easy to compute from $s$, impossible to reverse)
+
+### How signing works
+
+To sign a message $m$, the signer:
+
+1. **Picks a random nonce** $k$ and computes the **commitment** $R = k \cdot G$. The nonce is a one-time secret random number. "Commitment" because $R$ publicly commits the signer to their choice of $k$ without revealing $k$ itself (discrete log again).
+
+2. **Computes the challenge** $c = H(R \| Y \| m)$. This hashes together the commitment, the public key, and the message. The hash acts as an unpredictable "question" that the signer must answer — and crucially, it depends on $R$, so the signer can't know $c$ before committing to their nonce. We'll see why this matters right after verification.
+
+3. **Computes the response** $z = k + s \cdot c$. This is the core equation — it blends the nonce with the secret key, weighted by the challenge. It's the "answer" to the challenge that proves the signer knows $s$.
+
+4. **Outputs the signature** $\sigma = (R, z)$ — the commitment point and the response scalar.
+
+### How verification works
+
+Anyone with the public key $Y$ can verify the signature by checking:
+
+$$
+z \cdot G \stackrel{?}{=} R + c \cdot Y
+$$
+
+This reads: "multiply the generator by the response $z$, and check if it equals the commitment $R$ plus the challenge times the public key."
+
+Why does this equation hold? Let's expand the right side by substituting what $R$ and $Y$ actually are:
+
+$$
+R + c \cdot Y = k \cdot G + c \cdot (s \cdot G) = (k + s \cdot c) \cdot G = z \cdot G \quad \checkmark
+$$
+
+The equation works because we defined $z = k + s \cdot c$. A verifier who doesn't know $k$ or $s$ can still check this — they only need the public values $R$, $Y$, $c$, and $z$.
+
+### Why $R$ must be in the challenge hash
+
+Now that we've seen how verification works, we can understand why the challenge $c = H(R \| Y \| m)$ must include $R$. Without it, the scheme is completely broken — anyone can forge signatures without knowing the secret key.
+
+Suppose the challenge were just $c = H(Y \| m)$ — no $R$. An attacker wants to forge a signature on message $m$ under public key $Y$:
+
+1. Compute $c = H(Y \| m)$ — this is public knowledge, no secrets needed.
+2. Pick any random $z$.
+3. Compute $R = z \cdot G - c \cdot Y$.
+4. Output $(R, z)$ as the "signature."
+
+Does it verify? $z \cdot G \stackrel{?}{=} R + c \cdot Y = (z \cdot G - c \cdot Y) + c \cdot Y = z \cdot G$. Yes — a complete forgery without knowing the secret key.
+
+The attack works because the forger gets to choose $z$ and $R$ simultaneously, engineering them to satisfy the verification equation. By including $R$ in the hash, we force the signer to commit to $R$ *before* the challenge $c$ is determined. A forger would need to find $R$ such that $c = H(R \| Y \| m)$ *and* $z \cdot G = R + c \cdot Y$ hold simultaneously — but they can't know $c$ until they fix $R$, and they can't construct $R$ without knowing $c$. This circular dependency is what makes forgery infeasible.
+
+This construction is called the **[Fiat-Shamir transform](https://link.springer.com/chapter/10.1007/3-540-47721-7_12)** (Fiat & Shamir, CRYPTO 1986): it converts an interactive identification protocol into a non-interactive signature scheme by replacing the verifier's random challenge with a hash of the commitment. [Pointcheval & Stern (EUROCRYPT 1996)](https://link.springer.com/chapter/10.1007/3-540-68339-9_33) proved that this construction is existentially unforgeable in the random oracle model.
+
+### Why $Y$ must be in the challenge hash
+
+Including $R$ prevents forgery, but why is the public key $Y$ also in the hash? Without it, signatures aren't bound to a specific key — an attacker can take someone else's valid signature and claim it was signed by a different key.
+
+Suppose the challenge were $c = H(R \| m)$ — no $Y$. Given a valid signature $(R, z)$ for message $m$ under public key $Y$, an attacker can find a different public key $Y'$ for which the same signature is also valid:
+
+1. Start with the verification equation: $z \cdot G = R + c \cdot Y$.
+2. Rearrange: $Y' = c^{-1} \cdot (z \cdot G - R)$.
+3. The pair $(R, z)$ now verifies under $Y'$ too, because $R + c \cdot Y' = R + c \cdot c^{-1} \cdot (z \cdot G - R) = z \cdot G$.
+
+The attacker doesn't need to know the secret key for $Y'$ — they just need to find a point that makes the equation balance. This is called a **key substitution attack** (or "duplicate signature key selection").
+
+Why does this matter in practice? Consider a multi-party protocol where you need to prove that a *specific* participant signed a message. Without $Y$ in the hash, an adversary could take a legitimate signature from Alice and reuse it to frame Bob — or vice versa. In threshold signing like FROST, this is especially dangerous: the protocol relies on verifying that each participant produced their own valid signature share under their own verification key $Y_p$.
+
+Including $Y$ in the hash ties the challenge (and therefore the entire signature) to a specific public key. The same $(R, z)$ pair produces a different $c$ for a different $Y$, so it won't verify under any other key.
+
+This is analyzed in the multi-user security setting by [Menezes & Smart (2004)](https://link.springer.com/article/10.1007/s00145-004-0314-6). [Ed25519](https://ed25519.cr.yp.to/ed25519-20110926.pdf) and [BIP-340](https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki) (Bitcoin's Schnorr scheme) both include $Y$ in the hash for this reason.
+
+### Why the nonce is the most critical detail
+
+Look at the response equation again: $z = k + s \cdot c$. Both $z$ (published in the signature) and $c$ (computed from public data) are known to everyone. The only thing stopping an attacker from solving for the secret key $s$ is the nonce $k$:
+
+$$
+s = \frac{z - k}{c}
+$$
+
+If the nonce leaks, the secret key is immediately exposed. If the same nonce $k$ is reused for two different messages (producing two different challenges $c_1, c_2$ and responses $z_1, z_2$), an attacker can set up two equations and solve for $s$:
+
+$$
+z_1 = k + s \cdot c_1
+$$
+$$
+z_2 = k + s \cdot c_2
+$$
+
+Subtract: $z_1 - z_2 = s \cdot (c_1 - c_2)$, so $s = \frac{z_1 - z_2}{c_1 - c_2}$. Game over. This is why nonces must be truly random, used exactly once, and immediately deleted. This matters even more in FROST, where multiple parties each contribute nonces.
+
+### A concrete example with small numbers
+
+In real systems these are 256-bit numbers, but the math is identical with small ones. Let's work modulo $q = 23$.
+
+- Secret key: $s = 7$
+- Public key: $Y = 7G$
+- Nonce: $k = 13$, so commitment: $R = 13G$
+- Suppose the hash gives us: $c = H(R \| Y \| m) = 5$
+- Response: $z = k + s \cdot c = 13 + 7 \cdot 5 = 48 \equiv 2 \pmod{23}$
+
+Verification: Is $z \cdot G = R + c \cdot Y$?
+
+- Left side: $2G$
+- Right side: $13G + 5 \cdot 7G = 13G + 35G = 48G \equiv 2G \pmod{23}$
+
+Both sides equal $2G$. The signature is valid.
+
+## Aggregating nonce R
+
+Now let's move toward multi-party signing. Suppose two signers want to jointly produce a signature. Each picks their own random nonce: signer 1 picks $k_1$ and publishes $R_1 = k_1 \cdot G$, signer 2 picks $k_2$ and publishes $R_2 = k_2 \cdot G$.
+
+The simplest idea: just add them together.
+
+$$
+R = R_1 + R_2 = (k_1 + k_2) \cdot G
+$$
+
+The group's nonce is $k_1 + k_2$ and the group's commitment is $R_1 + R_2$. This is called **additive nonce aggregation**, and it almost works — except for a devastating attack.
+
+### Why naive aggregation is dangerous
+
+Suppose signer 2 is malicious. The honest signer 1 publishes $R_1$ first. The attacker waits, sees $R_1$, and then computes:
+
+$$
+R_2 = R_{\text{target}} - R_1
+$$
+
+for some $R_{\text{target}}$ they chose in advance. Now the aggregate is $R = R_1 + R_2 = R_{\text{target}}$ — the attacker has complete control over the group commitment.
+
+Why is this bad? The challenge $c = H(R \| Y \| m)$ depends on $R$. If the attacker controls $R$, they can precompute the challenge and craft their contribution to forge a signature. This is called a **nonce manipulation attack**.
+
+The root cause: the attacker gets to see the honest party's commitment before choosing their own. They can "cancel out" the honest contribution and replace it with whatever they want.
+
+### The fix: binding factors
+
+FROST solves this by adding a twist. Instead of each signer committing to one nonce value, they commit to **two** values, and these get combined using a **binding factor** — a hash-derived number that depends on *everyone's* commitments.
+
+Each participant $P_p$ publishes two commitments:
+
+- $D_p = d_p \cdot G$ (the "hiding" commitment)
+- $E_p = e_p \cdot G$ (the "binding" commitment)
+
+After everyone has published, the binding factor for each participant is computed as:
+
+$$
+\rho_p = H\big(Y \| \text{all commitments} \| m \| p\big)
+$$
+
+The group commitment is then:
+
+$$
+R = \sum_{p \in S} \left( D_p + \rho_p \cdot E_p \right)
+$$
+
+The key insight: $\rho_p$ is a hash of all commitments, so it can only be computed **after** everyone has already published $(D_p, E_p)$. If any signer changes their commitment, every binding factor changes, invalidating any precomputed attack. The attacker can no longer manipulate $R$ because they'd need to predict the hash output before it's computable.
+
+### Why two commitments instead of one?
+
+If each signer only published one commitment $R_p$ and we mixed it with a binding factor as $\rho_p \cdot R_p$, the attacker could still manipulate things — they have one unknown ($R_p$) but also one equation to satisfy. Two independent commitments $(D_p, E_p)$ combined as $D_p + \rho_p \cdot E_p$ give the binding factor something to "entangle" with. The attacker would need to predict $\rho_p$ before choosing $E_p$, but $\rho_p$ depends on $E_p$ — a chicken-and-egg problem that defeats the attack.
+
+### Why does FROST need per-participant binding factors?
+
+In **[MuSig2](https://eprint.iacr.org/2020/1261)** (an $n$-of-$n$ multisignature scheme where *all* signers must participate), a single binding factor $b$ — the same for everyone — is sufficient. That's because the signing set is fixed: the adversary can't choose which honest parties to include.
+
+FROST is a **threshold** scheme ($t$-of-$n$): only $t$ signers are needed. An adversary controlling $t-1$ parties can start multiple parallel signing sessions, each time pairing their corrupt parties with a **different** honest signer. If the binding factor were the same for all participants, the adversary could correlate honest signers' nonces across sessions and forge signatures (this is called Wagner's generalized birthday attack).
+
+FROST defeats this by including the participant's identifier $p$ in the binding factor hash. Different participants get different $\rho_p$ values, so the adversary can't correlate nonce contributions across sessions.
+
+## Aggregating partial signatures
+
+Now we know how to safely combine nonces. The next question: how do we combine each signer's contribution into a single valid Schnorr signature?
+
+Each signer produces a **signature share** (also called a partial signature) — a number $z_p$ computed from their own secrets and nonces. The design ensures that when you add up all the shares, you get a valid Schnorr response.
+
+### The signature share equation
+
+Recall that a standard Schnorr response is $z = k + s \cdot c$. In FROST, each participant $P_p$ computes their share as:
+
+$$
+z_p = d_p + \rho_p \cdot e_p + \lambda_p \cdot s_p \cdot c
+$$
+
+Let's break down each term:
+
+- $d_p + \rho_p \cdot e_p$ — this is $P_p$'s contribution to the aggregate nonce. It matches their commitments $D_p + \rho_p \cdot E_p$ that went into computing $R$.
+- $\lambda_p$ — the **Lagrange coefficient**, a weight that depends on which set of signers is participating. We'll explain this in detail in the next sections. For now, just know that these weights ensure the secret shares add up correctly.
+- $s_p$ — participant $P_p$'s secret share (their piece of the group secret key).
+- $c = H(R \| Y \| m)$ — the challenge, same as in regular Schnorr.
+
+### Why the sum of shares equals a valid signature
+
+When we add up all $t$ signature shares:
+
+$$
+z = \sum_{p \in S} z_p = \underbrace{\sum_{p \in S} (d_p + \rho_p \cdot e_p)}_{\text{adds up to } k} + \; c \cdot \underbrace{\sum_{p \in S} \lambda_p \cdot s_p}_{\text{adds up to } s}
+$$
+
+Two things happen:
+
+1. **The nonce parts sum to $k$** — the discrete log of the group commitment $R$. This is by construction: $R$ was defined as the sum of $(D_p + \rho_p \cdot E_p)$, so the corresponding scalars sum to $k$.
+
+2. **The weighted secret shares sum to $s$** — the group secret key. This is where Lagrange interpolation (covered below) does its magic: the $\lambda_p$ weights are chosen so that $\sum \lambda_p \cdot s_p = s$.
+
+Together: $z = k + s \cdot c$, which is exactly a valid Schnorr response. The verifier checks $z \cdot G \stackrel{?}{=} R + c \cdot Y$ and it passes — nobody needs to know that $z$ was computed by multiple parties.
+
+### Checking individual shares (identifiable abort)
+
+Before adding the shares up, the Coordinator can verify each one individually:
+
+$$
+z_p \cdot G \stackrel{?}{=} D_p + \rho_p \cdot E_p + (\lambda_p \cdot c) \cdot Y_p
+$$
+
+where $Y_p = s_p \cdot G$ is $P_p$'s **public verification share** — a publicly known point that corresponds to their secret share. This check uses only public values (no secrets revealed). If a participant sends a bad share, the Coordinator can identify them and abort. This is why FROST has **identifiable abort** — you can always tell who cheated.
+
+### A concrete example
+
+Let's trace through partial signature aggregation with numbers. We'll use the Shamir shares from the next section (feel free to jump ahead and come back):
+
+- $t = 2$, $n = 3$, signing set $S = \{1, 2\}$
+- Group secret: $s = 16$, challenge: $c = 5$
+- Secret shares: $s_1 = 22$, $s_2 = 28$
+- Lagrange coefficients for $S = \{1, 2\}$: $\lambda_1 = 2$, $\lambda_2 = -1$
+- Nonces: $d_1 = 4$, $e_1 = 3$, $d_2 = 6$, $e_2 = 2$
+- Binding factors: $\rho_1 = 7$, $\rho_2 = 11$
+
+Each participant computes their share by plugging into $z_p = d_p + \rho_p \cdot e_p + \lambda_p \cdot s_p \cdot c$:
+
+$$
+z_1 = 4 + 7 \cdot 3 + 2 \cdot 22 \cdot 5 = 4 + 21 + 220 = 245
+$$
+
+$$
+z_2 = 6 + 11 \cdot 2 + (-1) \cdot 28 \cdot 5 = 6 + 22 - 140 = -112
+$$
+
+The Coordinator sums them:
+
+$$
+z = z_1 + z_2 = 245 + (-112) = 133
+$$
+
+Let's verify this equals $k + s \cdot c$. The aggregate nonce is $k = (4 + 7 \cdot 3) + (6 + 11 \cdot 2) = 25 + 28 = 53$. The reconstructed secret is $\sum \lambda_p \cdot s_p = 2 \cdot 22 + (-1) \cdot 28 = 16 = s$. So:
+
+$$
+k + s \cdot c = 53 + 16 \cdot 5 = 133 \quad \checkmark
+$$
+
+It works. The sum of partial signatures is a valid Schnorr response.
+
+## Shamir Secret Sharing
+
+We've been using "secret shares" $s_p$ and "Lagrange coefficients" $\lambda_p$ without fully explaining where they come from. Let's fix that.
+
+The core problem: we need to split the secret key $s$ among $n$ participants so that:
+
+- Any $t$ participants can reconstruct $s$ (by combining their shares)
+- Any $t - 1$ participants learn **absolutely nothing** about $s$
+
+This is **[Shamir's Secret Sharing](https://dl.acm.org/doi/10.1145/359168.359176)** (1979), and it's built on a beautifully simple idea from algebra.
+
+### The key insight: polynomials and points
+
+A straight line ($y = ax + b$) is uniquely determined by 2 points. A parabola ($y = ax^2 + bx + c$) is uniquely determined by 3 points. In general, a polynomial of degree $d$ is uniquely determined by $d + 1$ points.
+
+Shamir's trick: to create a $(t, n)$ sharing scheme, embed the secret as the constant term of a random polynomial of degree $t - 1$. Then distribute $n$ points on that polynomial. Any $t$ points determine the polynomial (and thus the secret), but $t - 1$ points leave the secret completely undetermined.
+
+### How it works
+
+The dealer (the entity splitting the secret) picks a random polynomial of degree $t - 1$:
+
+$$
+f(x) = s + a_1 x + a_2 x^2 + \cdots + a_{t-1} x^{t-1}
+$$
+
+The constant term is the secret: $f(0) = s$. The other coefficients $a_1, \dots, a_{t-1}$ are random. Each participant $P_p$ receives the share $s_p = f(p)$ — the polynomial evaluated at their index.
+
+### Concrete example
+
+Let's set up a $(2, 3)$ scheme — any 2 of 3 participants can reconstruct, 1 participant alone learns nothing. Our secret is $s = 16$.
+
+Since $t = 2$, we need a degree-1 polynomial (a line): $f(x) = 16 + 6x$ (the coefficient $6$ is chosen randomly).
+
+Compute the shares by evaluating $f$ at each participant's index:
+
+- $P_1$ gets $s_1 = f(1) = 16 + 6 = 22$
+- $P_2$ gets $s_2 = f(2) = 16 + 12 = 28$
+- $P_3$ gets $s_3 = f(3) = 16 + 18 = 34$
+
+**Why is this secure?** The shares are points on a line. Two points determine a line, so any 2 shares let you find $f$ and compute $f(0) = 16 = s$. But a single point, say $(1, 22)$, tells you nothing: for any possible secret $s'$, there's a line through $(1, 22)$ with $y$-intercept $s'$. One share is consistent with every possible secret.
+
+### The dealer problem: who picks the polynomial?
+
+In the basic scheme, a single **dealer** knows the secret, creates the polynomial, and distributes shares. But in a decentralized system (like a blockchain bridge), there shouldn't be anyone who ever knows the full secret. If the dealer is compromised during setup, the whole scheme fails.
+
+The solution is **Distributed Key Generation (DKG)** — the participants collectively generate a shared secret where nobody, not even during setup, ever knows the full key.
+
+### Pedersen DKG: generating a shared secret with no trusted dealer
+
+The idea is elegant: instead of one dealer picking one polynomial, **every participant picks their own random polynomial** and shares pieces of it with everyone else. The group secret emerges as the sum of everyone's individual secrets, but no one ever computes that sum.
+
+Here's how it works. Each of the $n$ participants $P_j$ independently:
+
+1. **Picks a random polynomial** $f_j(x)$ of degree $t - 1$. The constant term $a_{j,0}$ is $P_j$'s private contribution to the group secret.
+
+2. **Publishes commitments** to their polynomial's coefficients: $C_{j,k} = a_{j,k} \cdot G$ for each coefficient $k$. These are elliptic curve points — they "commit" $P_j$ to their polynomial without revealing the actual coefficients (the discrete log problem protects them).
+
+3. **Privately sends** $f_j(p)$ to each participant $P_p$. This is the value of $P_j$'s polynomial evaluated at $P_p$'s index.
+
+4. **Publishes a proof** that they know their secret $a_{j,0}$ (a Schnorr proof of knowledge). This prevents a "rogue-key attack" where a malicious participant claims a carefully crafted public key to manipulate the group key.
+
+After everyone has done this, each participant $P_p$ adds up all the values they received:
+
+$$
+s_p = \sum_{j=1}^{n} f_j(p)
+$$
+
+This is $P_p$'s combined secret share. It's a sum of contributions from every participant.
+
+The group secret (which nobody ever computes explicitly!) is:
+
+$$
+s = \sum_{j=1}^{n} f_j(0) = \sum_{j=1}^{n} a_{j,0}
+$$
+
+The group public key is computable from the published commitments:
+
+$$
+Y = s \cdot G = \sum_{j=1}^{n} C_{j,0}
+$$
+
+Why does this work as Shamir sharing? The combined shares $s_p$ are points on a "virtual" polynomial $F(x) = \sum_{j=1}^{n} f_j(x)$. This polynomial has degree $t - 1$ (sum of degree-$(t-1)$ polynomials) and $F(0) = s$. So the combined shares are exactly Shamir shares of the group secret $s$ — even though nobody ever chose $F$ deliberately.
+
+### Concrete DKG example
+
+$n = 3$, $t = 2$. Each participant independently picks a degree-1 (line) polynomial:
+
+- $P_1$ picks: $f_1(x) = 7 + 3x$ (their secret contribution is $7$)
+- $P_2$ picks: $f_2(x) = 5 + 2x$ (their secret contribution is $5$)
+- $P_3$ picks: $f_3(x) = 4 + x$ (their secret contribution is $4$)
+
+Now each participant evaluates their polynomial at everyone's index and sends the result privately:
+
+| Sender evaluates at $\rightarrow$ | $P_1$ ($p=1$) | $P_2$ ($p=2$) | $P_3$ ($p=3$) |
+| --- | --- | --- | --- |
+| $P_1$: $f_1(p)$ | $7 + 3 = 10$ | $7 + 6 = 13$ | $7 + 9 = 16$ |
+| $P_2$: $f_2(p)$ | $5 + 2 = 7$ | $5 + 4 = 9$ | $5 + 6 = 11$ |
+| $P_3$: $f_3(p)$ | $4 + 1 = 5$ | $4 + 2 = 6$ | $4 + 3 = 7$ |
+
+Each participant sums the column they received:
+
+- $P_1$: $s_1 = 10 + 7 + 5 = 22$
+- $P_2$: $s_2 = 13 + 9 + 6 = 28$
+- $P_3$: $s_3 = 16 + 11 + 7 = 34$
+
+The virtual polynomial is: $F(x) = (7 + 5 + 4) + (3 + 2 + 1)x = 16 + 6x$
+
+The group secret is: $s = F(0) = 16$ — but nobody computed this! $P_1$ only knows $7$ (their own contribution), $P_2$ only knows $5$, $P_3$ only knows $4$.
+
+The group public key: $Y = 16G = 7G + 5G + 4G$ — anyone can compute this from the published commitments.
+
+### Feldman VSS: verifying that shares are correct
+
+There's a trust problem: when $P_j$ sends $f_j(p)$ to $P_p$, how does $P_p$ know the value is correct? $P_j$ could send garbage or strategically wrong values. We need a way to verify shares without revealing the polynomial.
+
+This is where the published commitments $C_{j,k} = a_{j,k} \cdot G$ become essential. Participant $P_p$ can check:
+
+$$
+f_j(p) \cdot G \stackrel{?}{=} \sum_{k=0}^{t-1} p^k \cdot C_{j,k}
+$$
+
+Left side: multiply the generator by the share value (a single scalar-point multiplication).
+
+Right side: evaluate the "committed polynomial" at $p$ using the public commitments. This works because:
+
+$$
+\sum_{k=0}^{t-1} p^k \cdot C_{j,k} = \sum_{k=0}^{t-1} p^k \cdot a_{j,k} \cdot G = \left(\sum_{k=0}^{t-1} a_{j,k} \cdot p^k\right) \cdot G = f_j(p) \cdot G
+$$
+
+Both sides compute $f_j(p) \cdot G$ by different paths. The left side uses the secret share value. The right side uses only public commitments. If they match, the share is consistent with the published commitments. If they don't, $P_j$ cheated and can be identified.
+
+The beauty: the verification happens entirely "in the exponent" (on elliptic curve points). Nobody learns the polynomial coefficients — they only verify consistency.
+
+## Lagrange Interpolation
+
+We now have $t$ participants, each holding a share $s_p = F(p)$ — a point on a secret polynomial $F$ of degree $t - 1$. We need to recover $F(0) = s$ (the group secret) without anyone actually reconstructing the polynomial.
+
+Lagrange interpolation gives us a formula that computes $F(0)$ directly from $t$ points, as a **weighted sum** of the share values.
+
+### Building the intuition
+
+Suppose you have 2 points on a line and want to find where it crosses the $y$-axis (i.e., the value at $x = 0$). You could find the slope, write the line equation, and plug in $x = 0$. Lagrange interpolation is a general formula that does this for polynomials of any degree — and it gives the answer as a weighted sum of the known $y$-values.
+
+### The formula
+
+Given a signing set $S$ of $t$ participants, each with share $s_p = F(p)$, the secret is:
+
+$$
+s = F(0) = \sum_{p \in S} \lambda_p \cdot s_p
+$$
+
+where the **Lagrange coefficient** for participant $P_p$ is:
+
+$$
+\lambda_p = \prod_{\substack{q \in S \\ q \neq p}} \frac{q}{q - p}
+$$
+
+This formula looks intimidating, but it's just a product of fractions involving the participant indices. Let's see it in action.
+
+### Where does this formula come from?
+
+The Lagrange interpolation formula for a polynomial $g(x)$ passing through points $(p, g(p))$ for $p \in S$ is:
+
+$$
+g(x) = \sum_{p \in S} g(p) \cdot \underbrace{\prod_{\substack{q \in S \\ q \neq p}} \frac{x - q}{p - q}}_{L_p(x)}
+$$
+
+Each $L_p(x)$ is called a **Lagrange basis polynomial**. It has a key property: $L_p(p) = 1$ and $L_p(q) = 0$ for every other $q \in S$. So each basis polynomial "selects" exactly one data point.
+
+We only need $g(0)$, so we plug in $x = 0$:
+
+$$
+g(0) = \sum_{p \in S} g(p) \cdot \prod_{\substack{q \in S \\ q \neq p}} \frac{0 - q}{p - q} = \sum_{p \in S} g(p) \cdot \prod_{\substack{q \in S \\ q \neq p}} \frac{q}{q - p}
+$$
+
+The last step is the sign flip: $\frac{0-q}{p-q} = \frac{-q}{p-q} = \frac{q}{q-p}$.
+
+### Concrete examples
+
+Using our shares: $s_1 = 22$, $s_2 = 28$, $s_3 = 34$. The secret is $s = 16$.
+
+**With participants $S = \{1, 2\}$:**
+
+$$
+\lambda_1 = \frac{2}{2 - 1} = 2, \qquad \lambda_2 = \frac{1}{1 - 2} = -1
+$$
+
+$$
+s = 2 \cdot 22 + (-1) \cdot 28 = 44 - 28 = 16 \quad \checkmark
+$$
+
+**With participants $S = \{2, 3\}$:**
+
+$$
+\lambda_2 = \frac{3}{3 - 2} = 3, \qquad \lambda_3 = \frac{2}{2 - 3} = -2
+$$
+
+$$
+s = 3 \cdot 28 + (-2) \cdot 34 = 84 - 68 = 16 \quad \checkmark
+$$
+
+**With participants $S = \{1, 3\}$:**
+
+$$
+\lambda_1 = \frac{3}{3 - 1} = \frac{3}{2}, \qquad \lambda_3 = \frac{1}{1 - 3} = -\frac{1}{2}
+$$
+
+$$
+s = \frac{3}{2} \cdot 22 + \left(-\frac{1}{2}\right) \cdot 34 = 33 - 17 = 16 \quad \checkmark
+$$
+
+Every pair recovers the same secret. The Lagrange coefficients are different for different sets of participants, but the weighted sum always yields $s = 16$. This is the mathematical guarantee of Shamir's scheme.
+
+### The critical property for FROST
+
+Notice that Lagrange interpolation is a **linear operation** — the secret is a weighted sum of the shares:
+
+$$
+\sum_{p \in S} \lambda_p \cdot s_p = s
+$$
+
+This linearity is what makes threshold Schnorr signatures possible. Each participant multiplies their share $s_p$ by $\lambda_p \cdot c$ and contributes that to the signature. Nobody reconstructs $s$ — they each contribute their weighted piece, and the sum magically equals $s \cdot c$.
+
+In curve-point terms:
+
+$$
+\sum_{p \in S} \lambda_p \cdot (s_p \cdot G) = s \cdot G = Y
+$$
+
+The Lagrange recombination works both in the scalar world (secret numbers) and in the point world (public keys). This "homomorphic" property — the ability to do the computation "in the exponent" — is the mathematical backbone of FROST.
+
+## FROST Protocol
+
+We've built all the pieces. Now let's put them together into the actual FROST protocol: a two-round scheme where $t$ of $n$ participants cooperatively produce a standard Schnorr signature.
+
+### Setup: Distributed Key Generation (done once)
+
+Before any signing can happen, the participants run the Pedersen DKG described above. Afterward, each participant $P_p$ holds:
+
+- Their **secret share** $s_p$ (private — never revealed)
+- The **group public key** $Y = s \cdot G$ (public — this is the address that will verify signatures)
+- **Public verification shares** $Y_p = s_p \cdot G$ for all participants (public — used to verify individual signature shares)
+
+### Roles
+
+- **Participants** $P_1, \dots, P_n$: hold secret shares, produce signature shares. At least $t$ must be online for any given signing session.
+- **Coordinator** (also called Signature Aggregator): orchestrates the protocol, collects commitments and shares, produces the final signature. The Coordinator is **semi-trusted** — they cannot learn the secret key or forge signatures (even a corrupt Coordinator can't sign without $t$ honest participants). However, a corrupt Coordinator can refuse to produce the signature (denial of service) or falsely blame a participant for sending a bad share.
+
+### Round 1: Commitment
+
+Each participant $P_p$ in the signing set $S$ (where $|S| \geq t$):
+
+1. **Generates two random nonces**: $d_p$ and $e_p$ (random scalars). These are generated as $H(\text{random\_bytes}(32) \| sk_p)$ — mixing randomness with the secret key as a hedge against a faulty random number generator.
+
+2. **Computes commitments**: $D_p = d_p \cdot G$ and $E_p = e_p \cdot G$.
+
+3. **Sends** $(D_p, E_p)$ to the Coordinator.
+
+After Round 1, the Coordinator has everyone's commitments, but nobody knows anyone else's nonce values ($d_p$, $e_p$), only the corresponding curve points.
+
+**Critical safety rule:** each $(d_p, e_p)$ pair must be used in exactly one signing session. If a signing session is aborted, the nonces must be discarded and fresh ones generated for any retry. Reusing nonces across sessions can leak the secret key.
+
+### Round 2: Signature Share
+
+The Coordinator broadcasts the message $m$ to sign and the full list of all commitments $(D_p, E_p)$ for every $p \in S$.
+
+Each participant $P_p$ then independently computes:
+
+**Step 1. Binding factors.** Compute the binding factor for each participant:
+
+$$
+\rho_p = H_1\big(Y \| H_4(m) \| H_5(\text{all commitments}) \| p\big)
+$$
+
+The subscripts $H_1, H_4, H_5$ denote **domain-separated** hash functions — they use different prefixes so that a hash computed for one purpose can't be confused with a hash for a different purpose. This is a standard defensive practice in cryptographic protocols.
+
+Every participant computes the same $\rho_p$ values because they all have the same inputs (all commitments were broadcast).
+
+**Step 2. Group commitment.** Compute the aggregate nonce point:
+
+$$
+R = \sum_{p \in S} \left(D_p + \rho_p \cdot E_p\right)
+$$
+
+Again, every participant gets the same $R$.
+
+**Step 3. Challenge.** Compute the Schnorr challenge:
+
+$$
+c = H_2(R \| Y \| m)
+$$
+
+**Step 4. Lagrange coefficient.** Compute $\lambda_p$ for participant $P_p$ given the signing set $S$.
+
+**Step 5. Signature share.** Compute and send:
+
+$$
+z_p = d_p + \rho_p \cdot e_p + \lambda_p \cdot s_p \cdot c
+$$
+
+This is the moment where the participant uses their secret share $s_p$. After computing $z_p$, they **delete** $d_p$ and $e_p$ immediately.
+
+**Step 6.** Send $z_p$ to the Coordinator.
+
+### Aggregation
+
+The Coordinator now has all $t$ signature shares $z_p$. They:
+
+1. **(Optional but recommended) Verify each share:**
+
+$$
+z_p \cdot G \stackrel{?}{=} D_p + \rho_p \cdot E_p + (\lambda_p \cdot c) \cdot Y_p
+$$
+
+If any share fails, the Coordinator identifies the misbehaving participant and aborts.
+
+2. **Aggregate:**
+
+$$
+z = \sum_{p \in S} z_p
+$$
+
+3. **Output the signature:** $\sigma = (R, z)$
+
+This signature passes standard Schnorr verification: $z \cdot G \stackrel{?}{=} R + c \cdot Y$.
+
+### Why it's correct
+
+Let's trace through the math one more time:
+
+$$
+z = \sum_{p \in S} z_p = \sum_{p \in S} (d_p + \rho_p \cdot e_p) + c \cdot \sum_{p \in S} \lambda_p \cdot s_p
+$$
+
+The nonce terms sum to $k$ (the discrete log of $R$):
+
+$$
+\sum_{p \in S} (d_p + \rho_p \cdot e_p) \cdot G = \sum_{p \in S} (D_p + \rho_p \cdot E_p) = R \quad \Rightarrow \quad \text{sum} = k
+$$
+
+The secret share terms recover $s$ by Lagrange interpolation:
+
+$$
+\sum_{p \in S} \lambda_p \cdot s_p = s
+$$
+
+Therefore $z = k + c \cdot s$, and $z \cdot G = k \cdot G + c \cdot s \cdot G = R + c \cdot Y$. Valid Schnorr.
+
+### Complete worked example
+
+Let's trace the entire FROST protocol end-to-end with concrete numbers. We'll work modulo $q = 97$ to keep the arithmetic manageable.
+
+**DKG (already done).** Virtual polynomial $F(x) = 16 + 6x \pmod{97}$.
+
+- Secret shares: $s_1 = 22$, $s_2 = 28$, $s_3 = 34$
+- Group secret: $s = 16$ (nobody knows this)
+- Group public key: $Y = 16G$
+
+**Signing set:** $S = \{1, 2\}$ (participants $P_1$ and $P_2$ will sign)
+
+**Lagrange coefficients** for $S = \{1, 2\}$:
+
+$$
+\lambda_1 = \frac{2}{2 - 1} = 2, \qquad \lambda_2 = \frac{1}{1 - 2} = -1 \equiv 96 \pmod{97}
+$$
+
+(In modular arithmetic, $-1 \equiv 96 \pmod{97}$ because $96 + 1 = 97 \equiv 0$.)
+
+**Round 1 — Each participant picks nonces and publishes commitments:**
+
+- $P_1$: $d_1 = 9$, $e_1 = 14$. Publishes $D_1 = 9G$, $E_1 = 14G$.
+- $P_2$: $d_2 = 5$, $e_2 = 11$. Publishes $D_2 = 5G$, $E_2 = 11G$.
+
+**Round 2 — Compute everything and sign:**
+
+Binding factors (from hash — we'll suppose): $\rho_1 = 3$, $\rho_2 = 7$.
+
+Group commitment:
+
+$$
+R = (D_1 + 3 \cdot E_1) + (D_2 + 7 \cdot E_2) = (9 + 42)G + (5 + 77)G = 51G + 82G = 133G \equiv 36G \pmod{97}
+$$
+
+So $R = 36G$, meaning the aggregate nonce is $k = 36$.
+
+Challenge (from hash — we'll suppose): $c = 10$.
+
+**Signature shares:**
+
+$P_1$:
+
+$$
+z_1 = 9 + 3 \cdot 14 + 2 \cdot 22 \cdot 10 = 9 + 42 + 440 = 491 \equiv 491 \mod 97
+$$
+
+$491 = 5 \cdot 97 + 6$, so $z_1 = 6$.
+
+$P_2$:
+
+$$
+z_2 = 5 + 7 \cdot 11 + 96 \cdot 28 \cdot 10 = 5 + 77 + 26880 = 26962 \equiv 26962 \mod 97
+$$
+
+$26962 = 277 \cdot 97 + 93$, so $z_2 = 93$.
+
+**Aggregation:**
+
+$$
+z = z_1 + z_2 = 6 + 93 = 99 \equiv 2 \pmod{97}
+$$
+
+**Verification — does this match a standard Schnorr signature?**
+
+$$
+k + s \cdot c = 36 + 16 \cdot 10 = 196 \equiv 2 \pmod{97} \quad \checkmark
+$$
+
+$$
+z \cdot G = 2G \stackrel{?}{=} R + c \cdot Y = 36G + 10 \cdot 16G = 36G + 160G = 196G \equiv 2G \pmod{97} \quad \checkmark
+$$
+
+The final signature is $(R, z) = (36G, 2)$ — a perfectly valid Schnorr signature under the group public key $Y = 16G$. A verifier sees a normal-looking single-signer Schnorr signature. They have no way to know it was produced by two participants collaborating through FROST.
+
+### Summary of FROST properties
+
+| Property | Detail |
+| --- | --- |
+| **Output** | Standard Schnorr signature — indistinguishable from single-signer |
+| **Rounds** | 2 (or 1 with preprocessed nonces) |
+| **Threshold** | Any $t$ of $n$ — the rest can be offline |
+| **Concurrency** | Safe to run many parallel signing sessions |
+| **Robustness** | Identifiable abort: misbehaving signers are detected, but the protocol doesn't automatically recover — a new session must be started without them |
+| **Security** | EUF-CMA secure under the One-More Discrete Log assumption. An adversary controlling up to $t-1$ participants cannot forge signatures |
+| **Standard** | [RFC 9591](https://www.rfc-editor.org/rfc/rfc9591.html) (June 2024) with ciphersuites for Ed25519, Ed448, P-256, secp256k1 |
+
+## References
+
+- **FROST paper:** Komlo, Goldberg. "FROST: Flexible Round-Optimized Schnorr Threshold Signatures." SAC 2020. [ePrint 2020/852](https://eprint.iacr.org/2020/852)
+- **RFC 9591:** "Two-Round Threshold Schnorr Signatures with FROST." June 2024. [rfc-editor.org](https://www.rfc-editor.org/rfc/rfc9591.html)
+- **BIP-340:** Wuille, Nick, Towns. "Schnorr Signatures for secp256k1." [github.com/bitcoin/bips](https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki)
+- **MuSig2:** Nick, Ruffing, Seurin. "MuSig2: Simple Two-Round Schnorr Multi-Signatures." CRYPTO 2021. [ePrint 2020/1261](https://eprint.iacr.org/2020/1261)
+- **Shamir's Secret Sharing:** Shamir. "How to Share a Secret." Communications of the ACM, 1979. [doi:10.1145/359168.359176](https://dl.acm.org/doi/10.1145/359168.359176)
+- **Fiat-Shamir transform:** Fiat, Shamir. "How to Prove Yourself: Practical Solutions to Identification and Signature Problems." CRYPTO 1986. [Springer](https://link.springer.com/chapter/10.1007/3-540-47721-7_12)
+- **Schnorr signature security proof:** Pointcheval, Stern. "Security Arguments for Digital Signatures and Blind Signatures." Journal of Cryptology, 2000 (originally EUROCRYPT 1996). [Springer](https://link.springer.com/chapter/10.1007/3-540-68339-9_33)
+- **Multi-user signature security:** Menezes, Smart. "Security of Signature Schemes in a Multi-User Setting." Designs, Codes and Cryptography, 2004. [Springer](https://link.springer.com/article/10.1007/s00145-004-0314-6)
+- **Ed25519:** Bernstein, Duif, Lange, Schwabe, Yang. "High-speed high-security signatures." 2012. [ed25519.cr.yp.to](https://ed25519.cr.yp.to/ed25519-20110926.pdf)
+- **Feldman VSS:** Feldman. "A Practical Scheme for Non-interactive Verifiable Secret Sharing." FOCS 1987. [IEEE](https://ieeexplore.ieee.org/document/4568297)
+- **Pedersen DKG:** Pedersen. "Non-Interactive and Information-Theoretic Secure Verifiable Secret Sharing." CRYPTO 1991. [Springer](https://link.springer.com/chapter/10.1007/3-540-46766-1_9)
+- **Zcash FROST implementation (Rust):** [github.com/ZcashFoundation/frost](https://github.com/ZcashFoundation/frost)
