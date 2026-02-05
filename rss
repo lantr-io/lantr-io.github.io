@@ -5,6 +5,12 @@
         <link>https://lantr.io</link>
         <description>Insights and updates on blockchain development, smart contracts, and decentralized infrastructure from Lantr Engineering</description>
         <item>
+          <title>FROST Explained</title>
+          <link>https://lantr.io/blog/frost-explained</link>
+          <description>A step-by-step guide to FROST threshold Schnorr signatures — from Schnorr basics through Shamir secret sharing to the full protocol, with concrete numeric examples.</description>
+          <pubDate>Thu, 05 Feb 2026 00:00:00 GMT</pubDate>
+        </item>
+<item>
           <title>Cardano Budget 2025 – What Drives Our Budgeting Choice?</title>
           <link>https://lantr.io/blog/cardano-budget-2025-drep-voting-decision</link>
           <description>How we vote on Cardano's 2025 budget as DReps. Balancing ecosystem funding, Catalyst proposals, and sustainable treasury spending in Cardano's decentralized governance.</description>
