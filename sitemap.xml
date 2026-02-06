@@ -2,15 +2,15 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
 <loc>https://lantr.io</loc>
-<lastmod>2026-02-05</lastmod>
+<lastmod>2026-02-06</lastmod>
 </url>
 <url>
 <loc>https://lantr.io/blog</loc>
-<lastmod>2026-02-05</lastmod>
+<lastmod>2026-02-06</lastmod>
 </url>
 <url>
 <loc>https://lantr.io/products</loc>
-<lastmod>2026-02-05</lastmod>
+<lastmod>2026-02-06</lastmod>
 </url>
 <url>
 <loc>https://lantr.io/blog/bitcoin-cardano-blockchain-future</loc>
@@ -33,7 +33,7 @@
 <lastmod>2025-05-04</lastmod>
 </url>
 <url>
-<loc>https://lantr.io/blog/frost-explained</loc>
+<loc>https://lantr.io/blog/frost-schnorr-threshold-signatures-bitcoin</loc>
 <lastmod>2026-02-05</lastmod>
 </url>
 <url>

@@ -1,6 +1,6 @@
-:HL["/_next/static/chunks/e13f1d05a6a724fa.css","style"]
+:HL["/_next/static/chunks/03efe5bcfda2c5c6.css","style"]
 :HL["/_next/static/media/GeistMono_Variable.p.73882635.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
-:HL["/_next/static/chunks/b2991ab84bad06c6.css","style"]
+:HL["/_next/static/chunks/d959b0d9b33e1c6e.css","style"]
 :HL["https://pbs.twimg.com/profile_images/1942036027633188864/XelTbPGt_normal.jpg","image"]
 :HL["https://pbs.twimg.com/media/G4aVZJXWUAAZMJm?format=jpg&name=small","image"]
-0:{"buildId":"ax0zOuzFlqqJvQe_IQ3Oo","tree":{"name":"","paramType":null,"paramKey":"","hasRuntimePrefetch":false,"slots":{"children":{"name":"blog","paramType":null,"paramKey":"blog","hasRuntimePrefetch":false,"slots":{"children":{"name":"slug","paramType":"d","paramKey":"scalus-intersect-budget-milestone-2","hasRuntimePrefetch":false,"slots":{"children":{"name":"__PAGE__","paramType":null,"paramKey":"__PAGE__","hasRuntimePrefetch":false,"slots":null,"isRootLayout":false}},"isRootLayout":false}},"isRootLayout":false}},"isRootLayout":true},"staleTime":300}
+0:{"buildId":"2ureJsIY94l9IL-jG0bZi","tree":{"name":"","paramType":null,"paramKey":"","hasRuntimePrefetch":false,"slots":{"children":{"name":"blog","paramType":null,"paramKey":"blog","hasRuntimePrefetch":false,"slots":{"children":{"name":"slug","paramType":"d","paramKey":"scalus-intersect-budget-milestone-2","hasRuntimePrefetch":false,"slots":{"children":{"name":"__PAGE__","paramType":null,"paramKey":"__PAGE__","hasRuntimePrefetch":false,"slots":null,"isRootLayout":false}},"isRootLayout":false}},"isRootLayout":false}},"isRootLayout":true},"staleTime":300}
