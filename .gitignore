@@ -19,6 +19,12 @@
 /_site/
 /.tweet-cache/
 
+# internal docs
+/docs/
+
+# claude
+.claude/
+
 # misc
 .DS_Store
 *.pem
