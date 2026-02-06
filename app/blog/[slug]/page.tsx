@@ -29,6 +29,7 @@ export async function generateMetadata({ params }) {
   return {
     title,
     description,
+    keywords: post.metadata.tags?.split(/,\s*|[\s]+/).filter(Boolean),
     openGraph: {
       title,
       description,
@@ -78,7 +79,7 @@ export default async function Blog({ params }) {
               : `${baseUrl}/opengraph-image.png`,
             url: `${baseUrl}/blog/${post.slug}`,
             keywords: post.metadata.tags?.split(/,\s*|[\s]+/).filter(Boolean).join(', '),
-            articleSection: 'Cardano Development',
+            articleSection: post.metadata.tags?.split(/,\s*|[\s]+/)[0] || 'Technology',
             author: {
               '@type': 'Person',
               name: post.metadata.author || 'Lantr Engineering',
