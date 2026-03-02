@@ -5,6 +5,18 @@
         <link>https://lantr.io</link>
         <description>Insights and updates on blockchain development, smart contracts, and decentralized infrastructure from Lantr Engineering</description>
         <item>
+          <title>Scalus Emulator: In-Memory Cardano Node for JS/TS Scenario Testing</title>
+          <link>https://lantr.io/blog/scalus-emulator-cardano-js-scenario-testing</link>
+          <description>The Scalus Emulator brings full Cardano ledger validation to JavaScript. Run complete transaction scenarios — chained UTxOs, time-dependent unlocks, multi-party flows — from your test suite in seconds.</description>
+          <pubDate>Mon, 02 Mar 2026 00:00:00 GMT</pubDate>
+        </item>
+<item>
+          <title>Scalus Intersect Budget Update – Milestone 3 Delivered</title>
+          <link>https://lantr.io/blog/scalus-intersect-budget-milestone-3</link>
+          <description>Progress update on Lantr's Intersect-funded Scalus project. Milestone 3 delivers production-ready transaction builder, ecosystem integrations, DApp starter kit, Yaci DevKit infrastructure, and expanded smart contract catalogue.</description>
+          <pubDate>Fri, 20 Feb 2026 00:00:00 GMT</pubDate>
+        </item>
+<item>
           <title>FROST Explained: Schnorr Threshold Signatures for Bitcoin</title>
           <link>https://lantr.io/blog/frost-schnorr-threshold-signatures-bitcoin</link>
           <description>A step-by-step guide to FROST (RFC 9591) threshold Schnorr signatures for Bitcoin — from Schnorr basics through Shamir secret sharing to the full protocol, with worked examples.</description>
