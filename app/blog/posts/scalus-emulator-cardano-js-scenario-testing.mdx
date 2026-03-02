@@ -1,0 +1,80 @@
+---
+title: 'Scalus Emulator: In-Memory Cardano Node for JS/TS Scenario Testing'
+author: 'Oleksii Khodakivskyi'
+tags: cardano scalus emulator JavaScript TypeScript Plutus testing developer-experience
+publishedAt: '2026-03-02'
+summary: "The Scalus Emulator brings full Cardano ledger validation to JavaScript. Run complete transaction scenarios — chained UTxOs, time-dependent unlocks, multi-party flows — from your test suite in seconds."
+---
+
+Once your Cardano dApp outgrows a single validator, the feedback loop gets painful. Write a validator, build a transaction, submit to a testnet, wait for confirmation, check the result, adjust. Every iteration costs time.
+
+For JS/TS developers, it's been even rougher. The moment you need to test how transactions interact — multi-step protocols, time-dependent unlocks, one transaction consuming another's output — you're either spinning up a local node or hitting a testnet. 
+
+There's been no way to run full transaction scenarios against real ledger rules from a JS test suite — in seconds.
+
+[Scalus Emulator](https://scalus.org/docs/testing/js-emulator) changes that. 
+
+## What It Is
+
+`npm install scalus` gives you a full in-memory Cardano ledger — native JavaScript, no WASM, no infrastructure. 
+
+Submit transactions, advance slots, snapshot state, roll back. Phase 1 (structure, signatures, fees, value conservation) and Phase 2 (Plutus script execution with cost tracking) — a complete scenario testing environment that runs as fast as your tests do.
+
+```javascript
+import { Emulator, SlotConfig } from "scalus";
+
+const emulator = Emulator.withAddresses(
+  [aliceAddress, bobAddress],
+  SlotConfig.mainnet,
+  BigInt(50_000_000_000) // 50,000 ADA each
+);
+```
+
+That's your node. It's running. It validates V1, V2, and V3 Plutus scripts, tracks CPU and memory budgets against protocol limits, handles staking, native scripts, multisig, timelocks, fee calculation, and collateral.
+
+## Why It's a Beast
+
+**Instant feedback.** Submit a transaction and get back a `SubmitResult` with either a tx hash or a detailed error with script trace logs. No polling. No waiting for slot progression. You know immediately whether your validator logic is correct.
+
+```javascript
+const result = emulator.submitTx(txCborBytes);
+if (result.isSuccess) {
+  console.log(`tx confirmed: ${result.txHash}`);
+} else {
+  console.error(result.error);
+  console.log(result.logs); // script execution traces
+}
+```
+
+**Time travel.** Need to test validity intervals, unlock conditions, or vesting schedules? Advance the slot and resubmit.
+
+```javascript
+emulator.setSlot(1000);
+// transactions with validity ranges covering slot 1000 now pass
+```
+
+**Snapshots.** Capture the full UTxO state at any point, run a sequence of transactions, then roll back. Ideal for testing multi-step protocols without rebuilding state from scratch.
+
+```javascript
+const checkpoint = emulator.snapshot();
+// run transactions, test edge cases
+// restore later if needed
+```
+
+**Real validation.** This isn't a mock. The emulator runs 20+ Cardano ledger rules — the same state transition logic that governs mainnet. If your transaction passes the emulator, it passes the chain.
+
+## Where It Fits
+
+Use the emulator for your development loop: writing validators, building transactions, testing edge cases. When you need full node semantics — real block production, consensus timing, epoch boundaries — Scalus also integrates with [Yaci DevKit](https://scalus.org/docs/testing/local-devnet) for local devnet testing, and the same tests run on Preprod and Mainnet without changes.
+
+The emulator is also available on the JVM with the same validation logic, so Scala/Java teams get the same experience.
+
+## Get Started
+
+```bash
+npm install scalus
+```
+
+Documentation: [scalus.org/docs/testing/js-emulator](https://scalus.org/docs/testing/js-emulator)
+
+The feedback loop on Cardano just got a lot shorter.
