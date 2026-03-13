@@ -6,6 +6,17 @@ publishedAt: '2026-02-05'
 summary: "A step-by-step guide to FROST (RFC 9591) threshold Schnorr signatures for Bitcoin — from Schnorr basics through Shamir secret sharing to the full protocol, with worked examples."
 ---
 
+## Contents
+
+- [Introduction](#introduction)
+- [Schnorr Signatures](#schnorr-signatures) — elliptic curve setup, signing, verification, and why nonces matter
+- [Aggregating Nonce R](#aggregating-nonce-r) — binding factors and why naive aggregation is dangerous
+- [Aggregating Partial Signatures](#aggregating-partial-signatures) — share equations, sum correctness, identifiable abort
+- [Shamir Secret Sharing](#shamir-secret-sharing) — polynomials, Pedersen DKG, Feldman VSS
+- [Lagrange Interpolation](#lagrange-interpolation) — the formula, intuition, and concrete examples
+- [FROST Protocol](#frost-protocol) — setup, rounds, aggregation, worked example
+- [References](#references)
+
 ## Introduction
 
 Imagine a Bitcoin wallet controlled by a company with five board members. You want a rule: any three of the five can authorize a transaction, but no one or two members can steal the funds. And when the transaction hits the blockchain, it should look exactly like any other — nobody can tell it was signed by a group.
