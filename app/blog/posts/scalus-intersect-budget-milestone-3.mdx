@@ -20,11 +20,9 @@ Scalus now includes a complete transaction builder covering the full range of Ca
 
 - [Transaction Building](https://scalus.org/docs/transactions) — core concepts and workflow
 - [Building Your First Transaction](https://scalus.org/docs/transactions/building-first-transaction)
-- [Payment Methods](https://scalus.org/docs/transactions/payment-methods)
-- [Spending UTxOs](https://scalus.org/docs/transactions/spending-utxos)
-- [Minting and Burning Native Tokens](https://scalus.org/docs/transactions/minting-burning-assets)
-- [Staking: Delegate to Stake Pool, Withdraw Rewards](https://scalus.org/docs/transactions/staking-rewards)
-- [Governance: Delegate to DRep, Vote](https://scalus.org/docs/transactions/governance)
+And detailed overview of [Payment Methods](https://scalus.org/docs/transactions/payment-methods), [Spending UTxOs](https://scalus.org/docs/transactions/spending-utxos), [Minting and Burning Native Tokens](https://scalus.org/docs/transactions/minting-burning-assets), [Staking: Delegate to Stake Pool, Withdraw Rewards](https://scalus.org/docs/transactions/staking-rewards) and [Governance: Delegate to DRep, Vote](https://scalus.org/docs/transactions/governance).
+
+<ZoomableImage src="/lantr-scalus-site-transactions.jpg" alt="Scalus documentation - Transactions" />
 
 ### Multiplatform Off-Chain Libraries
 
@@ -52,6 +50,8 @@ We published the [Scalus Starter](https://github.com/scalus3/scalus-starter) —
 
 The [DApp Starter Tutorial](https://scalus.org/docs/dapp-development/dapp-starter-tutorial) guides developers through a structured onboarding flow: **Run** -> **Understand** -> **Modify** -> **Deploy**.
 
+<ZoomableImage src="/lantr-scalus-starter.jpg" alt="Scalus documentation - Starter Kit" />
+
 
 ### Yaci DevKit Integration
 
@@ -67,9 +67,9 @@ It complements the Scalus Emulator for scenarios requiring complete Cardano node
 
 Implemented 3 additional patterns from the [Anastasia Labs catalogue](https://github.com/Anastasia-Labs/design-patterns):
 
-- **UTxO Indexer** — one-to-many and multiple one-to-one variants (with and without redeemer)
-- **Merkelized Validators** — including a batch auction example
-- **Parameter Validation** — with documentation, tests, and examples
+- **UTxO Indexer** - precomputes indexes in the redeemer, thereby enabling O(1) lookups and drastically reducing validation costs
+- **Merkelized Validators** - allows to separate the logic (and code) of the complex validator across a number of scripts
+- **Parameter Validation** - helps verifying the instantiations of parameterized scripts
 
 New design pattern documentation is available at [scalus.org/docs/design-patterns](https://scalus.org/docs/design-patterns).
 

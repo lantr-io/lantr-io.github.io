@@ -110,15 +110,15 @@ a:focus {
 }
 
 .prose h2 {
-  @apply text-2xl font-semibold tracking-tight mt-10 mb-4;
+  @apply text-2xl font-bold tracking-tight mt-10 mb-4 pt-6 border-t border-neutral-200 dark:border-neutral-800;
 }
 
 .prose h3 {
-  @apply text-xl font-semibold tracking-tight mt-8 mb-3;
+  @apply text-xl font-semibold tracking-tight mt-10 mb-3;
 }
 
 .prose h4 {
-  @apply text-lg font-semibold tracking-tight mt-6 mb-2;
+  @apply text-base font-semibold tracking-tight mt-6 mb-2;
 }
 
 .prose strong {
@@ -158,6 +158,30 @@ input[type='email'] {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
+}
+
+.prose table {
+  @apply my-6 w-full border-collapse text-sm;
+  display: block;
+  overflow-x: auto;
+}
+
+.prose table th {
+  @apply bg-neutral-100 dark:bg-neutral-800 px-4 py-2 text-left font-semibold border border-neutral-200 dark:border-neutral-700;
+  white-space: normal;
+}
+
+.prose table td {
+  @apply px-4 py-2 border border-neutral-200 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200;
+  white-space: normal;
+}
+
+.prose table tr:nth-child(even) {
+  @apply bg-neutral-50 dark:bg-neutral-900;
+}
+
+.prose .table-wrapper {
+  @apply overflow-x-auto my-6;
 }
 
 table {

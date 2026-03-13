@@ -1,0 +1,323 @@
+---
+title: 'Benchmarking Authenticated Collections on Cardano — Radix, Fusing & Fee Anatomy'
+author: 'Ruslan Shevchenko'
+tags: cardano scalus benchmarks merkle-patricia-forestry incremental-merkle-tree transaction-fees smart-contracts performance
+publishedAt: '2026-03-16'
+summary: 'Detailed benchmarks of Merkle Patricia Forestry variants (radix-2, 16, 64), fusing optimizations, and Incremental Merkle Trees on Cardano. Includes full transaction fee breakdowns showing why execution cost is only 11% of the total fee.'
+---
+
+This is the companion benchmarking article to our [guide on authenticated collections in Scalus](/blog/scalus-authenticated-collections-guide/). If you're unfamiliar with Merkle Patricia Forestry (MPF), Fused MPF, or Incremental Merkle Trees, start there for algorithmic explanations and decision guidance.
+
+Here we focus on **real numbers**: radix selection, fusing optimizations, and full transaction fee anatomy on Cardano.
+
+## Contents
+
+- [Optimizations Journey](#optimizations-journey) — radix analysis & unfused benchmarks
+  - [Benchmark (unfused)](#benchmark-unfused)
+  - [Cardano Fee Anatomy](#cardano-fee-anatomy)
+- [Fusing Optimization](#fusing-optimization) — hash & proof encoding fusion
+  - [Benchmark: MPF-16 unfused vs FusedMPF-16](#benchmark-mpf-16-unfused-vs-fusedmpf-16)
+- [Fused Radix Comparison](#fused-radix-comparison-does-radix-still-matter) — does radix still matter after fusing?
+- [Benchmarking Incremental Merkle Tree](#benchmarking-incremental-merkle-tree) — IMT vs FusedMPF-16
+  - [IMT vs FusedMPF-16: Emulator Benchmark](#imt-vs-fusedmpf-16-emulator-benchmark)
+  - [IMT Scaling with Depth](#imt-scaling-with-depth)
+- [Conclusion](#conclusion)
+
+## Optimizations Journey
+
+It can be tricky. When optimizing algorithms, each local optimum is an equilibrium between different aspects, where improving one aspect may worsen another.
+Therefore, instead of a 'simple elegant idea', we may end up with a complex, unwieldy beast that is hard to explain.
+
+For example, looking at Merkle Patricia Tree: the first impulse is to consider a very elegant mathematical structure, which we can call Merkle Patricia Tree (i.e. radix-2).
+Each prefix is 2 bits, branch nodes are minimal (2 children), proofs are minimal (1 sibling hash per branch step).
+One problem — 256 steps per path, 512 blake2b calls per proof. That's a lot of CPU.
+
+For a general radix-2ᵏ MPF (k bits per branch step), we can derive the formulas. A 256-bit key is consumed k bits at a time, giving **256/k branch steps** along a path (worst case, no skip compression). At each step, the Forestry binary tree of depth k requires **k blake2b calls** to reconstruct the merkle root from siblings, plus **1 blake2b call** to combine the prefix with the merkle root. The proof carries **k sibling hashes** (one per level of the inner binary tree), each 32 bytes. So:
+
+> **Blake2b calls per proof ≈ 256/k × (k + 1) = 256 + 256/k**
+>
+> **Branch proof size per step = k × 32 bytes**
+
+| Radix | k | Steps (worst case) | Blake2b calls | Branch proof bytes/step |
+|-------|---|---------------------|---------------|-------------------------|
+| 2     | 1 | 256                 | 512           | 32                      |
+| 16    | 4 | 64                  | 320           | 128                     |
+| 64    | 6 | ~43                 | ~299          | 192                     |
+| 256   | 8 | 32                  | 288           | 256                     |
+
+The blake2b count decreases with larger radix (converging to 256), so **larger radix is always cheaper in CPU**.
+
+What about proof size? The number of branch steps on a path depends on how many keys share prefixes — not on the radix. With uniform keys (blake2b-hashed), the expected number of branch nodes on a path is **B ≈ log₂(N) / k**. Since each branch costs k × 32 bytes of siblings:
+
+> **Actual proof size ≈ B × k × 32 = (log₂(N) / k) × k × 32 = log₂(N) × 32**
+
+The k cancels out. With uniform keys, the branch sibling bytes are approximately the same regardless of radix. The remaining proof overhead (step headers, skip prefixes, serialization) is small and roughly constant per step.
+
+### Benchmark (unfused)
+
+We compiled MPF-2, MPF-16 and MPF-64 on-chain verifiers (all unfused, Data-encoded proofs) and measured the cost of a standalone `has()` call (no transaction overhead) across collection sizes:
+
+| N | Variant | CPU | Memory | Fee | Proof (B) |
+|---|---------|-----|--------|-----|-----------|
+| 30 | MPF-2 | 39,899,850 | 133,522 | 10,581 | 238 |
+| 30 | MPF-16 | 24,549,465 | 87,845 | 6,839 | 252 |
+| 30 | MPF-64 | 27,582,061 | 100,332 | 7,778 | 236 |
+| 100 | MPF-2 | 53,547,765 | 178,036 | 14,134 | 330 |
+| 100 | MPF-16 | 35,254,107 | 122,665 | 9,620 | 323 |
+| 100 | MPF-64 | 34,212,855 | 123,597 | 9,599 | 372 |
+| 1,000 | MPF-2 | 64,170,230 | 211,647 | 16,839 | 398 |
+| 1,000 | MPF-16 | 37,066,889 | 129,836 | 10,165 | 413 |
+| 1,000 | MPF-64 | 33,241,765 | 121,068 | 9,383 | 419 |
+| 32,000 | MPF-2 | 100,029,655 | 328,930 | 26,192 | 645 |
+| 32,000 | MPF-16 | 55,386,806 | 191,515 | 15,044 | 609 |
+| 32,000 | MPF-64 | 46,582,977 | 167,625 | 13,031 | 624 |
+
+At 1K+ elements, MPF-64 uses **10–16% less CPU** than MPF-16. MPF-2 is ~80% more expensive. The proof sizes are nearly identical across radixes, confirming the log₂(N) × 32 prediction.
+
+The `insert()` results (using a combined single-pass optimization to compute both excluding and including roots simultaneously) are more mixed:
+
+| N | Variant | CPU | Memory | Fee |
+|---|---------|-----|--------|-----|
+| 30 | MPF-2 | 48,495,553 | 164,030 | 12,962 |
+| 30 | MPF-16 | 38,380,526 | 136,916 | 10,668 |
+| 30 | MPF-64 | 34,192,374 | 127,785 | 9,839 |
+| 100 | MPF-2 | 61,801,320 | 207,787 | 16,446 |
+| 100 | MPF-16 | 41,467,658 | 150,413 | 11,669 |
+| 100 | MPF-64 | 42,747,508 | 158,537 | 12,230 |
+| 1,000 | MPF-2 | 86,230,755 | 288,755 | 22,879 |
+| 1,000 | MPF-16 | 54,647,249 | 196,775 | 15,294 |
+| 1,000 | MPF-64 | 52,396,164 | 193,902 | 14,966 |
+| 32,000 | MPF-2 | 120,584,161 | 401,727 | 31,874 |
+| 32,000 | MPF-16 | 69,631,026 | 250,450 | 19,472 |
+| 32,000 | MPF-64 | 72,937,542 | 267,852 | 20,714 |
+
+Insert is mixed — MPF-64 wins at N=30 and 1K, but loses at 100 and 32K. The combined single-pass traversal has different cost characteristics than a simple `has()`.
+
+But everything changes when we compare full transaction costs with reference scripts. We wrote a simple validator, which maintains a single MPF collection in its datum and supports `withdraw` and `deposit` operations with proofs.
+Then we benchmarked the full transaction costs (fees, CPU, memory):
+
+
+| Variant | op | fee | CPU | mem | txSize | proof (B) |
+|---------|-----|---------|-------------|---------|--------|-----------|
+| MPF-2 | withdraw | 287,983 | 173,039,003 | 574,868 | 1,162 | 622 |
+| MPF-16 | withdraw | 287,027 | 119,282,279 | 415,719 | 1,132 | 593 |
+| MPF-64 | withdraw | 298,528 | 120,209,248 | 424,809 | 1,177 | 637 |
+| MPF-2 | deposit | 285,122 | 167,672,401 | 558,604 | 1,127 | 626 |
+| MPF-16 | deposit | 283,052 | 114,165,751 | 397,909 | 1,074 | 572 |
+| MPF-64 | deposit | 295,307 | 116,659,208 | 412,552 | 1,125 | 624 |
+
+Despite MPF-64's 12–17% CPU advantage in raw UPLC `has()`, it **loses** in full transactions. Even MPF-2, with ~45% more CPU, has nearly the same fee as MPF-16 (287,983 vs 287,027) thanks to its tiny validator.
+
+### Cardano Fee Anatomy
+
+The Cardano fee has three components: `fee = txSizeFee + exUnitsFee + refScriptFee`. Here's the breakdown for MPF-16 (withdraw, fee = 287,027):
+
+| Category | lovelace | % of total |
+|----------|---------|-----------|
+| Base fee (fixed) | 155,381 | 54.1% |
+| Tx size (1,132 bytes × 44) | 49,808 | 17.4% |
+| Reference script | ~49,251 | 17.2% |
+| Memory (415,719 × 0.0577) | 23,987 | 8.4% |
+| CPU (119.3M × 0.0000721) | 8,600 | 3.0% |
+
+The base fee dominates (54%). Reference script and tx size contribute equally (~17% each). Execution units (CPU + memory) are only 11.4% of the total fee.
+This explains why MPF-2 — despite 45% more CPU — has nearly the same fee: its smaller validator saves on reference script cost, offsetting the execution cost increase.
+
+The fee difference breakdown (MPF-64 vs MPF-16, withdraw, Δ = +11,501):
+
+| Category | Δ lovelace | % of diff |
+|----------|-----------|-----------|
+| Reference script (larger validator) | +8,930 | 78% |
+| Tx size (+45 bytes × 44) | +1,980 | 17% |
+| Memory (+9,090 units) | +524 | 5% |
+| CPU (+0.9M steps) | +67 | 1% |
+
+The dominant factor is **reference script cost** (78%). Even though the validator code doesn't travel in the transaction body (we use reference scripts),
+Cardano charges a tiered fee based on reference script size (15 lovelace/byte, ×1.2 multiplier per 25,600-byte tier). MPF-64's larger validator (with `merkle64`, `sparseMerkle64` functions) costs more.
+
+
+## Fusing Optimization
+
+We can fuse both the hash computations and the proof encoding.
+
+The idea of fusing is to:
+  - combine multiple hash computation calls into a single call, reducing the total number of calls and thus saving CPU.
+  - combine proof encoding into a single flat binary format, eliminating serialization overhead and reducing proof size.
+  - pass parts of the proof directly into the hash computation as already concatenated bytes, avoiding intermediate data structures and redundant hashing.
+
+Start with combining computations: at each branch step, the unfused variant computes `blake2b(prefix ++ blake2b(halfLeft ++ halfRight))` — two blake2b calls.
+By fusing these into a single `blake2b(skipLen ++ halfLeft ++ halfRight)` (called `combine3`), we save one blake2b call per branch step.
+The blake2b calls per proof with fusing become:
+> **Blake2b calls (fused) ≈ 256/k × k = 256** (constant, independent of radix!)
+
+Then, if we represent proof as a byte string, we can run hash computation over the proof bytes directly, without deserialization overhead. For some types of nodes,
+we can just hash the proof bytes as they are.
+
+### Benchmark: MPF-16 unfused vs FusedMPF-16
+
+`has()` comparison:
+
+| N | Variant | CPU | Memory | Fee | Proof (B) |
+|---|---------|-----|--------|-----|-----------|
+| 30 | MPF-16 | 24,549,465 | 87,845 | 6,839 | 252 |
+| 30 | FusedMPF-16 | 22,631,145 | 83,475 | 6,449 | 244 |
+| 100 | MPF-16 | 35,254,107 | 122,665 | 9,620 | 323 |
+| 100 | FusedMPF-16 | 32,051,872 | 115,511 | 8,976 | 311 |
+| 1,000 | MPF-16 | 37,066,889 | 129,836 | 10,165 | 413 |
+| 1,000 | FusedMPF-16 | 34,182,522 | 124,071 | 9,624 | 398 |
+| 32,000 | MPF-16 | 55,386,806 | 191,515 | 15,044 | 609 |
+| 32,000 | FusedMPF-16 | 50,652,213 | 182,352 | 14,174 | 586 |
+
+FusedMPF-16 is consistently **~8% cheaper in CPU** and **~5% cheaper in memory** for `has()` across all collection sizes. The proof sizes are also ~4% smaller thanks to the flat binary encoding. Combined fee savings: ~6%.
+
+`insert()` comparison:
+
+| N | Variant | CPU | Memory | Fee |
+|---|---------|-----|--------|-----|
+| 30 | MPF-16 | 38,380,526 | 136,916 | 10,668 |
+| 30 | FusedMPF-16 | 33,373,523 | 121,214 | 9,401 |
+| 100 | MPF-16 | 41,467,658 | 150,413 | 11,669 |
+| 100 | FusedMPF-16 | 36,520,296 | 134,103 | 10,371 |
+| 1,000 | MPF-16 | 54,647,249 | 196,775 | 15,294 |
+| 1,000 | FusedMPF-16 | 48,116,882 | 175,439 | 13,593 |
+| 32,000 | MPF-16 | 69,631,026 | 250,450 | 19,472 |
+| 32,000 | FusedMPF-16 | 61,165,915 | 222,972 | 17,276 |
+
+FusedMPF-16 saves **~12% CPU** and **~11% memory** on `insert()` — the combined single-pass traversal benefits more from fusing because it computes two roots (excluding and including) simultaneously, doubling the per-step blake2b savings. Combined fee savings: ~11%.
+
+Compiled program sizes: MPF-16 (unfused) = 1,467 bytes, FusedMPF-16 = 1,460 bytes — virtually identical.
+
+In full transactions (emulator), fusing saves 0.75–1% in total fee:
+
+| Variant | op | N | fee | CPU | mem | txSize | proof (B) |
+|---------|-----|---|---------|-------------|---------|--------|-----------|
+| MPF-16 | withdraw | 32K | 287,027 | 119,282,279 | 415,719 | 1,132 | 593 |
+| FusedMPF-16 | withdraw | 32K | 284,865 | 111,441,826 | 390,672 | 1,112 | 572 |
+| MPF-16 | deposit | 32K | 283,052 | 114,165,751 | 397,909 | 1,074 | 572 |
+| FusedMPF-16 | deposit | 32K | 280,927 | 106,332,852 | 373,105 | 1,054 | 552 |
+| MPF-16 | withdraw | 1M | 298,663 | 137,858,158 | 479,472 | 1,283 | 740 |
+| FusedMPF-16 | withdraw | 1M | 295,607 | 127,402,136 | 446,777 | 1,256 | 713 |
+| MPF-16 | deposit | 1M | 297,231 | 135,013,911 | 470,793 | 1,266 | 760 |
+| FusedMPF-16 | deposit | 1M | 294,138 | 124,550,336 | 437,855 | 1,239 | 733 |
+
+Despite ~7% savings in CPU and ~6% in memory, the total fee savings are only ~0.75% (N=32K) to ~1% (N=1M). This is because the Cardano fee is dominated by the base fee (54%) — execution units contribute only ~11% of the total.
+
+However, fusing is still worthwhile: the ~7% execution budget savings provide headroom against per-transaction CPU/memory limits (14B steps, 10M mem units). And for light validators (proof-only, no output/lovelace checks), the savings are more noticeable (~3.8%) because execution is a larger share of the fee.
+
+Fee difference breakdown (MPF-16 → FusedMPF-16, withdraw N=32K, Δfee = −2,162):
+
+| Category | Δ lovelace | % of saving |
+|----------|-----------|------------|
+| Memory (−25,047 units) | −1,445 | 66.8% |
+| Tx size (proof −21B) | −880 | 40.7% |
+| CPU (−7.8M steps) | −565 | 26.1% |
+| RefScript (fused validator is larger) | +728 | −33.7% |
+
+Memory reduction is the largest factor (~67%): fusing eliminates intermediate ByteString allocations from separate prefix hashing. Proof shrinking (~41%) comes from flat binary encoding saving ~20B per proof. CPU savings (~26%) come from fewer blake2b calls. The fused validator is slightly larger (3,323B vs 3,275B), partially offsetting the gains via higher reference script fees.
+
+## Fused Radix Comparison: Does Radix Still Matter?
+
+Quick idea — maybe the fused MPF-2 has a chance because of its tiny validator, which saves on reference script fees, and the CPU explosion is not so bad because of fusing?
+Let's see:
+
+| Category | Δ lovelace | % of saving |
+|----------|-----------|-----------|
+| Memory (+283,184 units × 0.0577) | +16,341 | — |
+| CPU (+83.3M steps × 0.0000721) | +5,998 | — |
+| Reference script (smaller validator!) | −10,695 | — |
+| Tx size (+3 bytes × 44) | +132 | — |
+
+Nope. FusedMPF-2's tiny validator saves on reference script fees, but the 2× CPU and memory explosion (more branch steps = more per-step UPLC overhead: pattern matching, cursor arithmetic, sliceByteString) overwhelms the savings. Radix-16 remains the sweet spot across all encodings.
+
+## Benchmarking Incremental Merkle Tree
+
+In a typical oracle use case, we have a stream of data points (e.g. price updates) that we want to commit on-chain. Clients need proof that some data is based on the latest N data points, but we don't care about old data points.
+So, we need proof of membership, but we don't need non-membership proofs.
+
+We can use an incremental Merkle tree to maintain a running commitment to the latest N data points, allowing us to prove membership of any recent data point with a compact proof.
+
+So, let's write a simple contract that performs only the append operation and benchmark how much we can save compared to fused MPF-16.
+
+### IMT vs FusedMPF-16: Emulator Benchmark
+
+IMT validator script size: 1,329 bytes (vs 3,323 bytes for FusedMPF-16). The IMT validator is 60% smaller because the on-chain logic is much simpler: a binary tree with `combine(left, right) = blake2b_256(left ++ right)` and linear walk from leaf to root.
+
+Membership verification (`withdraw`):
+
+| Variant | N | fee | CPU | mem | txSize | proof (B) |
+|---------|---|---------|-------------|---------|--------|-----------|
+| IMT | 32K | 253,350 | 87,911,926 | 308,948 | 1,045 | 513 |
+| FusedMPF-16 | 32K | 284,865 | 111,441,826 | 390,672 | 1,112 | 572 |
+| IMT | 100K | 257,587 | 91,870,073 | 324,204 | 1,115 | 581 |
+| FusedMPF-16 | 100K | 285,647 | 113,122,334 | 396,098 | 1,120 | 579 |
+| IMT | 1M | 263,898 | 97,812,763 | 347,088 | 1,218 | 683 |
+| FusedMPF-16 | 1M | 295,607 | 127,402,136 | 446,777 | 1,256 | 713 |
+
+IMT is **11–12% cheaper** in total fee for membership verification. At N=32K, it saves 31,515 lovelace per transaction.
+
+Fee difference breakdown (IMT vs FusedMPF-16, withdraw N=32K, Δfee = −31,515):
+
+| Category | Δ lovelace | % of saving |
+|----------|-----------|------------|
+| RefScript (60% smaller validator) | −22,157 | 70.3% |
+| Memory (−81,724 units) | −4,715 | 15.0% |
+| Tx size (−67 bytes) | −2,948 | 9.4% |
+| CPU (−23.5M steps) | −1,695 | 5.4% |
+
+The dominant saving is reference script cost (70%) — the IMT validator is much smaller. But IMT also wins on execution: 21% less CPU and 21% less memory, because the binary Merkle proof walk is simpler (just `blake2b_256(left ++ right)` per level, no radix-16 merkle/sparseMerkle functions).
+
+Append (`add` for IMT, `deposit` for FusedMPF-16):
+
+| Variant | N | fee | CPU | mem | txSize | proof (B) |
+|---------|---|---------|-------------|---------|--------|-----------|
+| IMT add | 32K | 252,266 | 94,441,577 | 322,949 | 991 | 498 |
+| FusedMPF-16 deposit | 32K | 280,927 | 106,332,852 | 373,105 | 1,054 | 552 |
+| IMT add | 1M | 263,372 | 107,885,827 | 370,129 | 1,160 | 662 |
+| FusedMPF-16 deposit | 1M | 294,138 | 124,550,336 | 437,855 | 1,239 | 733 |
+
+IMT append is **10–11% cheaper** than FusedMPF-16 insert. Note that IMT `add` is a single-pass operation that verifies the empty slot AND computes the new root with ~2D blake2b calls, while FusedMPF-16 `insert` needs a combined traversal with ~512 blake2b calls.
+
+IMT proof sizes scale as D×33 bytes (membership) or D×32 bytes (append), where D = ceil(log₂(N)). At N=1M, D=20, so proofs are ~660–683 bytes — comparable to FusedMPF-16's ~713–733 bytes.
+
+The tradeoff: IMT only supports **append** (sequential insertion) and **membership verification**. It cannot delete elements or prove non-membership. For oracle use cases where you only add data points and verify membership, IMT is the clear winner.
+
+### IMT Scaling with Depth
+
+The on-chain cost scales linearly with tree depth D:
+
+| N | D | withdraw fee | withdraw CPU | add fee | add CPU | proof (B) |
+|---|---|-------------|-------------|---------|---------|-----------|
+| 10 | 4 | 230,210 | 66,136,510 | 230,118 | 67,565,376 | 139 |
+| 100 | 7 | 236,508 | 72,074,704 | — | — | 241 |
+| 10K | 14 | 251,227 | 85,930,784 | — | — | 479 |
+| 32K | 15 | 253,350 | 87,911,926 | 252,266 | 94,441,577 | 513 |
+| 100K | 17 | 257,587 | 91,870,073 | 256,814 | 99,822,428 | 581 |
+| 1M | 20 | 263,898 | 97,812,763 | 263,372 | 107,885,827 | 683 |
+
+Each extra depth level adds ~2M CPU steps (~144 lovelace) for verification and ~3.4M steps for append. The fee grows gently from 230K (D=4) to 264K (D=20).
+
+An important off-chain advantage: it is possible to generate append proofs without storing the full history of data points. The `FrontierMerkleTree` stores only D sibling hashes (the "frontier" — the rightmost path of the tree), requiring O(D) memory instead of O(N). For D=20 that's just 20 × 32 = 640 bytes regardless of how many millions of elements have been appended. The on-chain costs are identical — the validator doesn't care how the proof was generated. The off-chain build time is higher (12s vs 2s for 1M elements) because the frontier tree recomputes intermediate hashes rather than looking them up in a stored structure, but for an oracle that appends one data point per block this is negligible.
+
+For extreme depths (D=64, D=256), the costs grow proportionally:
+- D=64 (N≤2⁶⁴): fee=359,342, CPU=226M, proof=2,114B
+- D=256 (N≤2²⁵⁶): fee=779,925, CPU=742M, proof=8,450B
+
+Even D=256 stays well within Cardano's per-transaction budget (14B CPU steps, 10M memory units).
+
+## Conclusion
+
+For **append-only** use cases (oracles, event logs, audit trails), IMT is 11–12% cheaper than FusedMPF-16 thanks to its smaller validator and simpler on-chain logic.
+
+For **general set membership** (with insert + delete + non-membership proofs), MPF-16 and FusedMPF-16 remain the best choice. Radix-16 hits the sweet spot: small enough validator for low reference script fees, large enough branching factor to minimize per-step UPLC overhead.
+
+For **tight transaction size constraints**, BilinearAccumulator is the option — each proof is 48 bytes regardless of set size. The ~35x CPU overhead sounds dramatic, but in real transactions the base fee and reference script fee dominate, so the actual fee increase is more moderate. Accumulators are most valuable when packing many proofs into one transaction or approaching the 16KB tx size limit.
+
+**A note on methodology:** Looking only at script execution costs (CPU and memory) can be misleading. A 7–8% reduction in execution budget may sound significant, but execution costs constitute only ~11% of the total transaction fee on Cardano — the base fee alone accounts for over 50%. When we measure real transactions through the emulator, that 7–8% execution saving translates to less than 1% in actual fee. Similarly, a 2× difference in standalone UPLC evaluation cost between two variants may shrink to a modest 10–15% difference in total fee once reference script size, transaction size, and the base fee are factored in. Always benchmark with full transactions to get the true picture.
+
+---
+
+This article is the benchmarking companion to [Authenticated Collections in Scalus — Merkle Trees, Tries & Accumulators for Cardano](/blog/scalus-authenticated-collections-guide/).
+
+Follow our progress on [X (@Scalus3)](https://x.com/Scalus3) and [X (@lantr_io)](https://x.com/lantr_io).
+
+Questions or feedback? Reach out on [Discord](https://discord.gg/B6tXmBzhTn) or email us at [contact@lantr.io](mailto:contact@lantr.io).

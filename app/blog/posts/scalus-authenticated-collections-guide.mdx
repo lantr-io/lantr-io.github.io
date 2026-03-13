@@ -1,0 +1,366 @@
+---
+title: 'Authenticated Collections in Scalus — Merkle Trees, Tries & Accumulators for Cardano'
+author: 'Ruslan Shevchenko'
+tags: cardano scalus authenticated-collections merkle-tree patricia-trie bilinear-accumulator smart-contracts cryptography
+publishedAt: '2026-03-10'
+summary: 'A practical guide to choosing the right authenticated data structure for Cardano smart contracts. Covers Merkle Trees, Incremental Merkle Trees, Merkle Patricia Forestry, Fused MPF, and Bilinear Accumulators — with algorithmic explanations and ASCII diagrams.'
+---
+
+{/* TODO:
+  1. Rewrite intro — explain WHY authenticated collections matter (data off-chain, hash on-chain, proofs verify) and Cardano constraints (eUTxO, tx size, execution budgets)
+  2. Add concrete use cases to comparison table or as a separate subsection (MT: airdrop allowlist; IMT: oracle price feed; MPF: DEX order book; Accumulator: many proofs per tx)
+  3. Add transition sentence before "Algorithmic Descriptions"
+  4. Consistent API coverage — either add brief Scalus API pointers for all structures or move Bilinear Accumulator API section to separate docs page
+  5. Add "Getting Started" section at the end (install, link to API docs, next steps)
+*/}
+
+Starting from 0.16.0, Scalus includes a library of authenticated collections: Merkle Trees, Merkle Patricia Tries, Bilinear Accumulators, and more.
+
+Why do we have more than one collection type? They differ in cost, proof size, mutability, and what they can prove.
+
+## Contents
+
+- [When to Use Each Collection](#when-to-use-each-collection) — comparison table & decision flowchart
+- [Algorithmic Descriptions](#algorithmic-descriptions)
+  - [Merkle Tree](#merkle-tree)
+  - [Incremental Merkle Tree](#incremental-merkle-tree)
+  - [Frontier Merkle Tree](#frontier-merkle-tree)
+  - [Merkle Patricia Forestry](#merkle-patricia-forestry)
+  - [Fused Merkle Patricia Forestry](#fused-merkle-patricia-forestry)
+  - [Bilinear Accumulators](#bilinear-accumulators)
+
+## When to Use Each Collection
+
+| Collection | Onchain Verification Cost | Proof Size | Grows with N? | When to use it? |
+|---|---|---|---|---|
+| **Merkle Tree** | log2(N)+1 blake2b calls | 33 x ceil(log2(N)) bytes | Yes (logarithmic) | Static set known at deploy time. Membership-only, no mutations. |
+| **Incremental Merkle Tree / FrontierMerkleTree** | Verify: log2(N)+1 blake2b. Append: 2*log2(N)+2 blake2b | 32-33 x ceil(log2(N)) bytes | Yes (logarithmic) | Append-only set, oracle-managed. Same onchain verifier; FrontierMerkleTree is an offchain optimization needing O(depth) memory instead of O(N). |
+| **Merkle Patricia Forestry** | ~5-15 blake2b calls per proof step | ~200-800 bytes (Data-encoded) | **No** (constant, max 2^256 entries) | General key-value with insert/delete/update + membership and non-membership proofs. Aiken-compatible. |
+| **Fused Merkle Patricia Forestry** | ~8-12% less CPU than MPF | ~100-500 bytes (flat ByteString) | **No** (constant, max 2^256 entries) | Same as MPF but cheaper onchain (fused proof encoding). Not Aiken-compatible. |
+| **Bilinear Accumulator (G2)** | 2 pairings + G1 MSM (**~35x more CPU** than tries) | ~48-96 bytes | **No** (constant, 1 group element) | Large sets where constant proof size matters. Requires trusted setup (CRS). Cheaper variant (G1 MSM). |
+| **Bilinear Accumulator (G1)** | 2 pairings + G2 MSM (**~35x more CPU** than tries) | ~48-96 bytes | **No** (constant, 1 group element) | Same as G2 but compatible with Ethereum KZG ceremony. Slightly more expensive (G2 MSM). |
+
+
+### Decision Flowchart
+
+1. **Static set?** -> **Merkle Tree (MT)** (cheapest possible)
+2. **Append-only?** -> **Incremental Merkle Tree (IMT)** / **Frontier Merkle Tree (FMT)**
+3. **Need insert + delete?** -> **Fused Merkle PatriciaForestry (Fused MPF)** (cheapest) or **Merkle Patricia Forestry (MPF)** (Aiken-compatible)
+4. **Proof size is critical** (e.g., many proofs per tx, tight tx size limits)? -> **Bilinear Accumulator** (smallest constant proof size, but ~35x more CPU)
+5. **Need non-membership proofs?** -> MPF, Fused MPF, or Bilinear Accumulator (all support it)
+
+```
+               What collection do you need?
+                            │
+                     ┌──────▼──────┐
+                     │ Static set? │── Yes ──→  Merkle Tree (MT) @ cheapest
+                     └──────┬──────┘
+                            │ No
+                     ┌──────▼───────┐
+                     │ Append-only? │── Yes ──→  Incremental MT / Frontier MT
+                     └──────┬───────┘
+                            │ No
+                            │
+               ┌────────────▼────────────┐
+               │ Proof size critical?    │── Yes ──→  Bilinear Accumulator
+               │ (many proofs per tx,    │   (smallest constant proof size, ~35x CPU)
+               │  tight tx size limits)  │
+               └────────────┬────────────┘
+                            │ No
+               ┌────────────▼────────────┐
+               │ Need Aiken              │── Yes ──→  Merkle Patricia Forestry (MPF)
+               │ compatibility?          │
+               └────────────┬────────────┘
+                            │ No
+                            ▼
+                  Fused MPF (10% cheaper than MPF)
+```
+
+### Supported Onchain Operations & Proofs
+
+| Operation | Merkle Tree (MT) | Incremental MT Frontier MT  | Merkle Patricia Forestry (MPF)  | Fused MPF | Bilinear Accumulator |
+|---|---|---|---|---|---|
+| Verify membership | yes | yes | yes | yes | yes |
+| Verify non-membership | — | — | yes | yes | yes |
+| Insert (with proof) | — | append only | yes | yes | — |
+| Delete (with proof) | — | — | yes | yes | — |
+| Update (with proof) | — | — | yes | yes | — |
+
+Frontier Merkle Tree uses the same onchain verifier as Incremental Merkle Tree (it is an offchain memory optimization).
+
+## Algorithmic Descriptions
+
+### Merkle Tree (MT)
+- Binary tree where each leaf is a hash of data and each internal node is a hash of its children. Proofs are log2(N) hashes.
+
+```
+                           ┌─────────┐
+                           │  root   │
+                           │ H(A|B)  │
+                           └────┬────┘
+                   ┌────────────┴──────────┐
+              ┌────┴────┐             ┌────┴────┐
+              │    A    │             │    B    │
+              │ H(C|D)   │            │ H(E|F)  │
+              └────┬────┘             └────┬────┘
+            ┌──────┴──────┐          ┌─────┴──────┐
+       ┌────┴────┐   ┌────┴────┐┌────┴────┐  ┌────┴────┐
+       │    C    │   │    D    ││    E    │  │    F    │
+       │ H(d₁|d₂)│   │ H(d₃|d₄)││ H(d₅|d₆)│  │ H(d₇|d₈)│
+       └────┬────┘   └────┬────┘└────┬────┘  └────┬────┘
+        ┌───┴───┐     ┌───┴───┐  ┌───┴───┐    ┌───┴───┐
+       d₁      d₂     d₃      d₄ d₅      d₆   d₇      d₈
+
+  Proof that d₃ is in the tree:  [d₄, C, B]
+  Verify:  D = H(d₃|d₄),  A = H(C|D),  root = H(A|B)  ✓
+```
+
+Author — Ralph Merkle described the idea in 1979 in "A Certified Digital Signature". The motivation was signing many messages at once:
+instead of signing each message individually, hash them into a root and sign only the root.
+
+### Incremental Merkle Tree (IMT)
+
+The idea of append-only hash tree commitments was explored by Peter Todd in his [merkle-mountain-range](https://github.com/opentimestamps/opentimestamps-server/blob/master/doc/merkle-mountain-range.md) work for OpenTimestamps (2012–2016) — a variable-depth structure where each append grows the "mountain range". A different, fixed-depth variant became widely known through **Zcash** (2016, [Zerocash paper by Ben-Sasson et al., 2014](https://eprint.iacr.org/2014/349)): the Sapling and Orchard shielded pools use incremental Merkle trees of depth 32 to commit to note hashes — each new transaction appends a note commitment, and spending requires a membership proof against the tree root. Our implementation follows the Zcash approach: a fixed-depth binary tree filled left-to-right, with empty slots initialized to a null hash.
+
+- Imagine a MerkleTree of N = 2^D leaves that is already fully filled. At the leaf level, each cell contains either hash(0) or hash(data).
+When you append a new leaf, you replace the leftmost hash(0) with hash(data). Then you recompute all the hashes on the path to the root.
+The proof for the new leaf is the sibling hashes along that path.
+
+```
+  Before append (3 elements, depth=3):
+
+              root
+            ┌──┴──┐
+           A      B=H(E|0₂)
+         ┌─┴─┐    ┌─┴──┐
+         C   D    E    0₂
+        ┌┴┐ ┌┴┐  ┌┴┐  ┌┴┐
+        d₁ d₂ d₃ 0  0  0  0  0
+
+  Append d₄ → replace leftmost 0:
+
+              root'
+            ┌──┴──┐
+           A      B'=H(E'|0₂)
+         ┌─┴─┐    ┌──┴──┐
+         C   D    E'    0₂
+        ┌┴┐ ┌┴┐  ┌─┴─┐  ┌┴┐
+        d₁ d₂ d₃ 0  d₄  0  0  0
+
+  Recompute:  E'=H(d₄|0), B'=H(E'|0₂), root'=H(A|B')
+  Proof for d₄:  [0, 0₂, A]
+```
+
+### Frontier Merkle Tree (FMT)
+
+- It's another offchain facade for the Incremental Merkle Tree, which holds not all N leaves, but only the "frontier" of the tree (the rightmost path of hashes).
+This allows it to support up to 2^256 leaves without needing to store all the empty hashes.
+
+```
+  Full IMT stores all nodes (O(N) memory):
+
+              root
+            ┌──┴──┐
+           A      B
+         ┌─┴─┐    ┌─┴──┐
+         C   D    E    0₂
+        ┌┴┐ ┌┴┐  ┌┴┐  ┌┴┐
+        d₁ d₂ d₃ d₄  0  0  0  0
+
+  Frontier stores only the rightmost hashes (O(depth) memory):
+
+              root
+            ┌──┴──┐
+           A      ●  ← frontier[2] = B
+                  ┌─┴──┐
+                  ●    0₂  ← frontier[1] = E
+                 ┌┴┐
+                 ●  0  ← frontier[0] = d₄
+                  ↑
+              next append goes here
+
+  Stored:  frontier = [d₄, E, B]  (3 hashes, not 8 leaves)
+           left_siblings = [A]     (frozen left subtree roots)
+
+  To append d₅:
+    1. E' = H(d₄ | d₅)        ← combine frontier[0] with new leaf
+    2. B' = H(E' | 0₂)        ← combine up using pre-computed null hashes
+    3. root' = H(A | B')       ← A was stored as frozen left sibling
+    4. Update frontier: [d₅, E', B']
+```
+
+### Merkle Patricia Forestry (MPF)
+
+Patricia here is not a name, but an acronym for "Practical Algorithm To Retrieve Information Coded In Alphanumeric", created by Donald R. Morrison in 1968.
+He invented prefix tries with path compression.
+
+#### Prefix Trie — what it is
+
+Every key is a 256-bit number, which we represent as a row of 64 hex nibbles (each nibble is 0–F).
+
+```
+key_A: 3  A  7  0  F  2  ...  (64 nibbles = 256 bits)
+```
+
+This is the "address" of the value in a conceptual 16^64 = 2^256 address space.
+
+Now stack two keys and read columns left to right:
+
+```
+key_A: 3  A  7  0  F  2  ...
+key_B: 3  A  7  0  F  8  ...
+```
+
+The first 5 nibbles (`3 A 7 0 F`) are identical — that's the **common prefix**. At column 5 they diverge: A goes to slot 2, B goes to slot 8.
+
+Instead of storing all 2^256 slots, you store only the divergence points:
+
+```
+root
+└─ skip "3A70F" (common prefix)
+   ├─ [2] → leaf(key_A, value_A)
+   └─ [8] → leaf(key_B, value_B)
+```
+
+Add a third key that diverges earlier:
+
+```
+key_A: 3  A  7  0  F  2  ...
+key_B: 3  A  7  0  F  8  ...
+key_C: 3  A  1  ...
+```
+
+Now the common prefix is only `3 A`. At column 2, C diverges (nibble 1) from A and B (nibble 7):
+
+```
+root
+└─ skip "3A"                          ← skip node (encodes 2 nibbles)
+   ├─ [1] → leaf(key_C, value_C)     ← branch: nibble 1 selects child
+   └─ [7] → skip "0F"                ← branch: nibble 7 selects child, then skip node
+              ├─ [2] → leaf(key_A)   ← branch: nibble 2 selects child
+              └─ [8] → leaf(key_B)   ← branch: nibble 8 selects child
+```
+
+A **skip node** encodes a shared prefix — many nibbles at once (0, 1, 10, 30+, any length). This is the Patricia compression: you don't need 5 separate nodes for `3, A, 7, 0, F` — one skip node labeled `"3A70F"` does the job.
+
+A **branch node** has up to 16 children (one per nibble 0–F). It encodes exactly 4 bits of the key — the nibble that selects which child to follow.
+
+Not all 256 bits of the key go through branch nodes. With, say, 3 branch nodes on a path, only 12 bits are branched; the remaining 244 bits are encoded in skip prefixes (flat byte comparisons). Every path from root to leaf consumes all 256 bits.
+
+Each node in the trie stores a hash:
+
+- **Leaf hash** = `blake2b(suffix_nibbles ++ blake2b(value))`
+- **Branch hash** = `blake2b(skip_nibbles ++ merkle_root_of_16_children)`
+
+The root hash is a single 32-byte commitment to the entire 2^256 address space. Most of the space is empty (hash = 0x00...00), and the sparse merkle tree of 16 children efficiently hashes away all the empty slots.
+
+#### Radix — the Forestry optimization
+
+Now, what does a branch node actually look like inside?
+
+In Ethereum's original MPT (radix-16, formalized in the Yellow Paper by Gavin Wood, 2014), branch nodes store 16 child hashes as a flat list. To prove membership, you provide all 15 sibling hashes at each branch step — that's 15 × 32 = 480 bytes per step.
+
+The [Merkle Patricia Forestry](https://github.com/aiken-lang/merkle-patricia-forestry) (Aiken team) applies a well-known sparse Merkle tree technique: arrange the 16 children as a **binary tree of depth 4** (since 2^4 = 16). Now a proof needs only **log₂(16) = 4 sibling hashes** per step (one per level of the binary tree) — that's 4 × 32 = 128 bytes instead of 480. A ~73% reduction in proof size, at the cost of ~30% more CPU for verification.
+
+#### Proofs
+
+To prove key_A is in the trie, you walk root → leaf and at each branch collect the sibling hashes needed to reconstruct the root. The verifier replays the hash computation and checks it matches the known root.
+
+- **Membership proof:** provide the path from root to the existing leaf. The verifier recomputes hashes and confirms they match the root.
+- **Non-membership proof:** provide the path to the point where the key *would* be, showing that the slot is empty or the skip prefix doesn't match. This is why MPT supports non-membership proofs while plain Merkle trees do not.
+
+### Fused Merkle Patricia Forestry (Fused MPF)
+
+The Fused Merkle Patricia Forestry (`FusedMerklePatriciaForestry`) is a Scalus-specific optimization of the Merkle Patricia Forestry described above. The trie structure is the same — radix-16 with skip compression and the Forestry binary tree of depth 4 at each branch. The difference is in **how proofs and hashes are encoded**.
+
+#### Proof encoding: flat ByteString instead of Plutus Data
+
+In the nibble (Aiken-compatible) variant, proofs are `List[ProofStep]` encoded as Plutus Data with CBOR serialization overhead per step.
+
+In the fused variant, proofs are packed into a single flat `ByteString` with fixed-size fields:
+
+- **Branch step**: 130 bytes — `0x00 | skip[1] | neighbors[128]`
+- **Fork step**: 68 bytes — `0x01 | skip[1] | nibble[1] | prefixLen[1] | halfLeft[32] | halfRight[32]`
+- **Leaf step**: 66 bytes — `0x02 | skip[1] | key[32] | value[32]`
+
+No CBOR, no Data deserialization — just flat byte parsing on-chain.
+
+#### Hashing: combine3
+
+The nibble variant hashes a branch as `blake2b(nibbles_as_bytes ++ merkle_root_of_16_children)` where `merkle_root_of_16_children` is `blake2b(halfLeft ++ halfRight)` — two nested blake2b calls.
+(the 16 children are first reduced to two halves (`halfLeft`, `halfRight`) via a binary merkle tree of depth 3).
+
+The fused variant then hashes a branch as `blake2b(skip_count ++ halfLeft ++ halfRight)` — a single blake2b call instead of two,
+saving one hash per branch step.
+
+#### Trade-offs
+
+- **~8–12% less CPU** than the nibble variant (fewer blake2b calls via combine3)
+- **~100–500 bytes** proof size (vs ~200–800 for nibble variant) — the proofs encode the same (or more) information, but the flat fused encoding is more compact than Plutus Data/CBOR serialization
+- **Not Aiken-compatible** — different hashing scheme, so cannot share roots with Aiken contracts
+
+### Bilinear Accumulators
+
+Bilinear accumulators represent a set as a single elliptic curve point.
+Unlike Merkle trees and tries (which use hash chains),
+accumulators use **polynomial commitments** and **pairings** on the BLS12-381 curve.
+
+The high-level intuition is:
+
+ - A set \{a₁, a₂, …, aₙ\} is encoded as a polynomial P(x) = (x + a₁)(x + a₂)…(x + aₙ).
+ - This polynomial is then **committed** to a single elliptic curve point using a **polynomial commitment scheme** (specifically, [KZG commitments](https://dankradfeist.de/ethereum/2020/06/16/kate-polynomial-commitments.html)).
+ - A commitment is computed from the polynomial coefficients and a trusted setup: given P(x) = c₀ + c₁x + … + cₙxⁿ and CRS points [g, τ·g, τ²·g, …], the commitment is `c₀·g + c₁·(τ·g) + … + cₙ·(τⁿ·g) = P(τ)·g` — a single group element (48 or 96 bytes) that uniquely represents the polynomial (and thus the set).
+ - Properties of the polynomial (like whether it has certain roots, i.e., whether elements are in the set) can then be proven with small proofs verified using **pairings**.
+
+The accumulator value is a single group element — constant size regardless of set size.
+
+#### Trusted setup (CRS)
+
+The accumulator requires a **Common Reference String** (CRS): a list of curve points [g, τ·g, τ²·g, …, τᵈ·g] where τ is a secret that must be destroyed after setup. Anyone who knows τ can forge proofs, so the setup must be performed by a trusted party or via a multi-party ceremony where at least one participant deletes their share. The maximum set size is bounded by the degree d.
+
+#### Proofs
+
+- **Membership:** to prove S ⊆ U, compute quotient Q = P<sub>U</sub> / P<sub>S</sub> and commit it. The verifier checks a pairing equation confirming that P<sub>S</sub> divides P<sub>U</sub>.
+- **Non-membership:** to prove D ∩ U = ∅, use extended GCD to find S, T such that S·P<sub>U</sub> + T·P<sub>D</sub> = 1 (possible only when the polynomials share no roots). The proof is (S, T) committed to curve points.
+
+#### When to use
+
+Accumulators shine when proof size is critical — each proof is ~48-96 bytes (1-2 compressed curve points), regardless of set size. The trade-off is ~35x more CPU for on-chain verification compared to tries. Use them when you need many proofs per transaction or are hitting transaction size limits.
+
+#### Background reading
+
+The math behind accumulators builds on several concepts. Here are recommended tutorials for each:
+
+- **Polynomial arithmetic and interpolation** — For concrete small examples of modular polynomial math, see the Lagrange interpolation section in [FROST: Schnorr Threshold Signatures](https://lantr.io/blog/frost-schnorr-threshold-signatures-bitcoin/).
+- **KZG polynomial commitments** — The commitment scheme used here. Dankrad Feist's [KZG Polynomial Commitments](https://dankradfeist.de/ethereum/2020/06/16/kate-polynomial-commitments.html) explains the construction from scratch, including how the trusted setup works and why pairings enable verification.
+- **Elliptic curve pairings** — Vitalik Buterin's [Exploring Elliptic Curve Pairings](https://medium.com/@VitalikButerin/exploring-elliptic-curve-pairings-c73c1f6b6b0) gives an accessible introduction to pairings and the bilinear map property e(a·G, b·H) = e(G, H)^(ab) that makes this all work.
+- **Bilinear accumulators specifically** — The original construction is from [Nguyen (2005)](https://link.springer.com/chapter/10.1007/978-3-540-30580-4_19). For a more accessible treatment, see the accumulator section in [Boneh, Bünz, Fisch: Batching Techniques for Accumulators](https://eprint.iacr.org/2018/1188) — particularly Section 3 on bilinear accumulators with membership and non-membership proofs.
+
+#### Scalus API
+
+Any trusted setup ceremony can produce a CRS. Scalus provides:
+- `BilinearAccumulatorProver.trustedSetup(tau, maxDegree)` to run your own ceremony — generate τ, create the CRS, then delete τ
+- `Setup.fromPoints(g1Powers, g2Powers)` to load CRS points from an external ceremony
+- The `scalus-ethereum-kzg-ceremony` module bundles the [Ethereum KZG ceremony](https://ceremony.ethereum.org/) as a ready-made production CRS via `EthereumKzgCeremony.loadSetup()`
+
+Scalus provides two variants of the accumulator — **G1** and **G2** — depending on which curve group holds the accumulator point. BLS12-381 has two groups: G1 (48-byte points, cheaper arithmetic) and G2 (96-byte points). The accumulator polynomial can be committed on either group; the CRS and proofs use the corresponding groups.
+
+| | **G2 Accumulator** | **G1 Accumulator** |
+|---|---|---|
+| Accumulator on | G2 | G1 |
+| Off-chain prover needs | G2 powers | G1 powers |
+| On-chain verifier needs | G1 powers | G2 powers |
+| Proof on | G2 | G1 |
+| On-chain cost | Cheaper (G1 MSM) | Slightly more expensive (G2 MSM) |
+
+Both use 2 pairings for verification. The G1 variant costs **~35x more CPU** than tries (benchmarked at 32K elements). The G2 variant would be cheaper on-chain (G1 MSM instead of G2 MSM) but the off-chain prover requires many G2 powers to build the accumulator — the Ethereum KZG ceremony has 32768 G1 powers but only 65 G2 powers, so only the G1 variant is practical with it.
+
+---
+
+For detailed performance benchmarks of all these collections — including radix comparisons, fusing optimizations, and full Cardano transaction fee breakdowns — see our companion article: [Benchmarking Authenticated Collections on Cardano](/blog/scalus-authenticated-collections-benchmarks/).
+
+---
+
+Follow our progress on [X (@Scalus3)](https://x.com/Scalus3) and [X (@lantr_io)](https://x.com/lantr_io).
+
+Questions or feedback? Reach out on [Discord](https://discord.gg/B6tXmBzhTn) or email us at [contact@lantr.io](mailto:contact@lantr.io).
