@@ -1,0 +1,135 @@
+---
+title: 'Scalus Intersect Budget Update – Milestone 3 Delivered'
+author: 'Oleksii Khodakivskyi'
+tags: cardano scalus intersect governance budget Scala smart-contracts transactions dApps
+publishedAt: '2026-02-20'
+summary: "Progress update on Lantr's Intersect-funded Scalus project. Milestone 3 delivers production-ready transaction builder, ecosystem integrations, DApp starter kit, Yaci DevKit infrastructure, and expanded smart contract catalogue."
+---
+
+As part of our commitment to transparency in Cardano's decentralized governance, we're sharing progress on our Intersect-administrated project: **Scalus - DApps Development Platform** (EC-0020-25).
+
+Milestone 3 focused on **off-chain capabilities and ecosystem integrations** — turning Scalus into a production-ready full-stack platform with a transaction builder, starter kit, and deep integrations with leading Cardano developer tools.
+
+## What We Delivered
+
+### Production-Ready Transaction Builder
+
+Scalus now includes a complete transaction builder covering the full range of Cardano operations. We published detailed documentation on how to construct transactions off-chain:
+
+- [Transaction Building](https://scalus.org/docs/transactions) — core concepts and workflow
+- [Building Your First Transaction](https://scalus.org/docs/transactions/building-first-transaction)
+- [Payment Methods](https://scalus.org/docs/transactions/payment-methods)
+- [Spending UTxOs](https://scalus.org/docs/transactions/spending-utxos)
+- [Minting and Burning Native Tokens](https://scalus.org/docs/transactions/minting-burning-assets)
+- [Staking: Delegate to Stake Pool, Withdraw Rewards](https://scalus.org/docs/transactions/staking-rewards)
+- [Governance: Delegate to DRep, Vote](https://scalus.org/docs/transactions/governance)
+
+### Multiplatform Off-Chain Libraries
+
+One of Scalus' key advantages is native support for JVM, JS/TS, and Native (LLVM) — no WASM, no intermediate solutions. The same code runs everywhere, cutting maintenance costs and ensuring consistency.
+
+Read the [Multiplatform Overview](https://scalus.org/docs/multiplatform) for details.
+
+### Ecosystem Integrations
+
+We're actively collaborating with ecosystem partners to improve the overall Cardano developer experience.
+
+**Evolution SDK** — JavaScript-based Plutus script evaluator using Scalus as an alternative to WASM-based evaluators. The [scalus-uplc package](https://github.com/IntersectMBO/evolution-sdk/tree/30bec3c8e902c1972aee400f2226ec2c852b6593/packages/scalus-uplc) is now available.
+
+<Tweet id="2011101183918964833" />
+
+**MeshJS** — Scalus offline evaluator [integrated](https://github.com/MeshJS/mesh/commit/f1d3a596f221780aa79d3a813261b3888e97c0e3) as a native JS/TS alternative to WASM-based evaluators.
+
+<Tweet id="2014695576495902947" />
+
+With Scalus in the stack, both Evolution SDK and MeshJS now evaluate Plutus scripts and estimate execution budgets natively in JS/TS — no WASM components needed, resulting in improved size/loading, simpler debugging, and no interoperability overhead.
+
+### DApp Starter Kit
+
+We published the [Scalus Starter](https://github.com/scalus3/scalus-starter) — a ready-to-use template for scaffolding new DApps with on-chain and off-chain code, server-side components, and built-in testing.
+
+The [DApp Starter Tutorial](https://scalus.org/docs/dapp-development/dapp-starter-tutorial) guides developers through a structured onboarding flow: **Run** -> **Understand** -> **Modify** -> **Deploy**.
+
+
+### Yaci DevKit Integration
+
+[Yaci DevKit](https://scalus.org/docs/testing/local-devnet) is a configurable local Cardano devnet running in Docker with full ledger validation and Plutus script execution — no testnet ADA, no network latency, no third-party API limits.
+
+It complements the Scalus Emulator for scenarios requiring complete Cardano node semantics: real Haskell node implementation, actual block production, consensus timing, and the full ledger rule set. We delivered:
+
+- **Core testing infrastructure** — container management, multi-party test setup, synchronous transaction submission
+- **Multi-environment test abstraction** — same tests run on Emulator, Yaci, Preprod, and Mainnet
+
+### Design Patterns — Part 2
+
+
+Implemented 3 additional patterns from the [Anastasia Labs catalogue](https://github.com/Anastasia-Labs/design-patterns):
+
+- **UTxO Indexer** — one-to-many and multiple one-to-one variants (with and without redeemer)
+- **Merkelized Validators** — including a batch auction example
+- **Parameter Validation** — with documentation, tests, and examples
+
+New design pattern documentation is available at [scalus.org/docs/design-patterns](https://scalus.org/docs/design-patterns).
+
+### Rosetta Blueprints (part 2)
+
+Delivered 7 additional common use cases — **Auction**, **Crowdfunding**, **Lottery**, **Storage**, **Price Betting**, **Editable NFT**, and **Escrow**. Each includes validators, transaction building logic, and tests. 
+
+The Payment Splitter blueprint was also updated with an optimised version reducing costs by 75%.
+
+### Intra-Era Hard Fork / Plutus Features
+
+In preparation for the Q1 2026 hard fork, we shipped the first pack of new Plutus features and optimisations:
+
+- New built-ins: `dropList`, `Array`, `multiIndexArray`
+- Case analysis on `Bool`, `Int`, `List`, `Pair`, `Data`
+- Plutus conformance v1.53.0.0
+
+<Tweet id="2003172464373948735" />
+
+## UPLC Conference & Performance
+
+At UPLC Conf 2025, Alexander Nemish unveiled how Scalus' JIT-compiling Plutus on JVM creates the fastest UPLC evaluator to date — approximately 6x faster than the recent Haskell CEK machine. This opens new horizons for performance optimisations, particularly useful for Cardano L2 protocols and dApps.
+
+<YouTubeEmbed videoid="PjvR_OfPk4Y" />
+
+## Growing Adoption
+
+The [Scalus Club](https://lu.ma/scalus) continues to grow — 30+ experienced Cardano developers meeting every 2-4 weeks for early feature access and direct input on the roadmap.
+
+Recent sessions covered production transaction patterns:
+
+<YouTubeEmbed videoid="VgpITnkwjsI" />
+
+Scalus is listed as one of the most actively developed projects on Cardano according to [ADADEV](https://adadev.io/).
+
+<Tweet id="2014372724194353487" />
+
+**Public releases**:
+- 0.14.2 (2025-12-31)
+- 0.14.1 (2025-12-22)
+- 0.14.0 (2025-12-19)
+
+Complete changelog: [GitHub](https://github.com/scalus3/scalus/blob/master/CHANGELOG.md)
+
+## Why This Matters
+
+With Milestone 3, Scalus crosses the threshold from a smart contract compiler to a full-stack Cardano development platform. The production-ready transaction builder eliminates the need for juggling multiple off-chain tools, the ecosystem integrations bring Scalus' native performance to JS/TS developers, and the DApp starter kit means teams can go from zero to a working application in minutes.
+
+<ZoomableImage src="/lantr-scalus-full-stack-development.jpg" alt="Scalus Full Stack Development" />
+
+The milestone was reviewed and approved by No Witness Labs as third-party assurer, confirming deliverables align with scope and demonstrating that Intersect's milestone-based funding model works.
+
+Treasury reports can be found in the [Intersect Treasury Dashboard](https://treasury.sundae.fi/instances/9e65e4ed7d6fd86fc4827d2b45da6d2c601fb920e8bfd794b8ecc619/project/EC-0020-25).
+
+## What's Next
+
+Milestone 4 will expand the Testing capabilities, in particular on the property based testing and local JVM / JS Emulator development, delivered the remaining Rosetta blueprints and design patterns, and focus on further ecosystem integrations and developer adoption.
+
+---
+
+Follow our progress on [X (@Scalus3)](https://x.com/Scalus3) and [X (@lantr_io)](https://x.com/lantr_io).
+
+Join [Scalus Club](https://lu.ma/scalus) for early access and to shape the roadmap.
+
+Questions or feedback? Reach out on [Discord](https://discord.gg/B6tXmBzhTn) or email us at [contact@lantr.io](mailto:contact@lantr.io).
