@@ -2,15 +2,15 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
 <loc>https://lantr.io</loc>
-<lastmod>2026-03-13</lastmod>
+<lastmod>2026-03-17</lastmod>
 </url>
 <url>
 <loc>https://lantr.io/blog</loc>
-<lastmod>2026-03-13</lastmod>
+<lastmod>2026-03-17</lastmod>
 </url>
 <url>
 <loc>https://lantr.io/products</loc>
-<lastmod>2026-03-13</lastmod>
+<lastmod>2026-03-17</lastmod>
 </url>
 <url>
 <loc>https://lantr.io/blog/bitcoin-cardano-blockchain-future</loc>
@@ -37,6 +37,10 @@
 <lastmod>2026-02-05</lastmod>
 </url>
 <url>
+<loc>https://lantr.io/blog/scalus-authenticated-collections-benchmarks</loc>
+<lastmod>2026-03-16</lastmod>
+</url>
+<url>
 <loc>https://lantr.io/blog/scalus-cardano-dapps-development</loc>
 <lastmod>2024-10-31</lastmod>
 </url>
@@ -51,5 +55,9 @@
 <url>
 <loc>https://lantr.io/blog/scalus-intersect-budget-milestone-3</loc>
 <lastmod>2026-02-20</lastmod>
+</url>
+<url>
+<loc>https://lantr.io/blog/tdd-atdd-ai-coding-era</loc>
+<lastmod>2026-03-11</lastmod>
 </url>
 </urlset>
