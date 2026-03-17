@@ -1,0 +1,82 @@
+---
+title: 'TDD in the AI Coding Era — Tests Are the New Specification'
+author: 'Oleksii Khodakivskyi'
+tags: tdd atdd testing ai-coding software-engineering best-practices
+publishedAt: '2026-03-11'
+summary: 'AI makes writing code faster, but the bottleneck was never typing. TDD and ATDD have become the primary mechanism for maintaining human control over what gets built — tests are no longer verification tools, they are the specification language.'
+---
+
+## The Paradox
+
+AI coding assistants have made writing code dramatically faster. But the bottleneck was never typing speed. It was knowing what to build and verifying it's correct.
+
+AI accelerates the part that was already fast — turning intent into code. It does nothing for the part that was already hard — defining what "correct" means. If anything, it makes that harder: more code gets produced faster, with fewer humans reviewing each line.
+
+The result? Teams ship more code with less understanding of what it does. The velocity feels productive. The bugs show up later.
+
+## Tests as Specification
+
+When you write a test before writing code, you're not "testing" — you're defining behavior. The test is a machine-verifiable specification: given this input, I expect this output. No ambiguity, no interpretation.
+
+In AI-assisted development, this specification becomes the artifact that actually matters. Not the natural language prompt you give to the AI. Not the code it generates. The test.
+
+Consider the workflow:
+
+1. **You** write the test — this encodes your intent
+2. **AI** writes the implementation — this is cheap and fast
+3. **The test** decides if the implementation is correct — this is objective
+
+The test is the contract between human intent and machine output. Without it, you're reviewing AI-generated code by reading it. And humans are notoriously bad at reviewing code they didn't write — especially when it *looks* clean.
+
+## The "Vibes-Based" Coding Trap
+
+AI-generated code has a dangerous property: it looks reasonable. It follows conventions, uses proper naming, handles edge cases you didn't think of. It passes the "does this look right?" test with flying colors.
+
+But "looks right" is not "is right."
+
+Without executable tests, the only verification is human review. And human review of AI-generated code has a fundamental bias: the code is fluent and well-structured, so you trust it. You skim instead of scrutinize. You approve because nothing *looks* wrong, not because you've verified it's correct.
+
+TDD breaks this trap. You don't need to read every line of generated code. You need to verify that your tests — your specification — pass. The test suite becomes the reviewer.
+
+## ATDD: Aligning Intent at the Right Level
+
+Test-Driven Development works at the unit level: does this function behave correctly? Acceptance Test-Driven Development (ATDD) works at the feature level: does this system do what the users need?
+
+With AI generating more code faster, the gap between "what users want" and "what gets shipped" can grow silently. The code compiles, the unit tests pass, but the feature subtly misses the point. Maybe the edge case handling is technically correct but violates a business rule. Maybe the flow works but the UX assumption is wrong.
+
+ATDD catches this at the requirement level:
+
+- **Before coding:** users and engineers agree on acceptance criteria as executable examples
+- **During coding:** AI implements against these examples
+- **After coding:** the acceptance tests verify that intent survived the translation
+
+The acceptance test is the one artifact that non-technical users can read and validate. It bridges the gap that AI widens.
+
+## The Practical Shift
+
+TDD in the AI era isn't about discipline or craftsmanship — it's about control. Here's how the workflow changes:
+
+**Before AI:** Write test → Write code → Refactor
+
+**With AI:** Write test → AI writes code → Test passes or fails → Iterate
+
+The human's job shifts from *writing code* to *writing specifications*. The test is what you own. The code is disposable — if the AI generates a bad implementation, you throw it away and try again. But the test persists. The test is your intent, captured precisely.
+
+This means:
+- **Invest more time in test quality** — a vague test gives AI room to be "correct" in useless ways
+- **Review tests, not implementations** — your time is better spent verifying that the test captures your intent than verifying that AI-generated code is clean
+- **Treat failing tests as features** — a new failing test is the most precise way to communicate what you want built next
+
+## Tests Are the Senior Engineer
+
+In a team where AI writes most of the code, the test suite plays the role that senior engineers used to play: it catches subtle mistakes, enforces invariants, and ensures that new changes don't break existing behavior. It doesn't get tired, doesn't skim, and doesn't defer to code that "looks fine."
+
+The irony is that TDD — a practice from 2003 — turns out to be the most important skill for working with AI in 2026. Not because the methodology changed, but because the failure mode changed. When humans wrote all the code, skipping tests meant slower feedback. When AI writes the code, skipping tests means losing control.
+
+Write the test. Let the machine handle the rest.
+
+---
+
+Follow our progress on [X (@lantr_io)](https://x.com/lantr_io).
+
+Questions or feedback? Reach out on [Discord](https://discord.gg/B6tXmBzhTn) or email us at [contact@lantr.io](mailto:contact@lantr.io).
