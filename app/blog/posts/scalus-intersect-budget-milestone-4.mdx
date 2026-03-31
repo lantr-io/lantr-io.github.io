@@ -1,0 +1,130 @@
+---
+title: 'Scalus Intersect Budget Update - Milestone 4 Delivered'
+author: 'Oleksii Khodakivskyi'
+tags: cardano scalus intersect governance budget Scala smart-contracts testing property-based-testing emulator
+publishedAt: '2026-03-30'
+summary: "Progress update on Lantr's Intersect-funded Scalus project. Milestone 4 delivers robust testing capabilities with property-based testing, in-process Cardano Emulator for JVM and JS/TS, advanced data structures, completed Rosetta blueprints catalogue, Ledger Rules Framework, and full Van Rossem intra-era hard fork readiness."
+---
+
+As part of our commitment to transparency in Cardano's decentralized governance, we're sharing progress on our Intersect-administrated project: **Scalus - DApps Development Platform** (EC-0020-25).
+
+<ZoomableImage src="/lantr-scalus-roadmap-032026.jpg" alt="Scalus Roadmap - March 2026" />
+
+Milestone 4 focused on **testing capabilities** — establishing robust, integrated testing tools to ensure reliability and correctness of smart contracts and applications built with Scalus.
+
+## What We Delivered
+
+### Testing Guide
+
+The [Testing section](https://scalus.org/docs/testing) was expanded with comprehensive documentation covering the full testing workflow:
+
+- [TDD/ATDD workflow](https://scalus.org/docs/testing/tdd-atdd-workflow)
+- [Unit testing / Testkit](https://scalus.org/docs/testing/unit-testing)
+- [Property-based testing](https://scalus.org/docs/testing/property-based-testing) with ScalaCheck helpers for Cardano development
+- [Boundary testing](https://scalus.org/docs/testing/boundary-testing) (advanced guide)
+- [Debugging](https://scalus.org/docs/testing/debugging)
+
+### Cardano Node Emulator
+
+A particular emphasis was placed on the **Cardano in-process Emulator** for JVM and JS/TS — a unique environment for fast scenario-based and test-driven development. The Scalus Emulator validates transactions and executes Plutus scripts, performing both **Phase 1** validation (transaction structure, signatures, fees, and value conservation) and **Phase 2** validation (Plutus script execution with cost tracking), exactly like the mainnet node.
+
+- [JVM Emulator](https://scalus.org/docs/testing/emulator)
+- [JS/TS Emulator](https://scalus.org/docs/testing/js-emulator)
+
+Our [engineering blog post on the JS Emulator](https://lantr.io/blog/scalus-emulator-cardano-js-scenario-testing/) led to an invitation to showcase the solution at Cardano Foundation development hours.
+
+### Property-Based Testing in Practice
+
+Property-based testing is now demonstrated across multiple real-world examples:
+
+- **LinkedList** and **AMM** examples using ScalaCheck generators and property assertions;
+- **Boundary testing** for Auction, Crowdfunding, and Lottery — combining Commands and Scenario patterns to verify contract invariants under randomized conditions.
+
+### Advanced Data Structures
+
+A new [Advanced Data Structures](https://scalus.org/docs/advanced-data-structures) tutorial series covers authenticated collections with both on-chain and off-chain code:
+
+- [Merkle Tree](https://scalus.org/docs/advanced-data-structures/merkle-tree)
+- [Incremental Merkle Tree](https://scalus.org/docs/advanced-data-structures/incremental-merkle-tree)
+- [Merkle Patricia Forestry](https://scalus.org/docs/advanced-data-structures/merkle-patricia-forestry)
+- [Bilinear Accumulator](https://scalus.org/docs/advanced-data-structures/bilinear-accumulators)
+
+Each structure was [benchmarked and optimised](https://lantr.io/blog/scalus-authenticated-collections-benchmarks/) while preserving Aiken compatibility. Scalus also provides a trusted setup with Ethereum KZG ceremony (32768 G1 points, 65 G2 points) for the Bilinear Accumulator.
+
+### Rosetta Blueprints — Catalogue Complete
+
+We delivered the final 7 of 21 Rosetta blueprints, completing the full catalogue:
+
+- **Decentralized Identity**
+- **Constant-product AMM**
+- **Upgradeable Proxy**
+- **Factory**
+- **Simple Wallet**
+- **Anonymous Data**
+- **Atomic Transactions**
+
+Each includes validators, off-chain transaction logic, and tests. The finalised blueprints will be contributed to the "Rosetta Smart Contracts" and "Cardano Blueprint and Ecosystem Monitoring" projects in Milestone 5.
+
+Implementations are available in the [Scalus examples repository](https://github.com/scalus3/scalus/tree/master/scalus-examples/jvm/src/main/scala/scalus/examples).
+
+### Ledger Rules Framework
+
+The [Ledger Framework](https://scalus.org/docs/ledger) opens the door for developers building L2 protocols and custom ledger extensions on Cardano. Check it out:
+
+- Ledger framework architecture
+- Rules customisation (enable, disable, specific rules)
+- Writing new rules
+
+
+### Van Rossem Intra-Era Hard Fork — Ready
+
+Scalus is among the first libraries to provide full support for the Van Rossem intra-era hard fork. The capabilities were used by the IntersectMBO team to test the functionality on SanchoNet.
+
+In preparation for the Q2 2026 hard fork, we shipped the complete set of protocol v11 capabilities:
+
+- Case expressions for built-in types
+- New built-ins and native types
+- Ledger rules updated for Emulator testing
+
+<Tweet id="2022278216413552660" />
+
+### Ongoing Platform Improvements
+
+Based on community feedback, releases v0.15.0 and v0.15.1 brought significant improvements:
+
+**Smart contract syntax** — all new builtins for protocol v11, `expModInteger` (CIP-109), BLS12-381 `multiScalarMul` (CIP-0109), optimised `toData` for constant values, improved PlutusV3 match lowering to reduce script size, variadic log function with auto-show diagnostics.
+
+**Standard & test library** — `Pretty` typeclass with automatic derivation, `Eq.derived` for equality, comprehensive `scalus-testkit` API with `EvalTestKit` and `ScalusTest` base classes, JavaScript Emulator for cross-platform testing, HD wallet implementation with BIP-39/BIP32-Ed25519/CIP-1852 support.
+
+**Transaction builder** — `TxBuilder.draft` for unbalanced transaction assembly, type-safe `UtxoQuery` DSL with parallel execution, simplified `BlockfrostProvider` API, Conway era ledger state rules for staking and governance.
+
+**Public releases**:
+- 0.15.1 (2026-02-13)
+- 0.15.0 (2026-02-05)
+
+Complete changelog: [GitHub](https://github.com/scalus3/scalus/blob/master/CHANGELOG.md)
+
+<Tweet id="2022358015643652206" />
+
+## Why This Matters
+
+With Milestone 4, Scalus delivers what production teams need most: confidence that their code works. The integrated testing framework — from unit tests through property-based testing to full emulator-based scenario validation — means developers can catch bugs before they reach the chain. 
+The completed Rosetta blueprints catalogue provides 21 battle-tested reference implementations, and the advanced data structures unlock sophisticated on-chain patterns like Merkle proofs and bilinear accumulators.
+
+<ZoomableImage src="/lantr-scalus-full-stack-development-2.jpg" alt="Scalus Full Stack Development" />
+
+The milestone was reviewed and approved by No Witness Labs as third-party assurer, confirming deliverables align with scope and demonstrating that Intersect's milestone-based funding model works.
+
+Treasury reports can be found in the [Intersect Treasury Dashboard](https://treasury.sundae.fi/instances/9e65e4ed7d6fd86fc4827d2b45da6d2c601fb920e8bfd794b8ecc619/project/EC-0020-25).
+
+## What's Next
+
+Milestone 5 & 6 will focus on advanced UPLC optimisations & Test data management, delivering on our mission to accelerate end-to-end development cycle and becoming the most complete development solution for the application development on Cardano.
+
+---
+
+Follow our progress on [X (@Scalus3)](https://x.com/Scalus3) and [X (@lantr_io)](https://x.com/lantr_io).
+
+Join [Scalus Club](https://lu.ma/scalus) for early access and to shape the roadmap.
+
+Questions or feedback? Reach out on [Discord](https://discord.gg/B6tXmBzhTn) or email us at [contact@lantr.io](mailto:contact@lantr.io).
