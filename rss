@@ -5,6 +5,12 @@
         <link>https://lantr.io</link>
         <description>Insights and updates on blockchain development, smart contracts, and decentralized infrastructure from Lantr Engineering</description>
         <item>
+          <title>Scalus Intersect Budget Update - Milestone 4 Delivered</title>
+          <link>https://lantr.io/blog/scalus-intersect-budget-milestone-4</link>
+          <description>Progress update on Lantr's Intersect-funded Scalus project. Milestone 4 delivers robust testing capabilities with property-based testing, in-process Cardano Emulator for JVM and JS/TS, advanced data structures, completed Rosetta blueprints catalogue, Ledger Rules Framework, and full Van Rossem intra-era hard fork readiness.</description>
+          <pubDate>Mon, 30 Mar 2026 00:00:00 GMT</pubDate>
+        </item>
+<item>
           <title>Benchmarking Authenticated Collections on Cardano — Radix, Fusing & Fee Anatomy</title>
           <link>https://lantr.io/blog/scalus-authenticated-collections-benchmarks</link>
           <description>Detailed benchmarks of Merkle Patricia Forestry variants (radix-2, 16, 64), fusing optimizations, and Incremental Merkle Trees on Cardano. Includes full transaction fee breakdowns showing why execution cost is only 11% of the total fee.</description>
