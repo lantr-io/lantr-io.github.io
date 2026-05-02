@@ -5,6 +5,12 @@
         <link>https://lantr.io</link>
         <description>Insights and updates on blockchain development, smart contracts, and decentralized infrastructure from Lantr Engineering</description>
         <item>
+          <title>Scalus Intersect Budget Update - Milestone 5 Delivered</title>
+          <link>https://lantr.io/blog/scalus-intersect-budget-milestone-5</link>
+          <description>Progress update on Lantr's Intersect-funded Scalus project. Milestone 5 delivers advanced UPLC optimisation techniques: a typed UPLC expression builder (Scalus' answer to Plutarch), three SIR-to-UPLC lowering backends, Scala 3 macros for compile-time optimisation, automatic Plutus Data derivation, and representation-level performance work delivering up to 50% fee savings on real validators.</description>
+          <pubDate>Thu, 30 Apr 2026 00:00:00 GMT</pubDate>
+        </item>
+<item>
           <title>Scalus Intersect Budget Update - Milestone 4 Delivered</title>
           <link>https://lantr.io/blog/scalus-intersect-budget-milestone-4</link>
           <description>Progress update on Lantr's Intersect-funded Scalus project. Milestone 4 delivers robust testing capabilities with property-based testing, in-process Cardano Emulator for JVM and JS/TS, advanced data structures, completed Rosetta blueprints catalogue, Ledger Rules Framework, and full Van Rossem intra-era hard fork readiness.</description>
