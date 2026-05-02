@@ -1,0 +1,226 @@
+---
+title: 'Scalus Intersect Budget Update - Milestone 5 Delivered'
+author: 'Oleksii Khodakivskyi'
+tags: cardano scalus intersect governance budget Scala smart-contracts UPLC optimisation macros plutus
+publishedAt: '2026-04-30'
+summary: "Progress update on Lantr's Intersect-funded Scalus project. Milestone 5 delivers advanced UPLC optimisation techniques: a typed UPLC expression builder (Scalus' answer to Plutarch), three SIR-to-UPLC lowering backends, Scala 3 macros for compile-time optimisation, automatic Plutus Data derivation, and representation-level performance work delivering up to 50% fee savings on real validators."
+---
+
+As part of our commitment to transparency in Cardano's decentralized governance, we're sharing progress on our Intersect-administrated project: **Scalus - Smart contracts & dApps Development Platform** (EC-0020-25).
+
+<ZoomableImage src="/lantr-scalus-roadmap-042026.jpg" alt="Scalus Roadmap -  2026" />
+
+Milestone 5 focused on **advanced UPLC optimisation**, giving Cardano developers fine-grained control over the entire compilation pipeline (Scala source → SIR → UPLC → Plutus Script) to reduce script size, execution costs, and transaction fees. As well as introducing the new Typed UPLC Expression Builder (equivalent of Plutarch in the Haskell ecosystem) for hand-crafting UPLC & deep optimisation capabilities.
+
+## What We Delivered
+
+### Advanced Smart Contract Optimisations — End-to-End Guide
+
+A new [Advanced Smart Contract Optimisations](https://scalus.org/docs/smart-contract-optimisations) section was rewritten end-to-end to give Cardano developers a complete, structured guide for reducing script size, execution costs, and fees. 
+
+<ZoomableImage src="/scalus-advanced-optimisations-docs.png" alt="Scalus Advanced Smart Contract Optimisations Documentation" />
+
+The section walks through every layer of the Scalus compilation pipeline and shows exactly where and how to intervene at each stage:
+
+- [**Measuring Performance**](https://scalus.org/docs/smart-contract-optimisations/measuring-performance) — end-to-end cost measurement (CPU steps, memory units, flat-encoded script size, total transaction fee) computed via the Scalus in-memory Node Emulator.
+- [**Algorithmic Optimisations**](https://scalus.org/docs/smart-contract-optimisations/algorithmic-optimisations) — backend-agnostic patterns that give the biggest wins: Withdraw-Zero (O(N) instead of O(N²)), UTxO Indexer, Transaction-Level Minting, Merkelised Validators.
+- [**Scala Metaprogramming**](https://scalus.org/docs/smart-contract-optimisations/scala-metaprogramming) — using Scala 3 `inline`, `inline if`, and compile-time evaluation to optimise Plutus scripts, with measured fee comparisons.
+- [**Direct Builtins Usage**](https://scalus.org/docs/smart-contract-optimisations/low-level-builtins) — manual control over `Data` access with 1:1 mapping to UPLC builtins for maximum on-chain efficiency.
+- [**Lowering Backends**](https://scalus.org/docs/smart-contract-optimisations/lowering-backends) — choosing between V3 Lowering, Scott Encoding, and Sum of Products, plus controlling type-to-UPLC representation with `@UplcRepr` annotations.
+- [**UPLC Term DSL**](https://scalus.org/docs/smart-contract-optimisations/uplc-term-dsl) — a Scala-based DSL for hand-crafting UPLC validators directly, analogous to Plutarch in Haskell.
+- [**UPLC Optimiser Pipeline**](https://scalus.org/docs/smart-contract-optimisations/uplc-optimiser-pipeline) — the optimisation passes Scalus delivers (EtaReduce, Inliner, StrictIf, ForcedBuiltinsExtractor, CaseConstrApply), applicable individually for fine-grained control.
+
+### New SIR-to-UPLC Lowering Algorithm
+
+The Scalus compiler ships with three backends for lowering SIR (Scalus Intermediate Representation) to UPLC. Each makes a different trade-off between code size, execution cost, and Plutus protocol-version compatibility.
+
+| | V3 Lowering (default) | Scott Encoding | Sum of Products | 
+| --- | --- | --- | --- |
+| Enum value | SirToUplcV3Lowering | ScottEncodingLowering | SumOfProductsLowering |
+| Architecture | Sea-of-nodes, data-flow based | Template-based | Template-based |
+| Data handling | Types stay as Data internally (toData is a NOOP in most cases) | Scott-encodes constructors as lambdas | Uses PlutusV3 Constr/Case nodes |
+| Protocol version | PlutusV3+ (Chang) | PlutusV1, V2, V3 | PlutusV3+ |
+| Best for | Most validators (default choice) | Legacy code, PlutusV1/V2 scripts | When Constr/Case encoding is preferred over Data |
+
+
+### Scala Metaprogramming for UPLC Code Generation
+
+Scala 3 introduces `inline` and `inline if` as first-class metaprogramming primitives. The Scala compiler evaluates these expressions at compile time, before the Scalus compiler plugin sees the code, giving developers full control over what reaches UPLC. Bodies can be substituted at call sites, values embedded as constants, and entire computations folded away during compilation.
+
+Supported patterns:
+
+- **Function inlining** — `inline def` eliminates let-bindings and per-call lambda overhead
+- **Constant inlining** — embeds compile-time values (public key hashes, configuration, parameters) directly into the generated UPLC, eliminating parameter-passing cost entirely.
+- **Loop unrolling** — `inline def` combined with `inline if` and a compile-time-known iteration count produces straight-line code with no recursion.
+- **Compile-time evaluation of closed functions** — `fib(100)` collapses to a single `Const Integer 354224848179261915075` in the compiled script.
+- **Conditional code generation** — `inline if` over a compile-time `Boolean` produces separate debug and release scripts from one source.
+
+### Typed UPLC Expression Builder
+
+Scalus delivers the [typed UPLC expression builder](https://scalus.org/docs/smart-contract-optimisations/uplc-term-dsl) as a Scala-embedded DSL for constructing Plutus Core scripts directly, with the Scala type system enforcing structural correctness. It is Scalus' equivalent of Plutarch in the Haskell ecosystem.
+
+| Scala DSL | UPLC | Description |
+| --- | --- | --- |
+| `f $ x` | Apply(f, x) | Function application |
+| `!t` | Force(t) | Force a delayed term |
+| `~t` | Delay(t) | Delay evaluation |
+| `λ("x")(body)` | LamAbs("x", body) | Lambda with named parameter |
+| `λ { x => body }` | LamAbs("x", body) | Lambda macro (extracts param name) |
+| `lam("x", "y")(body)` | LamAbs("x", LamAbs("y", body)) | Multi-parameter lambda |
+| `vr"x"` | Var(NamedDeBruijn("x")) | Variable reference |
+| `42.asTerm` | Const(Integer(42)) | Lift Scala value to Term |
+| `true.asTerm` | Const(Bool(True)) | Lift boolean |
+| `AddInteger` | Builtin(AddInteger) | Builtin (implicit conversion) |
+| `Term.Case(arg, branches)` | Case(arg, [...]) | V4 Case dispatch |
+| `Term.Const(Constant.Unit)` | Const(Unit) | Unit constant |
+| `Term.Error()` | Error | Abort execution |
+
+All 100+ Plutus builtins from scalus.uplc.DefaultFun are available via implicit conversion — just import TermDSL.given and write the builtin name directly.
+
+#### Example: Factorial
+
+A simple example to show the DSL mechanics — computing factorial using a fixpoint combinator:
+
+```scala
+import scalus.uplc.Term, scalus.uplc.Term.{asTerm, λ, vr}
+import scalus.uplc.TermDSL.given
+import scalus.uplc.DefaultFun.*
+ 
+// Y-combinator (strict fixpoint)
+def pfix(f: Term => Term): Term =
+    λ { r => r $ r } $ λ { r => f(r $ r) }
+ 
+val factorial = pfix { recur =>
+    λ { n =>
+        // Force(Force(IfThenElse) $ condition $ ~thenBranch $ ~elseBranch)
+        !(!IfThenElse
+            $ (LessThanEqualsInteger $ n $ 0.asTerm)
+            $ ~(1.asTerm)
+            $ ~(MultiplyInteger $ n $ (recur $ (SubtractInteger $ n $ 1.asTerm))))
+    }
+}
+ 
+// Wrap as a Plutus program and evaluate
+import scalus.uplc.eval.PlutusVM
+given PlutusVM = PlutusVM.makePlutusV3VM()
+val result = (factorial $ 10.asTerm).plutusV3.deBruijnedProgram.evaluateDebug
+// Result: 3628800
+```
+Scalus allows combining hand-crafted UPLC fragments with compiler-generated code. For example, you can write a simple validator in Scala, then drop into the UPLC Term DSL or apply targeted Scala 3 macros exactly where the budget pressure is.
+
+```scala
+import scalus.*, scalus.compiler.compile
+import scalus.uplc.Term, scalus.uplc.Term.{asTerm, λ}
+import scalus.uplc.TermDSL.given
+import scalus.uplc.DefaultFun.*
+ 
+// Compile part of the logic with the plugin
+val compiledFragment = compile {
+    (x: BigInt, y: BigInt) => x + y
+}.toUplcOptimized()
+ 
+// Use it in a hand-crafted validator
+val validator = λ { datum =>
+    λ { redeemer =>
+        λ { ctx =>
+            compiledFragment $ datum $ redeemer
+        }
+    }
+}
+```
+
+### Performance Optimisations
+
+Six weeks of representation-level optimisations targeting the SIR-to-UPLC lowering pipeline, progressing through five phases: 
+* opaque-typed `Queue`; 
+* list representation parameterisation (`SumBuiltinList`/`SumPairBuiltinList`); 
+* pair representation parameterisation (`ProdBuiltinPair`); 
+* `@UplcRepr(UplcConstr)` type-level annotations; 
+* `@UplcRepr` lambda-param plumbing with native intrinsics (`appendedAll`, `Option`).
+
+Cumulative impact on real workloads:
+
+#### SortedMap operations (Mar 13 baseline → Apr 28)
+
+| Test | Budget Mar 13 | Budget Apr 28 | Mem % | Steps % | Fee Mar 13 | Fee Apr 28 | Fee % |
+| --- | --- | --- | --- | --- | --- | --- | --- |   
+| singleton.toList | ~10K / ~2.6M | 432 / 73K | **-95.7%** | **-97.2%** | 0.000770 | 0.0000275 | **-96.4%** |
+| fromList.toList (3 elem) | ~125K / ~37M | 66.2K / 18.1M | **-47.2%** | **-51.6%** | 0.00993 | 0.00513 | **-48.3%** |
+| Eq (3 elem) | ~44K / ~13M | 30.3K / 8.7M | **-30.4%** | **-32.0%** | 0.00343 | 0.00238 | **-30.6%**  |
+| length (3 elem) | ~73K / ~22M | 55K / 16.1M | **-24.9%** | **-26.6%** | 0.00580 | 0.00434 | **-25.2%** |
+| Union (3+3 elem) | ~112K / ~35M | 93.9K / 29.4M | **-16.0%** | **-16.4%** | 0.00898 | 0.00754 | **-16.0%** |
+
+#### Value arithmetic  
+
+| Test | Budget Mar 13 | Budget Apr 28 | Mem % | Steps % | Fee Mar 13 | Fee Apr 28 | Fee % |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| v + Value.zero | 101.65K / 29.0M | 77.79K / 20.7M | **-23.5%** | **-28.7%** | 0.00796 | 0.00598 | **-24.9%** |
+| toData == | 10.4K / 4.3M | 901 / 1.7M | **-91.3%** | **-61.2%** | 0.000370 | 0.000175 | **-52.7%** |
+
+#### Benchmarks (Knights — biggest gain on Apr 15-28)
+
+| Test | Budget Mar 13 | Budget Apr 28 | Mem % | Steps % | Fee Mar 13 | Fee Apr 28 | Fee % |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Knights 100_4x4 | 213.0M / 56.6B | 139.8M / 27.8B | **-34.4%** | **-50.8%** | 16.37 | 10.07 | **-38.5%** |
+| Knights 100_6x6 | 590.0M / 148.5B | 550.1M / 111.9B | **-6.8%** | **-24.7%** | 44.74 | 39.81 | **-11.0%** |
+| Knights 100_8x8 | 1201.1M / 297.6B | 1073.0M / 218.2B | **-10.7%** | **-26.7%** | 90.74 | 77.64 | **-14.4%** |
+| NaiveSplitter 5 payees | 1961K / 595.7M | 1036K / 363.6M | **-47.2%** | **-39.0%** | 0.1561 | 0.0860 | **-44.9%** |
+| Clausify t5 (no Mar 13 data) | 586.4M / 162.9B | n/a | n/a | n/a | 45.36 | n/a | n/a |
+
+#### Validators
+
+| Test | Budget Mar 13 | Budget Apr 28 | Mem % | Steps % | Fee Mar 13 | Fee Apr 28 | Fee % |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| SimpleTransfer: deposit | 335K / 99.7M | 202.7K / 66.2M | **-39.5%** | **-33.6%** | 0.0265 | 0.01647 | **-37.8%** |
+| SimpleTransfer: withdraw | 565.5K / 172.5M | 355.5K / 111.6M | **-37.1%** | **-35.3%** | 0.0450 | 0.0285 | **-36.7%** |
+| SimpleTransfer: close | 199.76K / 58.1M | 114K / 38.6M | **-42.9%** | **-33.5%** | 0.01574 | 0.00936 | **-40.5%** |
+| TwoPartyEscrow: deposit | 66.38K / 27.1M | 55.2K / 23.3M | **-16.9%** | **-14.0%** | 0.00574 | 0.00487 | **-15.1%** |
+| Auction: end with winner | 315.5K / 94.8M | 300K / 93.7M | **-4.9%** | **-1.1%** | 0.0251 | 0.0241 | **-3.9%** |
+| Betting: initial mint | 143.7K / 44.3M | 117.4K / 38.5M | **-18.3%** | **-13.0%** | 0.01122 | 0.00955 | **-14.9%** |
+| Escrow: deposit | n/a | 231.6K / 79.4M | n/a | n/a | n/a | 0.01708 | n/a |
+| NaiveSplitter: 5 payees | 1961K / 595.7M | 1036K / 363.6M | **-47.2%** | **-39.0%** | 0.1561 | 0.0860 | **-44.9%** |
+| OptimizedSplitter: 5 payees | n/a | 541.4K / 187.1M | n/a | n/a | n/a | 0.0447 | n/a |
+
+
+
+
+### Smart Contracts Syntax Tuning
+
+Compile-time partial evaluation in the UPLC optimiser with occurrence analysis for smarter inlining; source positions in UPLC `Term` and CEK error reporting for precise diagnostics; `DebugScript` API for diagnostic replay of release scripts (re-evaluating stripped scripts with full traces); strip trace/log statements for release builds; `->` operator support in the Scalus compiler plugin; builtin totality annotations for improved dead-code elimination.
+
+Notable fixes: `Force(Delay)` elimination after inner optimisation in `Inliner`, free-variable tracking in `substitute` to avoid name capture, unsaturated builtin applications recognised as WHNF, and `inlinedFrom` propagation in `compileThrowException` for inline `require`.
+
+### Public Releases
+
+- **0.16.0** (2026-02-13) — [release notes](https://github.com/scalus3/scalus/releases/tag/v0.16.0), [announcement](https://x.com/Scalus3/status/2032118041853522306).
+
+Complete changelog: [GitHub](https://github.com/scalus3/scalus/blob/master/CHANGELOG.md).
+
+<Tweet id="2032118041853522306" />
+
+## Community Engagement
+
+The [Scalus Club](https://lu.ma/scalus) — our early adoption group of 30+ experienced Cardano developers — continues meeting every 4 weeks. Recent session covered dApp development & the van Rossem Hard Fork:
+
+<YouTubeEmbed videoid="-iwngTY5H08" />
+
+## Why This Matters
+
+With Milestone 5, Scalus delivers something the Cardano ecosystem has lacked: a complete spectrum of optimisation control, from idiomatic Scala 3 down to a hand-tuned UPLC AST, all within a single toolchain. 
+Developers no longer have to choose between high-level expressiveness and low-level efficiency. They can write the bulk of a validator in clear Scala, then drop into the UPLC Term DSL or apply targeted Scala 3 macros exactly where the budget pressure is. 
+
+The milestone was reviewed and approved by No Witness Labs as third-party assurer, confirming deliverables align with scope and demonstrating that Intersect's milestone-based funding model works.
+
+Treasury reports can be found in the [Intersect Treasury Dashboard](https://treasury.sundae.fi/instances/9e65e4ed7d6fd86fc4827d2b45da6d2c601fb920e8bfd794b8ecc619/project/EC-0020-25).
+
+## What's Next
+
+Milestone 6 will close out the project with a focus on **test data management** and **end-to-end developer flow** — completing Scalus' position as the most complete development solution for smart contract development on Cardano.
+
+---
+
+Follow our progress on [X (@Scalus3)](https://x.com/Scalus3) and [X (@lantr_io)](https://x.com/lantr_io).
+
+Join [Scalus Club](https://lu.ma/scalus) for early access and to shape the roadmap.
+
+Questions or feedback? Reach out on [Discord](https://discord.gg/B6tXmBzhTn) or email us at [contact@lantr.io](mailto:contact@lantr.io).
