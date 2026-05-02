@@ -12,28 +12,35 @@
     "@fontsource/lato": "^5.2.7",
     "@fontsource/outfit": "^5.2.8",
     "@fontsource/plus-jakarta-sans": "^5.2.8",
-    "@next/third-parties": "^16.1.6",
-    "@tailwindcss/postcss": "4.1.18",
-    "@types/node": "25.2.0",
-    "geist": "1.5.1",
-    "katex": "^0.16.28",
-    "next": "^16.1.6",
-    "next-mdx-remote": "^5.0.0",
-    "postcss": "^8.4.35",
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
-    "react-medium-image-zoom": "^5.4.0",
+    "@next/third-parties": "^16.2.4",
+    "@tailwindcss/postcss": "4.2.4",
+    "@types/node": "25.6.0",
+    "geist": "1.7.0",
+    "katex": "^0.16.45",
+    "next": "^16.2.4",
+    "next-mdx-remote": "^6.0.0",
+    "postcss": "^8.5.13",
+    "react": "19.2.5",
+    "react-dom": "19.2.5",
+    "react-medium-image-zoom": "^5.4.5",
     "react-tweet": "^3.3.0",
     "rehype-katex": "^7.0.1",
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
-    "sugar-high": "^0.9.5",
-    "tailwindcss": "4.1.18",
-    "typescript": "5.9.3"
+    "sugar-high": "^1.1.0",
+    "tailwindcss": "4.2.4",
+    "typescript": "6.0.3"
   },
   "devDependencies": {
-    "@types/react": "19.2.10",
+    "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "gh-pages": "^6.3.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "picomatch": "^4.0.3",
+      "yaml": "^2.8.3",
+      "postcss": "^8.5.13"
+    }
   }
 }
