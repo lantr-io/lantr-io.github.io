@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Common questions &mdash; Scalus Treasury Proposal 2026</title>
+    <meta
+      name="description"
+      content="Why another platform. Where the demand is. How Scalus differs from existing node implementations. ADA price exposure. Vendor lock-in. What if milestones slip. Direct answers to the questions DReps ask." />
+    <meta name="theme-color" content="#f5f1eb" />
+    <link rel="canonical" href="https://lantr.io/scalus-2026-proposal/faq/" />
+    <link rel="stylesheet" href="../shared.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="../">
+          <div class="brand-mark">L</div>
+          <div class="brand-copy">
+            <strong>Lantr</strong>
+            <span>Scalus Treasury Proposal 2026</span>
+          </div>
+        </a>
+        <div class="nav-wrap">
+          <nav class="nav" aria-label="Primary">
+            <a href="../">Home</a>
+            <a href="../why/">Why</a>
+            <a href="../built/">What's Built</a>
+            <a href="../team/">Team</a>
+            <a href="../budget/">Budget</a>
+            <a href="../faq/" class="current">FAQ</a>
+            <a href="../vote/">Vote</a>
+          </nav>
+          <a
+            class="topbar-cta"
+            href="https://gov.tools/governance_actions/e0900fddf52f1f2f6439fa8a3aaa8c224ab59b6074d0e2db3b27c8f06b0e5d3300"
+            target="_blank"
+            rel="noopener"
+            >Vote on GovTool</a
+          >
+          <div class="lang-switch" role="group" aria-label="Language">
+            <a href="./" class="active">EN</a>
+            <a href="../ja/faq/">JP</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <div class="page-shell">
+        <section style="padding-top: 3rem;">
+          <div class="section-head reveal">
+            <div class="eyebrow">Common questions</div>
+            <h1 style="margin-top: 1rem;">Direct answers to the questions DReps ask</h1>
+            <p>
+              These are the questions that come up most often in DRep deliberation, partner conversations, and Forum threads. We have answered each one as concisely as the topic allows. If a question is not here, contact details are at the bottom of the page.
+            </p>
+          </div>
+        </section>
+
+        <section>
+          <div class="faq-list">
+            <article class="faq-item">
+              <span class="faq-question-tag">Question 01</span>
+              <h3>Why another smart contract platform &mdash; Cardano already has Haskell, Rust, Go, and TypeScript routes?</h3>
+              <p>
+                The JVM is approximately 26 million developers and the environment where finance, fintech, and enterprise software already operate. Java, Kotlin, and Scala are not redundant with Haskell, Rust, Go, or TypeScript &mdash; they are the missing route into enterprise adoption.
+              </p>
+              <p>
+                The pattern is consistent across blockchains that reached enterprise scale. Ethereum has Besu (Java) at roughly 8&ndash;10% of mainnet usage. R3 Corda (Kotlin) is used across regulated financial networks with over $10B in on-chain real-world assets. Canton Network (Scala) is adopted by Goldman Sachs, DTCC, and Deutsche B&ouml;rse. Cardano does not yet have its JVM route. Scalus is that route.
+              </p>
+            </article>
+
+            <article class="faq-item">
+              <span class="faq-question-tag">Question 02</span>
+              <h3>Where is the demand for this? Who actually wants it?</h3>
+              <p>
+                Demand is already here. Hydrozoa (L2 state channels), Bifrost (Bitcoin&ndash;Cardano bridge), Sugar Rush (CLOB DEX), and Vela (synthetic stablecoin) build on Scalus today. MeshJS SDK, Cardano Client Lib, and Evolution SDK integrate Scalus capabilities into their stacks.
+              </p>
+              <p>
+                These are not speculative integrations &mdash; they are production and pre-production systems shipping with Scalus underneath. The structural driver is also clear: mission-critical applications such as bridges, oracles, L2s, and market-makers cannot operate on third-party chain access. They need sovereign chain access. That is the demand.
+              </p>
+            </article>
+
+            <article class="faq-item">
+              <span class="faq-question-tag">Question 03</span>
+              <h3>How does Scalus differ from the IOG node proposal, Amaru, or Dingo?</h3>
+              <p>
+                Different scope and different audience. Existing node implementations &mdash; the Haskell reference node, Amaru in Rust, Dingo in Go &mdash; primarily optimise for SPOs and block production. Scalus targets a different need: mission-critical applications and protocols that need their own application-focused chain access embedded inside or alongside their software.
+              </p>
+              <p>
+                Scalus complements existing node work rather than competing with it. The Scalus ledger rules framework already conforms to Node Diversity initiative tests, and we continue to collaborate with the Amaru, Dingo, and IOG teams throughout delivery.
+              </p>
+            </article>
+
+            <article class="faq-item">
+              <span class="faq-question-tag">Question 04</span>
+              <h3>7.0 FTE seems high for a team of two founders. How is that resourced?</h3>
+              <p>
+                The 7.0 FTE represents allocation of senior engineering capacity, not seven new hires. Lantr Engineering has a broader network of experienced Scala engineers and domain specialists who support delivery where additional capacity or specialist expertise is needed.
+              </p>
+              <p>
+                The proposal funds existing senior team allocation plus selective specialist contributors during execution &mdash; keeping accountability and execution ownership within Lantr while scaling delivery capacity where the roadmap requires it.
+              </p>
+            </article>
+
+            <article class="faq-item">
+              <span class="faq-question-tag">Question 05</span>
+              <h3>What if ADA price drops below the $0.25 reference rate during delivery?</h3>
+              <p>
+                The 2025 cycle hit exactly this risk and informed the 2026 design. We will manage receipts conservatively, including partial conversion into USD-denominated stablecoins where appropriate. The 10% refundable contingency provides additional buffer for delivery continuity. Unspent contingency returns to the Cardano Treasury at the end of the delivery period.
+              </p>
+              <p>
+                The conservative $0.25/ADA reference rate is itself a hedge: it is a floor on which the budget was scoped, not an optimistic projection. The retrospective published with this proposal documents what we learned in 2025 and how each lesson shapes the 2026 financial controls.
+              </p>
+            </article>
+
+            <article class="faq-item">
+              <span class="faq-question-tag">Question 06</span>
+              <h3>Lantr is the sole vendor. What about vendor lock-in?</h3>
+              <p>
+                Single-vendor structure provides single accountability. Hydrozoa/Gummiworm and Blaster teams are integration partners who do not receive funding through this proposal &mdash; their work is funded separately, and their teams remain independent.
+              </p>
+              <p>
+                Risk is managed through the Independent Oversight Board (Chris Gianelloni, Matthias Benkort, Riley Kilgore), quarterly third-party technical assurance by No.Witness Labs, an on-chain journal of every disbursement, and the SundaeSwap treasury-contracts escrow framework with multi-signature disbursement. All deliverables are open-source and reusable beyond Lantr.
+              </p>
+            </article>
+
+            <article class="faq-item">
+              <span class="faq-question-tag">Question 07</span>
+              <h3>What happens if Lantr misses milestones?</h3>
+              <p>
+                The SundaeSwap treasury-contracts escrow enforces milestone-conditional disbursement at the contract level. Any individual oversight board member can pause a milestone unilaterally; resume requires board majority. Routine disbursement requires Lantr + board majority for each release.
+              </p>
+              <p>
+                If milestones are not delivered, funds remain locked. Funds remaining in the contract after the delivery window expires sweep back to the Cardano Treasury automatically &mdash; enforced at the contract level and cannot be overridden by Lantr or by the oversight board.
+              </p>
+            </article>
+          </div>
+
+          <div class="faq-footer">
+            Have a question that is not answered here?
+            Open an issue on
+            <a href="https://github.com/lantr-io/scalus-treasury-proposal-2026/issues" target="_blank" rel="noopener">the proposal repository</a>,
+            join the discussion on the
+            <a href="#" aria-disabled="true" data-todo="forum thread not posted yet">Cardano Forum thread (coming soon)</a>,
+            or write to <a href="mailto:oleksii@lantr.io">oleksii@lantr.io</a>.
+            <!-- TR_REVIEW: Replace Forum CTA href once the official Cardano Forum discussion thread is published. -->
+          </div>
+
+          <a class="deep-link" href="https://github.com/lantr-io/scalus-treasury-proposal-2026" target="_blank" rel="noopener">
+            Read more in the proposal: Risks &amp; Mitigations
+          </a>
+        </section>
+
+        <nav class="page-nav" aria-label="Page navigation">
+          <a class="prev" href="../budget/">
+            <span class="direction">Previous</span>
+            <span class="target">Budget &amp; oversight</span>
+          </a>
+          <a class="next" href="../vote/">
+            <span class="direction">Next</span>
+            <span class="target">Vote</span>
+          </a>
+        </nav>
+      </div>
+    </main>
+
+    <footer>
+      <div class="page-shell">
+        <div class="trust-strip" aria-label="Trust signals">
+          <strong>Trust strip</strong>
+          <div class="trust-grid">
+            <div class="trust-cell">
+              <strong>Independent oversight</strong>
+              <span>Chris Gianelloni (Blink Labs) &middot; Matthias Benkort (Cardano Foundation) &middot; Riley Kilgore (IOG)</span>
+            </div>
+            <div class="trust-cell">
+              <strong>Technical assurance</strong>
+              <span>No.Witness Labs &middot; quarterly reviews &middot; independent financial audit Q3 2027</span>
+            </div>
+            <div class="trust-cell">
+              <strong>Prior delivery</strong>
+              <span>3 Catalyst grants delivered &middot; 2025 Treasury cycle in execution &middot; retrospective published</span>
+            </div>
+            <div class="trust-cell">
+              <strong>On-chain journal</strong>
+              <span>
+                <a href="https://github.com/lantr-io/scalus-treasury-proposal-2026" target="_blank" rel="noopener">Proposal repository &amp; quarterly reports</a>
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="footer-inner">
+          <div class="footer-block">
+            <strong>Scalus Treasury Proposal 2026</strong>
+            <span>Lantr Engineering &middot; sole vendor</span>
+            <span style="display:block; margin-top:0.4rem;">Delivery window: July 2026 &ndash; June 2027</span>
+            <a href="../single/" style="margin-top:0.6rem; color: var(--accent); font-weight: 600;">View as single page &rarr;</a>
+          </div>
+          <div class="footer-block">
+            <strong>Proposal</strong>
+            <a href="https://github.com/lantr-io/scalus-treasury-proposal-2026" target="_blank" rel="noopener">Proposal repository</a>
+            <a
+              href="https://gov.tools/governance_actions/e0900fddf52f1f2f6439fa8a3aaa8c224ab59b6074d0e2db3b27c8f06b0e5d3300"
+              target="_blank"
+              rel="noopener"
+              >GovTool action</a
+            >
+            <a href="#" aria-disabled="true" data-todo="forum thread not posted yet">Forum discussion (coming soon)</a>
+            <a href="mailto:oleksii@lantr.io">oleksii@lantr.io</a>
+          </div>
+          <div class="footer-block">
+            <strong>Projects</strong>
+            <a href="https://scalus.org/" target="_blank" rel="noopener">scalus.org</a>
+            <a href="https://lantr.io/" target="_blank" rel="noopener">lantr.io</a>
+            <a href="https://luma.com/scalus" target="_blank" rel="noopener">Scalus Club</a>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <span>&copy; 2026 Lantr Engineering. Open-source infrastructure for Cardano.</span>
+          <span>Multi-page version &middot; v1.0</span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

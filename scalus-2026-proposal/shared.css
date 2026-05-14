@@ -1,0 +1,1605 @@
+/* ==========================================================================
+   Scalus 2026 Treasury Proposal — Multi-page stylesheet
+   Inherits palette and typography from scalus-proposal-page/index.html
+   ========================================================================== */
+
+:root {
+  --bg: #f5f1eb;
+  --bg-elevated: #fbf8f4;
+  --ink: #181614;
+  --muted: #5f5750;
+  --line: #d8cec2;
+  --accent: #8e2f2c;
+  --accent-soft: #eed9d4;
+  --accent-deep: #7a2725;
+  --slate: #41505f;
+  --slate-soft: #dde4eb;
+  --shadow: 0 20px 40px rgba(24, 22, 20, 0.05);
+  --max: 1180px;
+  --radius: 22px;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at top left, rgba(142, 47, 44, 0.07), transparent 30%),
+    radial-gradient(circle at top right, rgba(65, 80, 95, 0.06), transparent 26%),
+    var(--bg);
+  font-family: "IBM Plex Sans", "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a { color: inherit; }
+
+h1, h2, h3, h4, h5 {
+  margin: 0;
+  font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  letter-spacing: -0.02em;
+}
+
+.page-shell {
+  width: min(var(--max), calc(100% - 2rem));
+  margin: 0 auto;
+}
+
+/* ==========================================================================
+   Sticky topbar with persistent Vote CTA
+   ========================================================================== */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  background: rgba(245, 241, 235, 0.92);
+  border-bottom: 1px solid rgba(216, 206, 194, 0.7);
+}
+
+.topbar-inner {
+  width: min(var(--max), calc(100% - 2rem));
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 0;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  font-size: 0.95rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.brand-mark {
+  width: 2.25rem;
+  height: 2.25rem;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--accent);
+  background: rgba(255, 255, 255, 0.62);
+  font-weight: 700;
+  font-family: "Iowan Old Style", Georgia, serif;
+}
+
+.brand-copy strong {
+  display: block;
+  font-size: 0.98rem;
+}
+
+.brand-copy span {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.nav-wrap {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.nav a {
+  text-decoration: none;
+  color: var(--muted);
+  font-size: 0.92rem;
+  position: relative;
+  padding: 0.25rem 0;
+}
+
+.nav a:hover { color: var(--ink); }
+
+.nav a.current {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.nav a.current::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.35rem;
+  height: 2px;
+  background: var(--accent);
+}
+
+.topbar-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1rem;
+  background: var(--accent);
+  color: #fffaf7;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color 160ms ease, transform 160ms ease;
+}
+
+.topbar-cta:hover {
+  background: var(--accent-deep);
+  border-color: var(--accent-deep);
+  transform: translateY(-1px);
+}
+
+.topbar-cta::after {
+  content: "\2192";
+  margin-left: 0.2rem;
+}
+
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.6);
+  font-size: 0.78rem;
+}
+
+.lang-switch a {
+  padding: 0.32rem 0.7rem;
+  text-decoration: none;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+
+.lang-switch a + a {
+  border-left: 1px solid var(--line);
+}
+
+.lang-switch a.active {
+  background: var(--ink);
+  color: #fbf8f4;
+}
+
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  padding: 0.8rem 1.2rem;
+  text-decoration: none;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+  font-weight: 600;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fffaf7;
+  border-color: var(--accent);
+}
+
+.btn-primary:hover {
+  background: var(--accent-deep);
+  border-color: var(--accent-deep);
+}
+
+.btn:hover { transform: translateY(-1px); }
+
+.btn[aria-disabled="true"] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn[aria-disabled="true"]:hover { transform: none; }
+
+.btn-lg {
+  font-size: 1.05rem;
+  padding: 1rem 1.6rem;
+  min-height: 3.4rem;
+}
+
+/* ==========================================================================
+   Hero
+   ========================================================================== */
+
+.hero {
+  padding: 3.6rem 0 3rem;
+  display: grid;
+  grid-template-columns: 1.08fr 0.92fr;
+  gap: 2rem;
+  align-items: stretch;
+}
+
+.hero-copy,
+.hero-visual {
+  background: rgba(251, 248, 244, 0.76);
+  border: 1px solid rgba(216, 206, 194, 0.9);
+  border-radius: calc(var(--radius) + 4px);
+  box-shadow: var(--shadow);
+}
+
+.hero-copy { padding: 2.4rem; }
+
+.hero-visual {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.eyebrow,
+.section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--accent);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-weight: 700;
+}
+
+.eyebrow::before,
+.section-label::before {
+  content: "";
+  width: 1.5rem;
+  height: 1px;
+  background: currentColor;
+}
+
+.eyebrow-slate { color: var(--slate); }
+
+h1 {
+  margin-top: 1rem;
+  font-size: clamp(2.4rem, 3.8vw, 4.2rem);
+  line-height: 0.98;
+}
+
+.subtitle {
+  max-width: 42rem;
+  margin-top: 1.3rem;
+  color: var(--muted);
+  font-size: 1.06rem;
+}
+
+.meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-top: 1.8rem;
+}
+
+.meta-pill {
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  min-width: 10rem;
+}
+
+.meta-pill strong,
+.stat strong {
+  display: block;
+  font-size: 0.95rem;
+}
+
+.meta-pill span,
+.stat span {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  margin-top: 1.8rem;
+}
+
+/* ==========================================================================
+   Hero stack visual
+   ========================================================================== */
+
+.visual-title {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.stack {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.stack-layer {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.15rem;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.stack-layer strong { font-size: 1rem; }
+
+.stack-layer span {
+  max-width: 15rem;
+  color: var(--muted);
+  font-size: 0.88rem;
+  text-align: right;
+}
+
+.stack-layer:nth-child(1) {
+  border-color: rgba(142, 47, 44, 0.35);
+  background: rgba(238, 217, 212, 0.6);
+}
+
+.stack-layer:nth-child(2) {
+  border-color: rgba(65, 80, 95, 0.22);
+  background: rgba(221, 228, 235, 0.65);
+}
+
+.stack-layer:nth-child(3) { border-color: rgba(142, 47, 44, 0.2); }
+.stack-layer:nth-child(4) { border-color: rgba(65, 80, 95, 0.2); }
+
+.visual-note {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+/* ==========================================================================
+   Oversight strip (hero adjacent)
+   ========================================================================== */
+
+.oversight-strip {
+  margin-top: 1.6rem;
+  padding: 0.95rem 1.1rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--slate);
+  border-radius: 14px;
+  background: rgba(221, 228, 235, 0.4);
+  color: var(--ink);
+  font-size: 0.92rem;
+}
+
+.oversight-strip strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-family: "Iowan Old Style", Georgia, serif;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--slate);
+}
+
+/* ==========================================================================
+   Partner strip
+   ========================================================================== */
+
+.partner-strip {
+  padding: 1.8rem 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: rgba(251, 248, 244, 0.5);
+}
+
+.partner-strip-inner {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1.4rem;
+  align-items: start;
+}
+
+.partner-strip-label {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  font-weight: 700;
+  white-space: nowrap;
+  padding-top: 0.3rem;
+}
+
+.partner-strip-body {
+  color: var(--ink);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.partner-strip-body em {
+  font-style: normal;
+  color: var(--muted);
+  font-size: 0.92rem;
+  display: block;
+  margin-top: 0.3rem;
+}
+
+.partner-name {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* ==========================================================================
+   Main / sections
+   ========================================================================== */
+
+main { padding-bottom: 4rem; }
+
+section { padding: 1.2rem 0 3.6rem; }
+
+.section-head {
+  max-width: 46rem;
+  margin-bottom: 1.6rem;
+}
+
+.section-head h2 {
+  margin-top: 0.9rem;
+  font-size: clamp(2rem, 2.8vw, 3rem);
+  line-height: 1;
+}
+
+.section-head p {
+  margin: 1rem 0 0;
+  color: var(--muted);
+  font-size: 1.02rem;
+}
+
+.single-column { max-width: 48rem; }
+
+.single-column p {
+  margin: 0 0 1rem;
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+.single-column p.lede {
+  color: var(--ink);
+  font-size: 1.08rem;
+}
+
+.highlight-quote {
+  margin-top: 1.4rem;
+  padding: 1rem 1.15rem;
+  border-left: 3px solid var(--accent);
+  background: rgba(238, 217, 212, 0.45);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   Cards & grids
+   ========================================================================== */
+
+.card {
+  padding: 1.2rem 1.2rem 1.25rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: rgba(251, 248, 244, 0.88);
+  box-shadow: var(--shadow);
+}
+
+.card h3 {
+  font-size: 1.4rem;
+  line-height: 1.05;
+  margin-bottom: 0.85rem;
+}
+
+.card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.96rem;
+}
+
+.card .examples,
+.card .mini-tag {
+  display: block;
+  margin-top: 0.9rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.card .mini-tag {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+}
+
+.grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
+
+.ordinal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  margin-bottom: 1.1rem;
+  border-radius: 50%;
+  background: rgba(142, 47, 44, 0.12);
+  color: var(--accent);
+  font-size: 0.83rem;
+  font-weight: 700;
+}
+
+.card:nth-child(even) .ordinal {
+  background: rgba(65, 80, 95, 0.12);
+  color: var(--slate);
+}
+
+/* ==========================================================================
+   Home — navigation cards
+   ========================================================================== */
+
+.nav-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.nav-card {
+  display: block;
+  padding: 1.4rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: rgba(251, 248, 244, 0.88);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 200ms ease, transform 200ms ease;
+}
+
+.nav-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.nav-card-eyebrow {
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  font-weight: 700;
+  display: block;
+  margin-bottom: 0.4rem;
+}
+
+.nav-card h3 {
+  font-size: 1.3rem;
+  line-height: 1;
+  margin-bottom: 0.6rem;
+}
+
+.nav-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.94rem;
+}
+
+.nav-card .arrow {
+  display: inline-block;
+  margin-top: 0.9rem;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* ==========================================================================
+   Why page — KPI table & lifecycle table
+   ========================================================================== */
+
+.kpi-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  background: rgba(251, 248, 244, 0.88);
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.kpi-table caption {
+  caption-side: top;
+  text-align: left;
+  font-family: "Iowan Old Style", Georgia, serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 0.7rem;
+  color: var(--ink);
+}
+
+.kpi-table th,
+.kpi-table td {
+  text-align: left;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.kpi-table th {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  background: rgba(251, 248, 244, 0.95);
+}
+
+.kpi-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.kpi-table .kpi-name {
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.kpi-table .kpi-align {
+  color: var(--accent);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.kpi-table td:last-child {
+  color: var(--muted);
+}
+
+/* Used for stacked tables (Why / Team) */
+.table-stack { display: grid; gap: 1.6rem; }
+
+/* ==========================================================================
+   Why page — lifecycle list
+   ========================================================================== */
+
+.lifecycle-list {
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 1.2rem;
+}
+
+.lifecycle-row {
+  display: grid;
+  grid-template-columns: 11rem 1fr;
+  gap: 1.2rem;
+  padding: 0.95rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(251, 248, 244, 0.88);
+}
+
+.lifecycle-row strong {
+  font-family: "Iowan Old Style", Georgia, serif;
+  font-weight: 600;
+  color: var(--ink);
+  font-size: 0.98rem;
+}
+
+.lifecycle-row span {
+  color: var(--muted);
+  font-size: 0.94rem;
+}
+
+/* ==========================================================================
+   Built page — milestone timeline
+   ========================================================================== */
+
+.milestone-rail {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.milestone-card {
+  min-height: 21rem;
+  padding: 1.4rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: rgba(251, 248, 244, 0.88);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+}
+
+.milestone-card .quarter {
+  display: block;
+  margin: 0.5rem 0 0.85rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.milestone-card h3 {
+  font-size: 1.2rem;
+  line-height: 1.1;
+}
+
+.milestone-card ul {
+  margin: 0.4rem 0 0;
+  padding-left: 1.1rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.milestone-card li + li { margin-top: 0.55rem; }
+
+.milestone-card .builders {
+  margin-top: auto;
+  padding-top: 0.95rem;
+  border-top: 1px dashed var(--line);
+  color: var(--ink);
+  font-size: 0.88rem;
+}
+
+.milestone-card .builders strong {
+  display: block;
+  font-family: "Iowan Old Style", Georgia, serif;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  margin-bottom: 0.35rem;
+}
+
+/* ==========================================================================
+   Adoption targets
+   ========================================================================== */
+
+.target-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.target-card {
+  padding: 1.1rem 1.2rem;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.target-card strong {
+  font-family: "Iowan Old Style", Georgia, serif;
+  font-size: 1.6rem;
+  color: var(--accent);
+  display: block;
+  line-height: 1;
+  margin-bottom: 0.35rem;
+}
+
+.target-card span {
+  color: var(--muted);
+  font-size: 0.94rem;
+}
+
+/* ==========================================================================
+   Team page — profiles & prior funding table
+   ========================================================================== */
+
+.profile {
+  padding: 1.1rem;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.profile h4 {
+  font-size: 1.2rem;
+}
+
+.profile .role {
+  display: block;
+  margin: 0.35rem 0 0.7rem;
+  color: var(--accent);
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.profile p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.93rem;
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.prior-funding-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.6rem;
+  font-size: 0.94rem;
+  background: rgba(251, 248, 244, 0.88);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.prior-funding-table th,
+.prior-funding-table td {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.prior-funding-table th {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.prior-funding-table tbody tr:last-child td { border-bottom: none; }
+
+.prior-funding-table td:nth-child(2),
+.prior-funding-table th:nth-child(2) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.prior-funding-table .delivered {
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.prior-funding-table code {
+  font-family: "JetBrains Mono", "SFMono-Regular", ui-monospace, "Menlo", monospace;
+  font-size: 0.78rem;
+  word-break: break-all;
+  color: var(--muted);
+}
+
+.retrospective-callout {
+  margin-top: 1.6rem;
+  padding: 1.4rem 1.6rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--slate);
+  border-radius: 14px;
+  background: rgba(221, 228, 235, 0.4);
+}
+
+.retrospective-callout h3 {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.retrospective-callout p {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.96rem;
+}
+
+.retrospective-callout a {
+  display: inline-block;
+  margin-top: 0.7rem;
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.retrospective-callout a:hover { text-decoration: underline; }
+
+.stat-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 0.6rem;
+}
+
+.stat {
+  padding: 1rem;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.stat strong {
+  font-family: "Iowan Old Style", Georgia, serif;
+  font-size: 1.5rem;
+  line-height: 1;
+  display: block;
+}
+
+.stat span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  display: block;
+  margin-top: 0.4rem;
+}
+
+/* ==========================================================================
+   Budget page — governance-lead pattern
+   ========================================================================== */
+
+.governance-panel,
+.budget-main,
+.budget-stats,
+.proof-panel {
+  padding: 1.5rem;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 2px);
+  background: rgba(251, 248, 244, 0.88);
+  box-shadow: var(--shadow);
+}
+
+.governance-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1.2rem;
+}
+
+.governance-grid .profile {
+  background: rgba(221, 228, 235, 0.45);
+  border-color: rgba(65, 80, 95, 0.25);
+}
+
+.governance-grid .role { color: var(--slate); }
+
+.gov-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin-top: 1.4rem;
+  font-size: 0.92rem;
+}
+
+.gov-meta div {
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.gov-meta strong {
+  display: block;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+}
+
+.gov-meta code {
+  font-family: "JetBrains Mono", "SFMono-Regular", ui-monospace, "Menlo", monospace;
+  font-size: 0.78rem;
+  word-break: break-all;
+  color: var(--ink);
+}
+
+.budget-panel {
+  display: grid;
+  grid-template-columns: 1fr 0.95fr;
+  gap: 1rem;
+}
+
+.budget-main .ask {
+  margin-top: 0.6rem;
+  font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  font-size: clamp(2.3rem, 3vw, 3.2rem);
+  line-height: 0.95;
+}
+
+.budget-main p {
+  margin: 1rem 0 0;
+  color: var(--muted);
+}
+
+.budget-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.budget-table {
+  margin-top: 1.6rem;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.budget-table th,
+.budget-table td {
+  text-align: left;
+  padding: 0.7rem 0.4rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.budget-table th {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.budget-table td:nth-child(2),
+.budget-table td:nth-child(3),
+.budget-table th:nth-child(2),
+.budget-table th:nth-child(3) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.budget-table tfoot td {
+  font-weight: 700;
+  border-bottom: none;
+  border-top: 2px solid var(--ink);
+}
+
+.fte-row {
+  margin-top: 1.4rem;
+  padding: 1rem 1.1rem;
+  border: 1px dashed var(--line);
+  border-radius: 16px;
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+.fte-row strong {
+  color: var(--ink);
+  font-family: "Iowan Old Style", Georgia, serif;
+}
+
+.escrow-row {
+  margin-top: 1rem;
+  padding: 1.1rem 1.2rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 14px;
+  background: rgba(238, 217, 212, 0.35);
+  font-size: 0.94rem;
+}
+
+.escrow-row strong {
+  display: block;
+  font-family: "Iowan Old Style", Georgia, serif;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  margin-bottom: 0.3rem;
+}
+
+/* ==========================================================================
+   FAQ page
+   ========================================================================== */
+
+.faq-list {
+  display: grid;
+  gap: 1.2rem;
+  max-width: 56rem;
+}
+
+.faq-item {
+  padding: 1.4rem 1.6rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(251, 248, 244, 0.88);
+  box-shadow: var(--shadow);
+}
+
+.faq-item h3 {
+  font-size: 1.25rem;
+  line-height: 1.25;
+  margin-bottom: 0.85rem;
+  color: var(--ink);
+}
+
+.faq-item p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.99rem;
+  line-height: 1.65;
+}
+
+.faq-item p + p { margin-top: 0.65rem; }
+
+.faq-question-tag {
+  display: inline-block;
+  margin-bottom: 0.55rem;
+  color: var(--accent);
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-weight: 700;
+}
+
+.faq-footer {
+  margin-top: 1.6rem;
+  padding: 1.1rem 1.3rem;
+  border: 1px dashed var(--line);
+  border-radius: 14px;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.faq-footer a {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.faq-footer a:hover { text-decoration: underline; }
+
+/* ==========================================================================
+   Vote page
+   ========================================================================== */
+
+.vote-hero {
+  padding: 3.5rem 0 2.5rem;
+  text-align: center;
+}
+
+.vote-hero h1 {
+  margin-top: 1.4rem;
+  font-size: clamp(2.6rem, 4vw, 4.2rem);
+}
+
+.vote-hero .subtitle {
+  margin: 1.4rem auto 0;
+  max-width: 38rem;
+}
+
+.vote-primary {
+  margin: 2.4rem auto 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.vote-primary .btn-primary {
+  font-size: 1.15rem;
+  padding: 1.2rem 2.4rem;
+  min-height: 3.8rem;
+}
+
+.vote-deadline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  background: rgba(238, 217, 212, 0.55);
+  color: var(--accent-deep);
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.action-id-panel {
+  margin: 2.4rem auto 0;
+  max-width: 42rem;
+  padding: 1.2rem 1.4rem;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.7);
+  text-align: left;
+}
+
+.action-id-panel strong {
+  display: block;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin-bottom: 0.5rem;
+}
+
+.action-id-panel code {
+  font-family: "JetBrains Mono", "SFMono-Regular", ui-monospace, "Menlo", monospace;
+  font-size: 0.84rem;
+  word-break: break-all;
+  color: var(--ink);
+}
+
+.how-to-vote {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1.2rem;
+}
+
+.how-to-vote .step {
+  padding: 1.3rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: rgba(251, 248, 244, 0.88);
+}
+
+.how-to-vote .step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: rgba(142, 47, 44, 0.12);
+  color: var(--accent);
+  font-weight: 700;
+  font-family: "Iowan Old Style", Georgia, serif;
+  margin-bottom: 0.85rem;
+}
+
+.how-to-vote .step h3 {
+  font-size: 1.1rem;
+  line-height: 1.1;
+  margin-bottom: 0.55rem;
+}
+
+.how-to-vote .step p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.93rem;
+}
+
+.vote-secondary-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.8rem;
+  margin-top: 2rem;
+}
+
+.vote-close {
+  max-width: 40rem;
+  margin: 3rem auto 0;
+  padding-top: 2rem;
+  border-top: 1px solid var(--line);
+  color: var(--ink);
+  font-family: "Iowan Old Style", Georgia, serif;
+  font-size: 1.15rem;
+  text-align: center;
+  font-style: italic;
+}
+
+/* ==========================================================================
+   Prev/Next page navigation
+   ========================================================================== */
+
+.page-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--line);
+}
+
+.page-nav a {
+  display: block;
+  padding: 1.1rem 1.3rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(251, 248, 244, 0.88);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 200ms ease, transform 200ms ease;
+}
+
+.page-nav a:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.page-nav .direction {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  margin-bottom: 0.3rem;
+}
+
+.page-nav .target {
+  font-family: "Iowan Old Style", Georgia, serif;
+  font-size: 1.2rem;
+  color: var(--ink);
+  line-height: 1.1;
+}
+
+.page-nav .prev { text-align: left; }
+.page-nav .next { text-align: right; }
+.page-nav .prev .direction::before { content: "\2190  "; }
+.page-nav .next .direction::after { content: "  \2192"; }
+
+.deep-link {
+  display: inline-block;
+  margin-top: 1.2rem;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.94rem;
+  text-decoration: none;
+}
+
+.deep-link::after { content: "  \2192"; }
+.deep-link:hover { text-decoration: underline; }
+
+/* ==========================================================================
+   Footer with trust strip
+   ========================================================================== */
+
+footer {
+  border-top: 1px solid var(--line);
+  padding: 2rem 0 2.5rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  background: rgba(251, 248, 244, 0.5);
+}
+
+.trust-strip {
+  padding: 1.2rem 1.4rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(251, 248, 244, 0.88);
+  margin-bottom: 1.8rem;
+  font-size: 0.88rem;
+  line-height: 1.7;
+  color: var(--ink);
+}
+
+.trust-strip strong {
+  font-family: "Iowan Old Style", Georgia, serif;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 0.45rem;
+}
+
+.trust-strip .trust-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.trust-strip .trust-cell strong {
+  color: var(--slate);
+}
+
+.trust-strip .trust-cell span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.trust-strip .trust-cell a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.trust-strip .trust-cell a:hover { text-decoration: underline; }
+
+.footer-inner {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.footer-block strong {
+  display: block;
+  color: var(--ink);
+  font-family: "Iowan Old Style", Georgia, serif;
+  font-size: 1rem;
+  margin-bottom: 0.4rem;
+}
+
+.footer-block a {
+  display: block;
+  text-decoration: none;
+  color: var(--muted);
+  padding: 0.15rem 0;
+}
+
+.footer-block a:hover { color: var(--ink); }
+
+.footer-bottom {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  font-size: 0.82rem;
+}
+
+/* ==========================================================================
+   JP-specific typography
+   ========================================================================== */
+
+.jp-body {
+  font-family: "Hiragino Sans", "Yu Gothic", "YuGothic", "Noto Sans JP", "IBM Plex Sans", system-ui, sans-serif;
+  line-height: 1.85;
+}
+
+.jp-body h1, .jp-body h2, .jp-body h3, .jp-body h4 {
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.jp-body h1 { line-height: 1.25; }
+
+.jp-body .eyebrow,
+.jp-body .section-label,
+.jp-body .nav-card-eyebrow,
+.jp-body .nav a,
+.jp-body .topbar-cta {
+  font-family: "Hiragino Sans", "Yu Gothic", "Noto Sans JP", system-ui, sans-serif;
+}
+
+/* ==========================================================================
+   Soft reveal
+   ========================================================================== */
+
+@media (prefers-reduced-motion: no-preference) {
+  .reveal {
+    opacity: 0;
+    transform: translateY(8px);
+    animation: reveal 700ms ease forwards;
+  }
+
+  .reveal-2 { animation-delay: 100ms; }
+  .reveal-3 { animation-delay: 200ms; }
+
+  @keyframes reveal {
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+
+@media (max-width: 980px) {
+  .hero,
+  .budget-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .grid-2, .grid-3, .grid-4,
+  .nav-card-grid,
+  .governance-grid,
+  .profile-grid,
+  .target-grid,
+  .footer-inner,
+  .partner-strip-inner,
+  .milestone-rail,
+  .how-to-vote,
+  .stat-strip,
+  .trust-strip .trust-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .partner-strip-label {
+    white-space: normal;
+    padding-top: 0;
+  }
+
+  .nav-wrap {
+    flex-wrap: wrap;
+  }
+
+  .lifecycle-row {
+    grid-template-columns: 1fr;
+    gap: 0.4rem;
+  }
+
+  .page-nav {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .topbar-inner {
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  .nav {
+    order: 3;
+    width: 100%;
+    gap: 0.7rem;
+    font-size: 0.86rem;
+  }
+
+  .hero-copy,
+  .hero-visual,
+  .budget-main,
+  .budget-stats,
+  .governance-panel,
+  .proof-panel,
+  .card,
+  .milestone-card,
+  .nav-card,
+  .faq-item {
+    border-radius: 18px;
+  }
+
+  .hero-copy { padding: 1.6rem; }
+
+  .hero-visual,
+  .budget-main,
+  .budget-stats,
+  .governance-panel,
+  .proof-panel {
+    padding: 1.2rem;
+  }
+
+  .budget-stats,
+  .gov-meta {
+    grid-template-columns: 1fr;
+  }
+
+  h1 { font-size: 2.2rem; }
+
+  .topbar-cta {
+    padding: 0.45rem 0.85rem;
+    font-size: 0.84rem;
+  }
+}
