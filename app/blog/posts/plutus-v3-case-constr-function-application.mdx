@@ -1,0 +1,194 @@
+---
+title: 'Applying Functions with Sums of Products: The case/constr Trick and When It Actually Pays'
+author: 'Alexander Nemish'
+tags: cardano scalus plutus uplc sums-of-products optimization compilers transaction-fees
+publishedAt: '2026-09-06'
+summary: 'Plutus V3 lets you call a function through a case expression instead of nested applies, spending fewer execution units. Every major Cardano compiler now does it above two arguments. But that threshold is only half the calculation: the encoding is also bigger below seven arguments, and measurement shows five sites in six never repeat — so the decision needs a profile, not a rule of thumb.'
+---
+
+Untyped Plutus Core has one way to call a function: `apply`, one argument at a time. Calling `f` with three arguments means three nested nodes:
+
+```
+[[[f a1] a2] a3]
+```
+
+Plutus V3 added sums of products ([CIP-85](https://cips.cardano.org/cip/CIP-0085)) — the `constr` and `case` nodes — so that compilers could stop [Scott-encoding](https://en.wikipedia.org/wiki/Mogensen%E2%80%93Scott_encoding) their data types, representing every constructor as a function that takes one branch per case. But `case` does something else too. Its reduction rule takes a constructor, picks a branch, and **applies that branch to all the constructor's fields**. Which means you can call a function with it:
+
+```
+(case (constr 0 [a1, a2, a3]) [f])
+```
+
+Same result. Different cost.
+
+## Why it's cheaper
+
+"Cheaper" here is not wall-clock speed. Every Cardano script is charged in **execution units** — CPU and memory — metered by the CEK machine as it evaluates. Those units cost money, and they are also capped: a transaction that exceeds the limit is rejected. Nothing about this changes how long the script takes in real time; it changes the bill and the headroom.
+
+The machine charges per node it visits. The apply chain visits one `Apply` node per argument: **N steps**. The case-constr form visits exactly two nodes — one `Case`, one `Constr` — **no matter how many arguments**. Everything else is identical: the same arguments get evaluated, the same lambdas get entered.
+
+Each step here costs 100 memory units and 16,000 CPU units, so the saving is `N − 2` steps per call:
+
+| arguments | apply chain | case/constr | steps saved |
+|---:|---:|---:|---:|
+| 1 | 1 | 2 | −1 |
+| 2 | 2 | 2 | 0 |
+| 3 | 3 | 2 | 1 |
+| 5 | 5 | 2 | 3 |
+| 10 | 10 | 2 | 8 |
+
+At one argument the trick loses. At two it's a wash. From three arguments up it wins, and the margin grows without bound.
+
+## Where it came from
+
+I found this in December 2024, then implemented and published it on [2 January 2025](https://x.com/atlanter/status/1874909022056505670):
+
+> I've discovered an interesting optimization in Plutus V3 using Sums Of Products.
+>
+> In UPLC you call a function with 2 arguments like this: `(apply (apply f a1) a2)`
+>
+> But with Sums of Products in Plutus V3 you can also call it like this: `(case (constr 0 [a1, a2]) f)`
+
+The same day I committed a benchmark to Scalus comparing both encodings for flat size and CEK budget, which is where the threshold came from. The conclusion is still sitting in that commit as three comments:
+
+```scala
+// compareN(1) // apply is more efficient for n=1
+// compareN(2) // same efficiency for n=2
+// compareN(3) // sop is more efficient for n=3 and more
+```
+
+Sums of products had been available since Plutus V3 shipped, and nobody had used them for this. It turned out to be one of those findings that spreads fast: [Plutarch](https://github.com/Plutonomicon/plutarch-plutus/pull/795) shipped it the next day, and [Aiken](https://github.com/aiken-lang/aiken) a week later, in v1.1.10. Three compilers, three independent codebases, all landing on the same rule:
+
+```haskell
+-- Plutarch, Plutarch/Internal/Term.hs
+applied
+  | length args <= 2 = foldl (UPLC.Apply ()) body args
+  | otherwise        = UPLC.Case () (UPLC.Constr () 0 args) (V.singleton body)
+```
+
+```rust
+// Aiken, shrinker.rs — "Add case constr for applies greater than 2 optimization"
+```
+
+That is where the story usually stops. It shouldn't, because `N > 2` is only half of the calculation.
+
+## The half nobody computed
+
+Machine steps are not the only thing Cardano charges for. Script **size** costs money too, and the case-constr form is not obviously smaller. Let's count bits.
+
+In the flat encoding, an application chain is nothing but tags — 4 bits each, `4N` bits total. The case-constr form has to pay framing first:
+
+```
+Case tag                4 bits
+Constr tag              4 bits
+constructor index       8 bits
+field-list framing    N+1 bits    (one bit per field, plus a terminator)
+branch-list framing     2 bits
+                    ---------
+                    19 + N bits
+```
+
+So the size difference is:
+
+```
+Δbits = (19 + N) − 4N = 19 − 3N
+```
+
+You save one 4-bit `Apply` tag per extra argument, but only after paying 19 bits of fixed framing up front. Measured against the encoder, N = 1 through 12, the formula reproduces every row exactly:
+
+| arguments | Δ bits | |
+|---:|---:|---|
+| 2 | +13 | bigger |
+| **3** | **+10** | bigger |
+| 4 | +7 | bigger |
+| 5 | +4 | bigger |
+| 6 | +1 | bigger |
+| **7** | **−2** | **smaller** |
+| 10 | −11 | smaller |
+| 12 | −17 | smaller |
+
+The crossover is at **seven arguments**. Below that, the encoding everyone adopted for spending fewer execution units is also *larger*.
+
+## Two clocks
+
+This matters because execution and size are billed on different schedules.
+
+- A machine step costs about **6.92 lovelace** — `100 mem × 0.0577 + 16,000 cpu × 0.0000721` at current mainnet parameters — and you pay it **every time the code runs**.
+- A script byte costs **15 lovelace** of reference-script fee, and you pay it **once per transaction**, whether that byte runs or not.
+
+So the question "is this optimization worth it" has no arity-only answer. It depends on how many times the call executes in a transaction:
+
+| arguments | steps saved | Δ bits | net @1 execution | net @3 executions |
+|---:|---:|---:|---:|---:|
+| 2 | 0 | +13 | −24.38 | −24.38 |
+| **3** | 1 | +10 | **−11.83** | **+2.02** |
+| 4 | 2 | +7 | +0.72 | +28.42 |
+| 5 | 3 | +4 | +13.27 | +54.81 |
+| 6 | 4 | +1 | +25.82 | +81.21 |
+| 7 | 5 | −2 | +38.37 | +107.60 |
+| 10 | 8 | −11 | +76.01 | +186.79 |
+
+(lovelace, mainnet parameters)
+
+Read the `N = 3` row again. That is the threshold every compiler uses, and for a call site that executes **once per transaction it costs about 12 lovelace instead of saving anything**. It needs roughly three executions before it breaks even.
+
+How often does that happen? Scalus ships a profiling CEK machine, so this is a question you can just answer: run the validators on real transaction contexts and read the per-site firing counts straight out of the profile.
+
+Across nine validators — eight Scalus examples plus [Binocular](https://github.com/lantr-io/binocular), a Bitcoin oracle that validates block headers in a recursive walk — **184 case-constr sites**:
+
+| | sites | fire more than once | never fire at all |
+|---|---:|---:|---:|
+| eight example validators | 70 | 17 (24%) | 14 (20%) |
+| Binocular oracle | 114 | 15 (13%) | 53 (46%) |
+| **total** | **184** | **32 (17%)** | **67 (36%)** |
+
+**83% of sites never repeat.** And the ones that do are wildly skewed: in Binocular a single site fires 316 times and two more fire 99 times, while twelve fire between 2 and 22. In the smaller examples the busiest site fires 6 times. One real loop, and a long tail of once-or-never.
+
+The 36% that never fire are worth their own line. They are not dead code — they are branches this transaction did not take. A cheap redeemer path in a large validator can carry a hundred case-constr sites it never touches, paying their bytes in every transaction that uses the script and saving nothing.
+
+So `N > 2` is right for the handful of sites inside a loop, and wrong for the other five out of six.
+
+## So what should the threshold be?
+
+Three regimes, and the boundaries are worth knowing:
+
+- **N ≥ 7** — fewer execution units *and* fewer bytes. Always take it, no analysis needed.
+- **4 ≤ N ≤ 6** — fewer execution units, slightly more bytes. Worth it for anything executed more than once; roughly break-even for cold one-shot code.
+- **N = 3** — fewer execution units, meaningfully more bytes. Worth it only for hot code. For a cold call site it loses money.
+
+In Scalus I hit this while building a pass that regroups chains of independent `let` bindings into a single case-constr call — cold code by construction, a validator prologue that runs once. The theory above says the cutoff should be four. Measurement said five:
+
+| threshold | steps saved | bytes added | net fee | validators made worse |
+|---:|---:|---:|---:|---:|
+| 3 | 151 | +64 | +85 lovelace | 7 of 10 |
+| 4 | 115 | +19 | +511 lovelace | 1 of 10 |
+| **5** | 77 | **+0** | **+533 lovelace** | **0 of 10** |
+
+The gap between theory and measurement at N = 4 is bit packing. The model says a four-argument group costs 7 bits; but flat is bit-packed, and in a real script those 7 bits round up to a whole byte often enough that one validator paid 1.5 bytes per group and came out 17 lovelace behind. At threshold 5 the groups turn out to be byte-free across the whole corpus — one validator even comes out a byte smaller — so it nets more overall *and* leaves every validator no worse off, which is the property you want from a default.
+
+Nine validators is still a small corpus, and the let-chain figures are specific to cold chains. Hot code has a lower break-even — for the site that fires 316 times, `N = 3` is obviously right — but the measurement says such sites are rare, not typical.
+
+## The real lesson: this decision needs a profile
+
+Step back from the arity table. Every number in this article that mattered came from measuring, and every number that came from reasoning was wrong or incomplete:
+
+- The step model said "apply case-constr from three arguments up". It ignored size, and at `N = 3` on a cold site that costs about 12 lovelace per transaction.
+- The size model then said the cutoff should be four. Bit packing pushed it to five — 7 theoretical bits round up to a whole byte often enough to flip the sign on a real validator.
+- The obvious intuition, mine included, was that these sites mostly sit in loops. Measured: five in six never repeat, and one in three never executes at all on a given path.
+
+None of that is knowable from the shape of the term. It depends on how often each site runs, which depends on the transaction. That is the definition of a profile-guided optimization, and Cardano is an unusually good place to do one:
+
+- **The cost model is exact.** The CEK machine meters CPU and memory deterministically, with published per-node prices. There is no sampling error and no clock jitter — run the same script on the same inputs and you get the same integer budget, every time.
+- **The objective is a closed form.** Fee is `execution units × prices + script bytes × the per-byte rate`. You can compute the fee delta of a rewrite exactly, rather than guessing whether it helped.
+- **The counts are already collected.** Any profiling run over representative transactions gives per-site execution counts directly.
+
+Mainstream compilers do profile-guided optimization against noisy hardware, sampled counters and a cost model that is a polite fiction. On Cardano the machine *is* the cost model. A compiler that reads `count(site)` can make this decision — and per-site inlining, common-subexpression extraction and loop unrolling, which have the same shape — correctly rather than by convention.
+
+That is where I think Cardano compilers should be heading, and it is a bigger prize than any single threshold.
+
+## The takeaway
+
+If you write a Cardano compiler: the case-constr application encoding is worth having, and the arity threshold should follow the execution count, not the arity alone. `N > 2` is right for loops and wrong for everything else, and everything else is where five sites in six are. Failing a profile, pick a threshold that does not need the distinction — `N >= 5` is a safe default and `N >= 7` is unconditionally free.
+
+If you write contracts: nothing to do. But if you have ever wondered why a script's execution budget dropped while its size crept up after a compiler upgrade, this is one of the reasons — and now you can price it.
+
+More on the Scalus optimizer pipeline in the [optimisation docs](https://scalus.org/docs/smart-contract-optimisations/uplc-optimiser-pipeline).

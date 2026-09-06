@@ -82,6 +82,22 @@ a:focus {
   @apply bg-neutral-50 dark:bg-neutral-900 rounded-lg overflow-x-auto border border-neutral-200 dark:border-neutral-900 py-2 px-3 text-sm;
 }
 
+.prose blockquote {
+  border-left: 3px solid #FF8C00;
+  padding-left: 1rem;
+  margin: 1.5rem 0;
+  font-style: italic;
+  color: #a3a3a3;
+}
+
+.prose blockquote p {
+  margin: 0.5rem 0;
+}
+
+.prose blockquote code {
+  font-style: normal;
+}
+
 .prose code {
   @apply px-1 py-0.5 rounded-lg;
 }

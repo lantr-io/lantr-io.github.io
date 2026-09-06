@@ -55,7 +55,18 @@ function RoundedImage(props) {
   return <Image alt={props.alt} className="rounded-lg" {...props} />
 }
 
+// Only fenced code blocks are highlighted. MDX wraps those in <pre>, so it passes a
+// className like "language-scala", while inline `code` spans in prose have none.
+// sugar-high is a JavaScript highlighter, so running it on prose miscolours any word
+// that happens to be a JS keyword — `case`, `for`, `if` — in languages that are not
+// JavaScript.
 function Code({ children, ...props }) {
+  // Inline `code` spans in prose are plain text; fenced blocks arrive with a
+  // className like "language-scala" from MDX. Highlighting anything else would
+  // also break on non-string children (MDX passes elements through here).
+  if (typeof children !== 'string' || !props.className) {
+    return <code {...props}>{children}</code>
+  }
   let codeHTML = highlight(children)
   return <code dangerouslySetInnerHTML={{ __html: codeHTML }} {...props} />
 }
