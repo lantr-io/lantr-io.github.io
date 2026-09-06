@@ -17,12 +17,6 @@
           <pubDate>Wed, 01 Jul 2026 00:00:00 GMT</pubDate>
         </item>
 <item>
-          <title>Two Consensus Families, One Huge Difference</title>
-          <link>https://lantr.io/blog/nakamoto-vs-bft-consensus</link>
-          <description>Nakamoto and BFT consensus differ on a single threshold — 51% vs 33% — that determines what kind of adversary a chain can survive. A look at finality, censorship, bonded vs liquid stake, and the underrated recovery asymmetry across Bitcoin, Cardano, Ethereum, Solana, TON, Sui, and Algorand.</description>
-          <pubDate>Thu, 07 May 2026 00:00:00 GMT</pubDate>
-        </item>
-<item>
           <title>Scalus Intersect Budget Update - Milestone 5 Delivered</title>
           <link>https://lantr.io/blog/scalus-intersect-budget-milestone-5</link>
           <description>Progress update on Lantr's Intersect-funded Scalus project. Milestone 5 delivers advanced UPLC optimisation techniques: a typed UPLC expression builder (Scalus' answer to Plutarch), three SIR-to-UPLC lowering backends, Scala 3 macros for compile-time optimisation, automatic Plutus Data derivation, and representation-level performance work delivering up to 50% fee savings on real validators.</description>
