@@ -5,16 +5,22 @@
         <link>https://lantr.io</link>
         <description>Insights and updates on blockchain development, smart contracts, and decentralized infrastructure from Lantr Engineering</description>
         <item>
+          <title>Applying Functions with Sums of Products: The case/constr Trick and When It Actually Pays</title>
+          <link>https://lantr.io/blog/plutus-v3-case-constr-function-application</link>
+          <description>Plutus V3 lets you call a function through a case expression instead of nested applies, spending fewer execution units. Every major Cardano compiler now does it above two arguments. But that threshold is only half the calculation: the encoding is also bigger below seven arguments, and measurement shows five sites in six never repeat — so the decision needs a profile, not a rule of thumb.</description>
+          <pubDate>Sun, 06 Sep 2026 00:00:00 GMT</pubDate>
+        </item>
+<item>
           <title>Scalus Intersect Budget Update - Milestone 6 Delivered</title>
           <link>https://lantr.io/blog/scalus-intersect-budget-milestone-6</link>
           <description>Progress update on Lantr's Intersect-funded Scalus project. The final milestone accelerates the end-to-end development cycle: a comprehensive sbt-based CLI, a JSON-driven test-data management toolkit, one-command reference-script deployment, and a full CEK profiling & diagnostics suite — completing EC-0020-25.</description>
           <pubDate>Wed, 01 Jul 2026 00:00:00 GMT</pubDate>
         </item>
 <item>
-          <title>Scalus 2026 Treasury ask - Frequently asked questions</title>
-          <link>https://lantr.io/blog/scalus-2026-faq</link>
-          <description></description>
-          <pubDate>Fri, 15 May 2026 00:00:00 GMT</pubDate>
+          <title>Two Consensus Families, One Huge Difference</title>
+          <link>https://lantr.io/blog/nakamoto-vs-bft-consensus</link>
+          <description>Nakamoto and BFT consensus differ on a single threshold — 51% vs 33% — that determines what kind of adversary a chain can survive. A look at finality, censorship, bonded vs liquid stake, and the underrated recovery asymmetry across Bitcoin, Cardano, Ethereum, Solana, TON, Sui, and Algorand.</description>
+          <pubDate>Thu, 07 May 2026 00:00:00 GMT</pubDate>
         </item>
 <item>
           <title>Scalus Intersect Budget Update - Milestone 5 Delivered</title>

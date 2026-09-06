@@ -2,15 +2,15 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
 <loc>https://lantr.io</loc>
-<lastmod>2026-07-02</lastmod>
+<lastmod>2026-09-06</lastmod>
 </url>
 <url>
 <loc>https://lantr.io/blog</loc>
-<lastmod>2026-07-02</lastmod>
+<lastmod>2026-09-06</lastmod>
 </url>
 <url>
 <loc>https://lantr.io/products</loc>
-<lastmod>2026-07-02</lastmod>
+<lastmod>2026-09-06</lastmod>
 </url>
 <url>
 <loc>https://lantr.io/blog/bitcoin-cardano-blockchain-future</loc>
@@ -37,8 +37,12 @@
 <lastmod>2026-02-05</lastmod>
 </url>
 <url>
-<loc>https://lantr.io/blog/scalus-2026-faq</loc>
-<lastmod>2026-05-15</lastmod>
+<loc>https://lantr.io/blog/nakamoto-vs-bft-consensus</loc>
+<lastmod>2026-05-07</lastmod>
+</url>
+<url>
+<loc>https://lantr.io/blog/plutus-v3-case-constr-function-application</loc>
+<lastmod>2026-09-06</lastmod>
 </url>
 <url>
 <loc>https://lantr.io/blog/scalus-authenticated-collections-benchmarks</loc>
