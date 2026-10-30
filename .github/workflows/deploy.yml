@@ -1,0 +1,39 @@
+name: Deploy site
+
+# Builds the Next.js site and publishes the static export to the gh-pages branch, which
+# GitHub Pages serves at lantr.io. Posts marked `draft: true` are left out of the build.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# A newer push waits for the running deploy instead of racing it on gh-pages.
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 10
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      # The same result as `pnpm run deploy`: out/ replaces gh-pages, with the custom
+      # domain in CNAME and a .nojekyll file so Pages serves _next/ as it is.
+      - uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./out
+          publish_branch: gh-pages
+          cname: lantr.io
