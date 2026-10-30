@@ -6,103 +6,103 @@
         <description>Insights and updates on blockchain development, smart contracts, and decentralized infrastructure from Lantr Engineering</description>
         <item>
           <title>Blazing-Fast Lambda Calculus via Metaprogramming</title>
-          <link>https://lantr.io/blog/blazing-fast-lambda-calculus-scala-3-staging</link>
-          <description>How Scala 3 staging turns a lambda-calculus interpreter into a compiler, why the production version runs real Cardano contracts about three times faster than the Haskell reference VM, and the quadratic compile-time bug hidden behind a dollar sign. The written version of my ScalaDays 2026 talk.</description>
+          <link>https://lantr.io/blog/blazing-fast-lambda-calculus-scala-3-staging/</link>
+          <description>Scala 3 staging turns a lambda-calculus interpreter into a JIT that runs Cardano contracts 3× faster than the Haskell VM. My ScalaDays 2026 talk, written up.</description>
           <pubDate>Fri, 30 Oct 2026 00:00:00 GMT</pubDate>
         </item>
 <item>
           <title>Applying Functions with Sums of Products: The case/constr Trick and When It Actually Pays</title>
-          <link>https://lantr.io/blog/plutus-v3-case-constr-function-application</link>
+          <link>https://lantr.io/blog/plutus-v3-case-constr-function-application/</link>
           <description>Plutus V3 lets you call a function through a case expression instead of nested applies, spending fewer execution units. Every major Cardano compiler now does it above two arguments. But that threshold is only half the calculation: the encoding is also bigger below seven arguments, and measurement shows five sites in six never repeat — so the decision needs a profile, not a rule of thumb.</description>
           <pubDate>Sun, 06 Sep 2026 00:00:00 GMT</pubDate>
         </item>
 <item>
           <title>Scalus Intersect Budget Update - Milestone 6 Delivered</title>
-          <link>https://lantr.io/blog/scalus-intersect-budget-milestone-6</link>
+          <link>https://lantr.io/blog/scalus-intersect-budget-milestone-6/</link>
           <description>Progress update on Lantr's Intersect-funded Scalus project. The final milestone accelerates the end-to-end development cycle: a comprehensive sbt-based CLI, a JSON-driven test-data management toolkit, one-command reference-script deployment, and a full CEK profiling & diagnostics suite — completing EC-0020-25.</description>
           <pubDate>Wed, 01 Jul 2026 00:00:00 GMT</pubDate>
         </item>
 <item>
           <title>Scalus Intersect Budget Update - Milestone 5 Delivered</title>
-          <link>https://lantr.io/blog/scalus-intersect-budget-milestone-5</link>
+          <link>https://lantr.io/blog/scalus-intersect-budget-milestone-5/</link>
           <description>Progress update on Lantr's Intersect-funded Scalus project. Milestone 5 delivers advanced UPLC optimisation techniques: a typed UPLC expression builder (Scalus' answer to Plutarch), three SIR-to-UPLC lowering backends, Scala 3 macros for compile-time optimisation, automatic Plutus Data derivation, and representation-level performance work delivering up to 50% fee savings on real validators.</description>
           <pubDate>Thu, 30 Apr 2026 00:00:00 GMT</pubDate>
         </item>
 <item>
           <title>Scalus Intersect Budget Update - Milestone 4 Delivered</title>
-          <link>https://lantr.io/blog/scalus-intersect-budget-milestone-4</link>
+          <link>https://lantr.io/blog/scalus-intersect-budget-milestone-4/</link>
           <description>Progress update on Lantr's Intersect-funded Scalus project. Milestone 4 delivers robust testing capabilities with property-based testing, in-process Cardano Emulator for JVM and JS/TS, advanced data structures, completed Rosetta blueprints catalogue, Ledger Rules Framework, and full Van Rossem intra-era hard fork readiness.</description>
           <pubDate>Mon, 30 Mar 2026 00:00:00 GMT</pubDate>
         </item>
 <item>
           <title>Benchmarking Authenticated Collections on Cardano — Radix, Fusing & Fee Anatomy</title>
-          <link>https://lantr.io/blog/scalus-authenticated-collections-benchmarks</link>
+          <link>https://lantr.io/blog/scalus-authenticated-collections-benchmarks/</link>
           <description>Detailed benchmarks of Merkle Patricia Forestry variants (radix-2, 16, 64), fusing optimizations, and Incremental Merkle Trees on Cardano. Includes full transaction fee breakdowns showing why execution cost is only 11% of the total fee.</description>
           <pubDate>Mon, 16 Mar 2026 00:00:00 GMT</pubDate>
         </item>
 <item>
           <title>TDD in the AI Coding Era — Tests Are the New Specification</title>
-          <link>https://lantr.io/blog/tdd-atdd-ai-coding-era</link>
+          <link>https://lantr.io/blog/tdd-atdd-ai-coding-era/</link>
           <description>AI makes writing code faster, but the bottleneck was never typing. TDD and ATDD have become the primary mechanism for maintaining human control over what gets built — tests are no longer verification tools, they are the specification language.</description>
           <pubDate>Wed, 11 Mar 2026 00:00:00 GMT</pubDate>
         </item>
 <item>
           <title>Scalus Emulator: In-Memory Cardano Node for JS/TS Scenario Testing</title>
-          <link>https://lantr.io/blog/scalus-emulator-cardano-js-scenario-testing</link>
+          <link>https://lantr.io/blog/scalus-emulator-cardano-js-scenario-testing/</link>
           <description>The Scalus Emulator brings full Cardano ledger validation to JavaScript. Run complete transaction scenarios — chained UTxOs, time-dependent unlocks, multi-party flows — from your test suite in seconds.</description>
           <pubDate>Mon, 02 Mar 2026 00:00:00 GMT</pubDate>
         </item>
 <item>
           <title>Scalus Intersect Budget Update – Milestone 3 Delivered</title>
-          <link>https://lantr.io/blog/scalus-intersect-budget-milestone-3</link>
+          <link>https://lantr.io/blog/scalus-intersect-budget-milestone-3/</link>
           <description>Progress update on Lantr's Intersect-funded Scalus project. Milestone 3 delivers production-ready transaction builder, ecosystem integrations, DApp starter kit, Yaci DevKit infrastructure, and expanded smart contract catalogue.</description>
           <pubDate>Fri, 20 Feb 2026 00:00:00 GMT</pubDate>
         </item>
 <item>
           <title>FROST Explained: Schnorr Threshold Signatures for Bitcoin</title>
-          <link>https://lantr.io/blog/frost-schnorr-threshold-signatures-bitcoin</link>
+          <link>https://lantr.io/blog/frost-schnorr-threshold-signatures-bitcoin/</link>
           <description>A step-by-step guide to FROST (RFC 9591) threshold Schnorr signatures for Bitcoin — from Schnorr basics through Shamir secret sharing to the full protocol, with worked examples.</description>
           <pubDate>Thu, 05 Feb 2026 00:00:00 GMT</pubDate>
         </item>
 <item>
           <title>Scalus Intersect Budget Update – Milestone 2 Delivered</title>
-          <link>https://lantr.io/blog/scalus-intersect-budget-milestone-2</link>
+          <link>https://lantr.io/blog/scalus-intersect-budget-milestone-2/</link>
           <description>Progress update on Lantr's Intersect-funded Scalus project. Milestone 2 delivers comprehensive documentation, design patterns, smart contract templates, and growing developer adoption.</description>
           <pubDate>Mon, 15 Dec 2025 00:00:00 GMT</pubDate>
         </item>
 <item>
           <title>Cardano Budget 2025 – What Drives Our Budgeting Choice?</title>
-          <link>https://lantr.io/blog/cardano-budget-2025-drep-voting-decision</link>
+          <link>https://lantr.io/blog/cardano-budget-2025-drep-voting-decision/</link>
           <description>How we vote on Cardano's 2025 budget as DReps. Balancing ecosystem funding, Catalyst proposals, and sustainable treasury spending in Cardano's decentralized governance.</description>
           <pubDate>Thu, 31 Jul 2025 00:00:00 GMT</pubDate>
         </item>
 <item>
           <title>Cardano Voting Power Distribution</title>
-          <link>https://lantr.io/blog/cardano-voting-power-distribution-2025-analysis</link>
+          <link>https://lantr.io/blog/cardano-voting-power-distribution-2025-analysis/</link>
           <description>Analysis of Cardano DRep voting power distribution in 2025. See which delegates control governance decisions and how ADA delegation shapes Cardano decentralized future.</description>
           <pubDate>Sun, 04 May 2025 00:00:00 GMT</pubDate>
         </item>
 <item>
           <title>Cardano Treasury Withdrawal Strategy</title>
-          <link>https://lantr.io/blog/cardano-treasury-withdrawal-strategy-2024</link>
+          <link>https://lantr.io/blog/cardano-treasury-withdrawal-strategy-2024/</link>
           <description>Mathematical model for sustainable Cardano Treasury withdrawals. DRep voting strategy for 2025 budget allocation and long-term ADA treasury management.</description>
           <pubDate>Wed, 06 Nov 2024 00:00:00 GMT</pubDate>
         </item>
 <item>
           <title>Why Cardano Needs a Fee Market</title>
-          <link>https://lantr.io/blog/cardano-fee-market-transaction-prioritisation</link>
+          <link>https://lantr.io/blog/cardano-fee-market-transaction-prioritisation/</link>
           <description>Why Cardano needs transaction fee prioritization: Analysis of DDoS vulnerabilities, mempool congestion, and proposed solutions for fair transaction ordering.</description>
           <pubDate>Tue, 05 Nov 2024 00:00:00 GMT</pubDate>
         </item>
 <item>
           <title>Why Scalus, Technically?</title>
-          <link>https://lantr.io/blog/scalus-cardano-dapps-development</link>
+          <link>https://lantr.io/blog/scalus-cardano-dapps-development/</link>
           <description>Scalus: Build Cardano smart contracts and dApps in Scala 3 with native Plutus support. Full-stack development from on-chain validators to off-chain transaction building.</description>
           <pubDate>Thu, 31 Oct 2024 00:00:00 GMT</pubDate>
         </item>
 <item>
           <title>Blockchain Levels - Bitcoin, Cardano, and the future of blockchains</title>
-          <link>https://lantr.io/blog/bitcoin-cardano-blockchain-future</link>
+          <link>https://lantr.io/blog/bitcoin-cardano-blockchain-future/</link>
           <description>Comparing Bitcoin and Cardano architectures — from proof-of-work vs proof-of-stake to UTxO models, smart contracts, and what each blockchain's design reveals about the future.</description>
           <pubDate>Wed, 20 Dec 2023 00:00:00 GMT</pubDate>
         </item>
