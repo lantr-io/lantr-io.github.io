@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { MDXRemote } from 'next-mdx-remote/rsc'
-import { highlight } from 'sugar-high'
 import React from 'react'
 import { JupyterNotebook } from './jupyter-notebook'
 import { ZoomableImage } from './zoomable-image'
@@ -10,6 +9,8 @@ import { YouTubeEmbed } from '@next/third-parties/google'
 import remarkMath from 'remark-math'
 import remarkGfm from 'remark-gfm'
 import rehypeKatex from 'rehype-katex'
+import rehypePrettyCode from 'rehype-pretty-code'
+import { codeThemes } from './code-themes'
 
 function Table({ data }) {
   let headers = data.headers.map((header, index) => (
@@ -53,22 +54,6 @@ function CustomLink(props) {
 
 function RoundedImage(props) {
   return <Image alt={props.alt} className="rounded-lg" {...props} />
-}
-
-// Only fenced code blocks are highlighted. MDX wraps those in <pre>, so it passes a
-// className like "language-scala", while inline `code` spans in prose have none.
-// sugar-high is a JavaScript highlighter, so running it on prose miscolours any word
-// that happens to be a JS keyword — `case`, `for`, `if` — in languages that are not
-// JavaScript.
-function Code({ children, ...props }) {
-  // Inline `code` spans in prose are plain text; fenced blocks arrive with a
-  // className like "language-scala" from MDX. Highlighting anything else would
-  // also break on non-string children (MDX passes elements through here).
-  if (typeof children !== 'string' || !props.className) {
-    return <code {...props}>{children}</code>
-  }
-  let codeHTML = highlight(children)
-  return <code dangerouslySetInnerHTML={{ __html: codeHTML }} {...props} />
 }
 
 function Video({ src, width = '800', ...props }) {
@@ -122,7 +107,6 @@ let components = {
   h6: createHeading(6),
   Image: RoundedImage,
   a: CustomLink,
-  code: Code,
   Table,
   JupyterNotebook,
   Video,
@@ -139,7 +123,12 @@ export function CustomMDX(props) {
       options={{
         mdxOptions: {
           remarkPlugins: [remarkGfm, remarkMath],
-          rehypePlugins: [rehypeKatex],
+          // Fenced code blocks are highlighted at build time by Shiki, with the
+          // grammars of VS Code. A block without a language stays plain text.
+          rehypePlugins: [
+            [rehypePrettyCode, { theme: codeThemes, keepBackground: false }],
+            rehypeKatex,
+          ],
         },
       }}
     />

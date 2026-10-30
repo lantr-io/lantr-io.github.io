@@ -1,7 +1,8 @@
 import { readFileSync } from 'fs'
 import { join } from 'path'
 import Image from 'next/image'
-import { highlight } from 'sugar-high'
+import { codeToHtml } from 'shiki'
+import { codeThemes } from './code-themes'
 
 interface NotebookCell {
   cell_type: 'code' | 'markdown'
@@ -90,10 +91,22 @@ function renderOutput(output: NonNullable<NotebookCell['outputs']>[number], inde
   return null
 }
 
-export function JupyterNotebook({ path }: { path: string }) {
+export async function JupyterNotebook({ path }: { path: string }) {
   const notebookPath = join(process.cwd(), 'app/blog', path)
   const notebookContent = readFileSync(notebookPath, 'utf-8')
   const notebook: NotebookData = JSON.parse(notebookContent)
+  // Highlight every code cell up front: Shiki is async, the cell rendering below is not.
+  const highlighted = await Promise.all(
+    notebook.cells.map((cell) =>
+      cell.cell_type === 'code'
+        ? codeToHtml(getCellSource(cell.source), {
+            lang: 'python',
+            themes: codeThemes,
+            defaultColor: false,
+          })
+        : null
+    )
+  )
 
   return (
     <div className="jupyter-notebook my-8">
@@ -109,12 +122,12 @@ export function JupyterNotebook({ path }: { path: string }) {
         }
 
         if (cell.cell_type === 'code') {
-          const codeHTML = highlight(source)
           return (
             <div key={cellIndex} className="code-cell my-6">
-              <pre className="bg-gray-50 dark:bg-gray-900 p-4 rounded-t overflow-x-auto border border-gray-200 dark:border-gray-700">
-                <code className="text-sm" dangerouslySetInnerHTML={{ __html: codeHTML }} />
-              </pre>
+              <div
+                className="text-sm [&_pre]:bg-gray-50 dark:[&_pre]:bg-gray-900 [&_pre]:p-4 [&_pre]:rounded-t [&_pre]:overflow-x-auto [&_pre]:border [&_pre]:border-gray-200 dark:[&_pre]:border-gray-700"
+                dangerouslySetInnerHTML={{ __html: highlighted[cellIndex]! }}
+              />
               {cell.outputs && cell.outputs.length > 0 && (
                 <div className="outputs border-l border-r border-b border-gray-200 dark:border-gray-700 rounded-b">
                   {cell.outputs.map((output, outputIndex) =>
