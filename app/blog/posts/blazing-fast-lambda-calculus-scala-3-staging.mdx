@@ -1,12 +1,14 @@
 ---
 title: 'Blazing-Fast Lambda Calculus via Metaprogramming'
 author: 'Alexander Nemish'
+authorTwitter: '@atlanter'
 tags: scala scala3 staging metaprogramming jit compilers interpreters plutus uplc cardano scalus
 publishedAt: '2026-10-30'
-summary: 'How Scala 3 staging turns a lambda-calculus interpreter into a compiler, why the production version runs real Cardano contracts about three times faster than the Haskell reference VM, and the quadratic compile-time bug hidden behind a dollar sign. The written version of my ScalaDays 2026 talk.'
+summary: 'Scala 3 staging turns a lambda-calculus interpreter into a JIT that runs Cardano contracts 3× faster than the Haskell VM. My ScalaDays 2026 talk, written up.'
+image: '/blazing-fast-lambda-calculus/og-image.png'
 ---
 
-I gave this talk at ScalaDays 2026 in Berlin. This post is the written version, with the code and the data.
+I gave [this talk](https://scaladays.org/session/blazing-fast-lambda-calculus-via-metaprogramming/) at ScalaDays 2026 in Berlin. This post is the written version, with the code and the data.
 
 <YouTubeEmbed videoid="xwRdY8Ht-o0" />
 
@@ -43,7 +45,7 @@ Cardano's answer is Plutus Core: untyped lambda calculus, designed at IOG by a t
 
 <ZoomableImage src="/blazing-fast-lambda-calculus/phil-wadler-iohk-summit-2019.jpg" alt="Alex Nemish with Phil Wadler at the IOHK Summit 2019" />
 
-*Phil Wadler and me at the IOHK Summit 2019. Photo: Alexander Nemish.*
+*Phil Wadler (right) and me at the IOHK Summit 2019. Photo: Alexander Nemish.*
 
 Phil is one of the designers of Haskell and the author of [Propositions as Types](https://homepages.inf.ed.ac.uk/wadler/papers/propositions-as-types/propositions-as-types.pdf): a type is a proposition and a program is its proof. Lambda calculus is where logic and computation are the same thing, so if you want to prove things about programs, that is where you want to be.
 
@@ -457,6 +459,7 @@ None of this is specific to blockchains. Any interpreter with hot inputs – bus
 
 ## Links
 
+- Talk: [ScalaDays 2026 session page](https://scaladays.org/session/blazing-fast-lambda-calculus-via-metaprogramming/)
 - Talk video: [YouTube](https://www.youtube.com/watch?v=xwRdY8Ht-o0)
 - Slides: [PDF](/blazing-fast-lambda-calculus/blazing-fast-lambda-calculus-via-metaprogramming-scaladays-2026.pdf)
 - Talk code: [lantr-io/tiny-uplc-jit at `scala-days-2026`](https://github.com/lantr-io/tiny-uplc-jit/tree/scala-days-2026) – the mini-UPLC, the CEK machine, the closure compiler, the staged compiler, tests and JMH benchmarks
