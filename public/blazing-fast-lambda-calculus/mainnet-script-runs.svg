@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 292" width="760" height="292" role="img" aria-labelledby="t d">
+<title id="t">Share of mainnet script runs by script rank, per Plutus version</title>
+<desc id="d">Cardano mainnet, 28 Feb to 28 Mar 2025. Plutus V2: top 10 scripts 60 %, next 90 33 %, the other 1472 scripts 7 % of 276,137 runs; Plutus V1: top 10 scripts 71 %, next 90 25 %, the other 293 scripts 4 % of 33,667 runs; Plutus V3: top 10 scripts 46 %, next 90 42 %, the other 159 scripts 12 % of 1,589 runs.</desc>
+<style>
+  svg { --surface: #ffffff; --ink: #0b0b0b; --ink-2: #52514e;
+        --r1: #1c5cab; --r2: #3987e5; --r3: #86b6ef; --on-r1: #ffffff; --on-r2: #ffffff;
+        font-family: ui-sans-serif, system-ui, sans-serif; }
+  @media (prefers-color-scheme: dark) {
+    svg { --surface: #000000; --ink: #f0efec; --ink-2: #c3c2b7;
+          --r1: #9ec5f4; --r2: #3987e5; --r3: #184f95; --on-r1: #0b0b0b; --on-r2: #ffffff; }
+  }
+  .title { font-size: 17px; font-weight: 600; fill: var(--ink); }
+  .sub { font-size: 13px; fill: var(--ink-2); }
+  .row { font-size: 14px; font-weight: 600; fill: var(--ink); }
+  .row2 { font-size: 12px; fill: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .in1 { font-size: 13px; font-weight: 600; fill: var(--on-r1); font-variant-numeric: tabular-nums; }
+  .in2 { font-size: 13px; font-weight: 600; fill: var(--on-r2); font-variant-numeric: tabular-nums; }
+  .out { font-size: 13px; fill: var(--ink); font-variant-numeric: tabular-nums; }
+  .legend { font-size: 13px; fill: var(--ink); }
+  .r1 { fill: var(--r1); } .r2 { fill: var(--r2); } .r3 { fill: var(--r3); }
+</style>
+<text class="title" x="16" y="28">A few scripts do most of the work</text>
+<text class="sub" x="16" y="48">Share of script runs on Cardano mainnet, four weeks in early 2025, by script rank</text>
+<rect class="r1" x="16" y="64" width="14" height="14" rx="3"/>
+<text class="legend" x="36" y="76">Top 10 scripts</text>
+<rect class="r2" x="161.60000000000002" y="64" width="14" height="14" rx="3"/>
+<text class="legend" x="181.60000000000002" y="76">Next 90</text>
+<rect class="r3" x="255.40000000000003" y="64" width="14" height="14" rx="3"/>
+<text class="legend" x="275.40000000000003" y="76">All the others</text>
+<text class="row" x="16" y="127">Plutus V2</text>
+<text class="row2" x="16" y="144">276,137 runs, 1,572 scripts</text>
+<clipPath id="c0"><rect x="200" y="112" width="470" height="34" rx="4"/></clipPath>
+<g clip-path="url(#c0)">
+<rect class="r1" x="200.0" y="112" width="280.9" height="34"><title>Plutus V2: top 10 scripts did 60.2 % of 276,137 runs</title></rect>
+<rect class="r2" x="482.9" y="112" width="153.9" height="34"><title>Plutus V2: next 90 scripts did 33.2 % of 276,137 runs</title></rect>
+<rect class="r3" x="638.8" y="112" width="31.2" height="34"><title>Plutus V2: the other 1,472 scripts did 6.6 % of 276,137 runs</title></rect>
+</g>
+<text class="in1" x="210.0" y="134">60 %</text>
+<text class="in2" x="492.9" y="134">33 %</text>
+<text class="out" x="678" y="134">7 %</text>
+<text class="row" x="16" y="193">Plutus V1</text>
+<text class="row2" x="16" y="210">33,667 runs, 393 scripts</text>
+<clipPath id="c1"><rect x="200" y="178" width="470" height="34" rx="4"/></clipPath>
+<g clip-path="url(#c1)">
+<rect class="r1" x="200.0" y="178" width="329.8" height="34"><title>Plutus V1: top 10 scripts did 70.6 % of 33,667 runs</title></rect>
+<rect class="r2" x="531.8" y="178" width="115.2" height="34"><title>Plutus V1: next 90 scripts did 24.9 % of 33,667 runs</title></rect>
+<rect class="r3" x="649.1" y="178" width="20.9" height="34"><title>Plutus V1: the other 293 scripts did 4.5 % of 33,667 runs</title></rect>
+</g>
+<text class="in1" x="210.0" y="200">71 %</text>
+<text class="in2" x="541.8" y="200">25 %</text>
+<text class="out" x="678" y="200">4 %</text>
+<text class="row" x="16" y="259">Plutus V3</text>
+<text class="row2" x="16" y="276">1,589 runs, 259 scripts</text>
+<clipPath id="c2"><rect x="200" y="244" width="470" height="34" rx="4"/></clipPath>
+<g clip-path="url(#c2)">
+<rect class="r1" x="200.0" y="244" width="216.0" height="34"><title>Plutus V3: top 10 scripts did 46.4 % of 1,589 runs</title></rect>
+<rect class="r2" x="418.0" y="244" width="193.2" height="34"><title>Plutus V3: next 90 scripts did 41.5 % of 1,589 runs</title></rect>
+<rect class="r3" x="613.2" y="244" width="56.8" height="34"><title>Plutus V3: the other 159 scripts did 12.1 % of 1,589 runs</title></rect>
+</g>
+<text class="in1" x="210.0" y="266">46 %</text>
+<text class="in2" x="428.0" y="266">42 %</text>
+<text class="out" x="678" y="266">12 %</text>
+</svg>

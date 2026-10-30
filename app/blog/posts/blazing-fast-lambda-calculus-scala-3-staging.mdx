@@ -6,13 +6,13 @@ publishedAt: '2026-10-30'
 summary: 'How Scala 3 staging turns a lambda-calculus interpreter into a compiler, why the production version runs real Cardano contracts about three times faster than the Haskell reference VM, and the quadratic compile-time bug hidden behind a dollar sign. The written version of my ScalaDays 2026 talk.'
 ---
 
-I gave this talk at ScalaDays 2026 in Berlin on 13 October. This post is the written version: the same story, with the full code, the data behind every chart, and two sets of benchmark numbers – the ones I showed on stage, and a newer public run.
+I gave this talk at ScalaDays 2026 in Berlin. This post is the written version, with the code and the data.
 
 <YouTubeEmbed videoid="xwRdY8Ht-o0" />
 
 ## TL;DR
 
-We take the textbook interpreter of a small lambda calculus and, with Scala 3 staging, turn it into a compiler that emits JVM code at runtime. The core of the idea is a few dozen lines. The production version in [Scalus](https://scalus.org), about two thousand lines, runs real Cardano smart contracts about three times faster than the Haskell reference VM. And the hardest part was neither speed nor semantics: it was a quadratic compile time hidden behind a `$`, and the fix is one rule – create each `Expr` where it will live.
+We take the textbook interpreter of a small lambda calculus and, with Scala 3 staging, turn it into a compiler that emits JVM code at runtime. The core of the idea is a few dozen lines. The production version in [Scalus](https://scalus.org) runs real Cardano smart contracts about three times faster than the Haskell reference VM. And the hardest part was neither speed nor semantics: it was a quadratic compile time hidden behind a `$`, and the fix is one rule – create each `Expr` where it will live.
 
 All the code from the talk is on GitHub at the tag [`scala-days-2026`](https://github.com/lantr-io/tiny-uplc-jit/tree/scala-days-2026). The slides are [here](/blazing-fast-lambda-calculus/blazing-fast-lambda-calculus-via-metaprogramming-scaladays-2026.pdf).
 
@@ -47,7 +47,7 @@ Cardano's answer is Plutus Core: untyped lambda calculus, designed at IOG by a t
 
 Phil is one of the designers of Haskell and the author of [Propositions as Types](https://homepages.inf.ed.ac.uk/wadler/papers/propositions-as-types/propositions-as-types.pdf): a type is a proposition and a program is its proof. Lambda calculus is where logic and computation are the same thing, so if you want to prove things about programs, that is where you want to be.
 
-It is also tiny: three constructs and one reduction rule. And it is mechanized: the [Plutus Core metatheory](https://github.com/IntersectMBO/plutus/tree/master/plutus-metatheory) is formalized in Agda, and [PlutusCoreBlaster](https://github.com/input-output-hk/PlutusCoreBlaster) is a Lean 4 formalization with a CEK evaluator, for proofs about compiled scripts. On-chain it is untyped, so the chain does not need to trust a type checker.
+It is also tiny: three constructs and one reduction rule. And it is mechanized, in [Agda](https://github.com/IntersectMBO/plutus/tree/master/plutus-metatheory) and in [Lean 4](https://github.com/input-output-hk/PlutusCoreBlaster). On-chain it is untyped, so the chain does not need to trust a type checker.
 
 The price for all of this: it was not designed to be fast. That is our job.
 
@@ -60,7 +60,7 @@ Here is a plain Scala `fib`, annotated with `@Compile` (imports left out):
   def fib(n: BigInt): BigInt = if n <= 1 then n else fib(n - 1) + fib(n - 2)
 ```
 
-The Scalus compiler plugin turns it into this UPLC (optimized, common-subexpression elimination off so it reads like the Scala, generated names shortened):
+The Scalus compiler plugin turns it into this UPLC (names shortened):
 
 ```
 [(lam fib [fib fib])
@@ -151,22 +151,11 @@ At the talk I asked the room to bet. Same algorithm – a CEK machine, the inter
 - **A.** The reference implementation in Haskell, `plutus-core`, tuned for years by people who really know GHC.
 - **B.** The same machine in Scala, on the JVM, with HotSpot's JIT behind it.
 
-Same 89 real contracts from a public benchmark, same machine, steady state. Which one is faster?
+Same 89 real contracts from a public benchmark, same machine. Which one is faster?
 
-Place your bet before you read on. On the benchmark run I showed in the talk, **Haskell won by 17 %**: 220 µs against 256 µs per script (geometric mean, flat-decode plus evaluation). The JVM by itself does not buy anything: the same interpreter in a different language is just the same interpreter.
+Place your bet before you read on. On the run I showed in the talk, **Haskell won by 17 %**: 220 µs against 256 µs per contract. The same interpreter in a different language is just the same interpreter.
 
-That was the answer on 13 October. Two weeks later the answer is B, in both timing modes of the [public benchmark](https://plutus-vm-bench.lantr.io) (run of 2026-10-27):
-
-| Scalus CEK against Haskell `plutus-core` | Scalus CEK | Haskell |
-|---|---:|---:|
-| Decode + eval | 268 µs | 711 µs |
-| Eval only | 171 µs | 276 µs |
-
-*AMD EPYC Milan, GraalVM 25, Scalus 1.4.1, geometric mean over 89 scripts.*
-
-Two things changed between the two answers. Scalus 1.4.1 rewrote the inner loop of its CEK machine (an environment with constant-time extension, and the machine state kept in local variables). And the benchmark moved to a new harness, with a different timing loop, a different machine, and a different way of decoding the scripts. The first run of the new harness, on 23 October with Scalus 1.4.0 – before the rewrite – hints at the split: the Scalus CEK already won decode plus eval, 400 µs against 703 µs, but still lost eval only, 291 µs against 272 µs. That run used a different server, so it is a hint, not a measurement. A clean A/B run on one machine is still to do.
-
-The point of the bet survives either way: whichever interpreter wins, it is still an interpreter. With the same JVM and Scala 3 metaprogramming – a few dozen lines for the core idea, about two thousand for the production JIT – we get about three times faster than that Haskell VM. Not a faster language – a different idea.
+Two weeks later the Scala one wins – 171 µs against 276 µs on our [public benchmark](https://plutus-vm-bench.lantr.io) – after we rewrote its inner loop and the benchmark moved to a new harness. But the point of the bet stands: an interpreter is still an interpreter. With the same JVM and Scala 3 metaprogramming, we get about three times faster than the Haskell VM. Not a faster language – a different idea.
 
 ## Act 2: the climb
 
@@ -197,7 +186,7 @@ private def compileTerm(term: Term, scope: List[String]): Code = term match
   // … constants, builtins, case, error
 ```
 
-Variable names become depths at compile time. A UPLC lambda becomes a real Scala lambda. Application is just a call, and saturated builtins become direct calls on `BigInt`. This classic technique already gives **16×** over our CEK machine on `fib 20`, on the stage laptop (the full table is below).
+Variable names become depths at compile time. A UPLC lambda becomes a real Scala lambda. Application is just a call, and saturated builtins become direct calls on `BigInt`. This classic technique already gives **16×** over our CEK machine on `fib 20`.
 
 Why isn't that the end? Because the interpreter is still there, just hidden. Every node is a call to `Function1.apply`, and at that call site the JVM sees hundreds of different closure classes – a megamorphic call it cannot inline. Variables still live in a runtime linked list. And the structure of the program is data the JVM cannot see. What we really want is for the program itself to become JVM code: generate well-typed Scala at runtime and compile it. That is exactly what Scala 3 staging gives us.
 
@@ -218,9 +207,9 @@ val cube: Double => Double =
 // compiled: (x: Double) => x * (x * (x * 1.0))
 ```
 
-(An illustrative example: imports and the build setup are left out.) `power` generates the multiplications for a known `n`: the loop runs at generation time, the multiplication at run time. `staging.run` runs the real Scala compiler inside your JVM, loads the bytecode and hands you a function. And crucially, the quotes are type-checked when you compile the generator, so you cannot generate ill-typed Scala. Compare that with string concatenation or ASM bytecode.
+`power` generates the multiplications for a known `n`: the loop runs at generation time, the multiplication at run time. `staging.run` runs the real Scala compiler inside your JVM, loads the bytecode and hands you a function. And crucially, the quotes are type-checked when you compile the generator, so you cannot generate ill-typed Scala. Compare that with string concatenation or ASM bytecode.
 
-This has a name. Yoshihiko Futamura showed in 1971 that specializing an interpreter to one fixed program is the same as compiling it – [the first Futamura projection](https://doi.org/10.1023/A:1010095604496) (reprinted in 1999). Scala has a long line of making it practical: Tiark Rompf and Martin Odersky's [Lightweight Modular Staging](https://doi.org/10.1145/1868294.1868314) in 2010, and the quotes and splices above, from Nicolas Stucki, Aggelos Biboudis and Martin Odersky's [2018 paper](https://doi.org/10.1145/3278122.3278139) that unified multi-stage programming and macros. The same quotes serve compile-time macros and run-time staging.
+This has a name. Yoshihiko Futamura showed in 1971 that specializing an interpreter to one fixed program is the same as compiling it – [the first Futamura projection](https://doi.org/10.1023/A:1010095604496). Scala has a long line of making it practical: Tiark Rompf and Martin Odersky's [Lightweight Modular Staging](https://doi.org/10.1145/1868294.1868314) in 2010, and the quotes and splices above, from Nicolas Stucki, Aggelos Biboudis and Martin Odersky's [2018 paper](https://doi.org/10.1145/3278122.3278139) that unified multi-stage programming and macros. The same quotes serve compile-time macros and run-time staging.
 
 So the plan: take the interpreter we already understand, and make it return code instead of values.
 
@@ -316,7 +305,7 @@ $ sbt "scalusBridge/run 20"
 | Closure compiler | 389 | 16.4× |
 | Staged compiler | 183 | 35.0× |
 
-`fib 20` is 21,891 recursive calls and about 0.9 million CEK steps, so these are milliseconds, while real contracts take hundreds of microseconds. Every engine returns 6765. These are the toy engines on the stage laptop: Scala 3.9.0, Zulu JDK 25, 2 s warm-up and 3 s measurement, October 2026. Our toy CEK machine is deliberately simple, so 35× overstates the real-world gap. The honest real-world numbers come in Act 4.
+`fib 20` is about 22,000 recursive calls, so these are milliseconds; real contracts take hundreds of microseconds. Our toy CEK machine is deliberately simple, so 35× overstates the real-world gap. The real-world numbers come in Act 4.
 
 ### Fast and exactly the same
 
@@ -325,7 +314,7 @@ Making it fast is easy. Making it exactly the same as the reference is the job, 
 - **Untyped means `Any`.** Every use checks its type at runtime, and must fail exactly where the CEK machine fails.
 - **Evaluation order.** All arguments are evaluated first, then checked. If you type-check the first argument before you evaluate the second, a program whose second argument loops forever behaves differently. That is what the `val`s in the builtin code are for.
 - **Lazy `case`, strict calls.** Only the chosen branch of a `case` runs, while every argument of a call runs, even if it is unused.
-- **Budget.** Plutus charges for every step. The production JIT in Scalus emits the same cost accounting into the generated code: the same result, the same failures and the same spent budget per cost category as the CEK machine. It passes the [Plutus conformance suite](https://github.com/IntersectMBO/plutus/tree/master/plutus-conformance).
+- **Budget.** Plutus charges for every step. The production JIT in Scalus emits the same cost accounting into the generated code, charges exactly what the CEK machine charges, and passes the [Plutus conformance suite](https://github.com/IntersectMBO/plutus/tree/master/plutus-conformance).
 
 And one more: compiled code uses the JVM call stack. Non-tail recursion 100,000 deep is fine for the CEK machine, whose stack is on the heap, but both compilers blow up:
 
@@ -336,9 +325,7 @@ Closure compiler   StackOverflowError!
 Staged compiler    StackOverflowError!
 ```
 
-The Scalus JIT counts its call depth and stops at 25,000 nested calls, which fits a 64 MB thread stack. Called through `withFallback()`, it then evaluates the script again on the CEK machine from the start.
-
-How deep can a valid script go? The budget caps it. At epoch 664 (October 2026), a mainnet transaction may spend at most 16.5 million memory units, and every machine step costs 100, so a script runs at most 165,000 steps. A nested call needs at least 3 steps, so there are at most about 55,000 nested calls. We measured about 350 bytes per nested call with interpreted frames and about 30 bytes once JIT-compiled, so the worst case is about 19 MB. One caveat: we measured those frame sizes on a model of the generated code, and big scripts have bigger frames. That is why the JIT's own limit is conservative: a script nested deeper than 25,000 calls simply runs on the CEK machine.
+The Scalus JIT counts its call depth, and when recursion gets too deep, it falls back to the CEK machine. The execution budget also caps how deep a valid script can recurse.
 
 The rule behind all of this: keep the boring interpreter as the oracle, and test every engine against it – especially on programs that fail.
 
@@ -352,7 +339,7 @@ Median compile time: 22 seconds.
 
 Or, as we used to call it back in the Scala 2 days: fast.
 
-The biggest scripts blew through a two-minute timeout and finished in 135 to 197 seconds, and the time grew faster than the script did. Add the JVM warm-up the generated code needs – about 20 seconds before it reaches full speed – and the honest break-even was a median of 175,000 evaluations before the JIT beat the plain interpreter. Fine for a test suite, pointless for almost anything else. One more trap: a staging compiler that you keep alive keeps growing, so we used a fresh compiler per script.
+The biggest scripts blew through a two-minute timeout, and the time grew faster than the script did. Add the JVM warm-up the generated code needs – about 20 seconds before it reaches full speed – and the honest break-even was a median of 175,000 evaluations before the JIT beat the plain interpreter. Fine for a test suite, pointless for almost anything else. One more trap: a staging compiler that you keep alive keeps growing, so we used a fresh compiler per script.
 
 But 93 % of the time was not `scalac`. It was in our own generator, before `scalac` even started. So I decided to fix the compile times. I opened a terminal and said: "Claude, `--dangerously-skip-permissions`, figure out what's going on."
 
@@ -400,19 +387,16 @@ In Scalus there were two copies: our own `changeOwner` on every lambda body, and
 
 | Scalus JIT, 89 contracts | Before | After |
 |---|---:|---:|
-| Median compile | 21.89 s | 2.32 s |
-| Slowest compile | 197 s, after the timeout | 7.65 s |
-| Scripts that compiled within 120 s | 80 of 89 | 89 of 89 |
+| Median compile | 22 s | 2.3 s |
+| Slowest compile | 197 s | 7.7 s |
 | Our generator, share of compile | 93 % | 6 % |
-| Break-even against the CEK, median | 175,078 runs | 15,768 runs |
+| Break-even against the CEK, median | 175,000 runs | 16,000 runs |
 
-*Scalus `480d81c0d` before the fix and `2eb9f3d61` after, Apple M3 Max, Zulu JDK 25 (C2), one fresh staging compiler per script.*
-
-Except for the slowest compile, the "Before" column covers only the 80 scripts that compiled within 120 s, so its medians are biased low. The other 9 finished in 135 to 197 s. The steady speed did not change: 3.9× the interpreter. `scalac` itself took about two seconds, before and after. Staging was never the slow part.
+The steady speed did not change: 3.9× the interpreter. `scalac` itself took about two seconds, before and after. Staging was never the slow part.
 
 <ZoomableImage src="/blazing-fast-lambda-calculus/compile-time-vs-term-size.svg" alt="Compile time of the Scalus JIT against UPLC term size, before and after the fix, for 89 contracts" />
 
-*Compile time against term size, one dot per contract, log scale. Data: [before](/blazing-fast-lambda-calculus/jit-compile-times-before.csv), [after](/blazing-fast-lambda-calculus/jit-compile-times-after.csv). Scalus JIT, fresh staging compiler per script, Apple M3 Max, Zulu JDK 25 (C2), Scala 3.3.8, October 2026.*
+*Compile time against script size, one dot per contract, log scale. Data: [before](/blazing-fast-lambda-calculus/jit-compile-times-before.csv), [after](/blazing-fast-lambda-calculus/jit-compile-times-after.csv).*
 
 While we were in there, we also found why a long-lived staging compiler keeps growing: every staging run got the same run id, so a compiler cache was never cleared. That one is fixed upstream in [scala/scala3#27335](https://github.com/scala/scala3/pull/27335).
 
@@ -422,48 +406,28 @@ The rule to take home: **create each `Expr` where it will live.**
 
 ### Real-world numbers
 
-Here are two benchmark runs. The first is the one I showed in the talk, after the fix: the community [cross-language Plutus VM benchmark](https://github.com/SAIB-Inc/cardano-plutus-vm-benchmark), 89 real contracts – auctions, escrows, crowdfunding, a Uniswap clone – every VM built from source, on one machine, and all of them pass all 89.
+The benchmark is 89 real contracts – auctions, escrows, crowdfunding, a Uniswap clone – run by every VM on one machine. Time per contract, after compilation and warm-up:
 
-| Talk run: 2026-10-11, Apple M3 Max, SAIB harness | Flat-decode + eval, geometric mean, 89 scripts |
-|---|---:|
-| Scalus JIT | 71 µs |
-| `plutus-core` (Haskell) | 220 µs |
-| Scalus CEK | 256 µs |
-| `uplc-turbo` (Rust) | 363 µs |
-
-*Docker on an Apple M3 Max, GraalVM JDK 25, Scalus master of 2026-10-11 (`2eb9f3d61`), SAIB harness. The JIT row excludes compile time.*
-
-On that run the JIT was about three times faster than Haskell. Per contract against Haskell: the median contract was 4.4× faster, 72 of the 89 at least twice as fast, the best almost 9× faster. The JIT won on 78 of the 89; on the other 11, mostly the biggest scripts, Haskell was still faster. All of this is steady state, after compilation and warm-up.
-
-The second is the latest run of our [public Plutus VM benchmark](https://plutus-vm-bench.lantr.io), where anyone can check the numbers and the method:
-
-| Public run: 2026-10-27, AMD EPYC, Scalus 1.4.1 | Decode + eval | Eval only |
+| | Talk run (Mac, 11 Oct) | [Public run](https://plutus-vm-bench.lantr.io) (cloud server, 27 Oct, eval only) |
 |---|---:|---:|
-| Scalus JIT (experimental, not ranked) | – | 94 µs |
-| Scalus CEK | 268 µs | 171 µs |
-| Plutigo (Go) | 306 µs | 205 µs |
-| `amaru-uplc` (Rust) | 467 µs | 365 µs |
-| `plutus-core` (Haskell) | 711 µs | 276 µs |
+| Scalus JIT | 71 µs | 94 µs |
+| Haskell `plutus-core` (the reference) | 220 µs | 276 µs |
+| Scalus CEK (our interpreter) | 256 µs | 171 µs |
+| Rust | 363 µs | 365 µs |
 
-*A KVM guest on AMD EPYC Milan, Oracle GraalVM 25, Scalus 1.4.1, lantr harness, geometric mean over 89 scripts, [results of the 2026-10-27 run](https://github.com/lantr-io/plutus-vm-benchmark/tree/5f64541/results/2026-10-27).*
+The machines and the benchmark harness differ, so compare within a column. In both, the JIT is about three times faster than the Haskell VM, and up to nine times on some contracts. On a few contracts – some tiny, some the biggest – the interpreters still win. On the biggest ones, the JVM needs more warm-up than the benchmark gives it, and emitting fewer, larger methods is our next job.
 
-`amaru-uplc` is the VM the talk called `uplc-turbo`. The JIT row times evaluation only: compile time is excluded, and so is decoding, because the JIT compiles each script before the timed loop. On evaluation only, the JIT is 2.9× faster than Haskell and 1.8× faster than the Scalus CEK, and seven scripts are slower on the JIT than on the CEK.
+<ZoomableImage src="/blazing-fast-lambda-calculus/plutus-vm-benchmark-ranking-2026-10-27.png" alt="Eval-only ranking of 15 Plutus VMs on plutus-vm-bench.lantr.io, run of 27 October 2026, with the Scalus JIT on top" />
 
-Why do the two tables differ? Almost everything changed between them:
-
-- **The machine**: Docker on an Apple M3 Max (arm64) against a virtual AMD EPYC Milan (x86-64). Both runs used GraalVM 25.
-- **The harness**: a new timing loop, decode plus evaluation as a node does it, and a correctness gate that checks every result and its execution units against the Haskell VM. It runs every script as Plutus V3 at protocol version 11 with the mainnet cost model. The two harnesses also time Haskell's decoding differently: Haskell went from 220 µs to 711 µs while the Scalus CEK barely moved. So the two tables are not comparable row by row.
-- **The CEK machine**: Scalus 1.4.1 has the faster inner loop from Act 1.
-- **The JIT**: Scalus 1.4.1 has a rewritten JIT that charges exactly the same budget as the CEK machine, per cost category.
-- **JIT warm-up on the largest scripts**: each `stablecoin_*` script compiles to about 3,200 small methods. On the four virtual CPUs of a benchmark lane, the JVM needs 48–60 s to compile the hot ones – longer than the 30 s warm-up. The fix is to emit fewer, larger methods, and that is our next job.
-
-So, one machine at a time, the honest summary is: the staged JIT is about three times faster than the Haskell reference VM on these 89 contracts, and on some contracts it is still slower than an interpreter.
+*The eval-only ranking on [plutus-vm-bench.lantr.io](https://plutus-vm-bench.lantr.io/?timing=eval), run of 27 October 2026. The Scalus JIT is shown but not ranked, because it compiles each script before the timed loop.*
 
 ### Where does a JIT pay? A cache for hot scripts
 
-Here are four weeks of Cardano mainnet: blocks 11,544,518 to 11,662,495, from 28 February to 28 March 2025 (epochs 543 to 548). That is 117,978 blocks and 311,393 script runs of 2,224 different scripts. Plutus V2 scripts did 89 % of the runs. Among them, the single most-run script did 12 %, the top 10 did 60 %, and the top 100 – 6 % of the 1,572 V2 scripts – did 93 %. In Plutus V1, the top 100 of 393 scripts did 95 % of the runs.
+Here are four weeks of Cardano mainnet from early 2025: 311,393 script runs of 2,224 different scripts. Most runs were Plutus V2 scripts, and among them the 10 most used did 60 % of the runs and the top 100 – 6 % of the scripts – did 93 % ([how we counted](https://github.com/scalus3/scalus/blob/a72ca9001e46d37a76e505fdb8da401faa4c58b7/scalus-cardano-ledger-it/src/test/scala/scalus/testing/integration/BlocksValidation.scala)).
 
-We counted the runs with the block-validation test of Scalus, which replays every block and evaluates every script with Scalus ([`BlocksValidation.scala`](https://github.com/scalus3/scalus/blob/a72ca9001e46d37a76e505fdb8da401faa4c58b7/scalus-cardano-ledger-it/src/test/scala/scalus/testing/integration/BlocksValidation.scala)). On stage I called this one epoch and merged the three Plutus versions into one ranking; the figures here are the corrected ones.
+<ZoomableImage src="/blazing-fast-lambda-calculus/mainnet-script-runs.svg" alt="Share of mainnet script runs done by the top 10 scripts, the next 90 and all others, per Plutus version" />
+
+*Share of script runs by script rank, per Plutus version. Data: [CSV](/blazing-fast-lambda-calculus/mainnet-script-runs.csv).*
 
 The usual power law, and exactly the shape a JIT wants: a few hot scripts, run over and over. On Cardano, scripts are immutable and addressed by their hash, so a compiled script is just a cache entry: compile once, key it by hash, and never invalidate it. The architecture is tiering, like the JVM itself: the interpreter answers immediately for cold scripts, and hot ones get compiled in the background and swapped in.
 
@@ -481,7 +445,7 @@ Not "always write a compiler". Pick the tier your workload pays for – the same
 | Closure compiler | 16× | milliseconds | Warm scripts. No metaprogramming needed. |
 | Staged compiler | 35× | seconds + warm-up | The hot few: one script, many runs. |
 
-The speed-ups are our toy engines on `fib 20`, on the stage laptop. On real contracts, the Scalus JIT against the Scalus CEK was about 3.6× on the talk benchmark run (71 µs against 256 µs), 3.9× in our compile-time measurements, and 1.8× on the public run.
+The speed-ups are our toy engines on `fib 20`. On real contracts the gap is smaller, as the benchmark above shows.
 
 Three lessons on the way:
 
