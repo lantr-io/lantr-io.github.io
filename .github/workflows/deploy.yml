@@ -2,15 +2,15 @@ name: Deploy site
 
 # Builds the Next.js site and publishes the static export to the gh-pages branch, which
 # GitHub Pages serves at lantr.io. Posts marked `draft: true` are left out of the build.
+# Runs only by hand, so a push to main never changes the live site:
+#   gh workflow run deploy.yml --repo lantr-io/lantr-io.github.io
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: write
 
-# A newer push waits for the running deploy instead of racing it on gh-pages.
+# A second run waits for the running deploy instead of racing it on gh-pages.
 concurrency:
   group: deploy
   cancel-in-progress: false
