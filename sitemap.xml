@@ -2,19 +2,23 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
 <loc>https://lantr.io</loc>
-<lastmod>2026-09-06</lastmod>
+<lastmod>2026-10-30</lastmod>
 </url>
 <url>
 <loc>https://lantr.io/blog</loc>
-<lastmod>2026-09-06</lastmod>
+<lastmod>2026-10-30</lastmod>
 </url>
 <url>
 <loc>https://lantr.io/products</loc>
-<lastmod>2026-09-06</lastmod>
+<lastmod>2026-10-30</lastmod>
 </url>
 <url>
 <loc>https://lantr.io/blog/bitcoin-cardano-blockchain-future</loc>
 <lastmod>2023-12-20</lastmod>
+</url>
+<url>
+<loc>https://lantr.io/blog/blazing-fast-lambda-calculus-scala-3-staging</loc>
+<lastmod>2026-10-30</lastmod>
 </url>
 <url>
 <loc>https://lantr.io/blog/cardano-budget-2025-drep-voting-decision</loc>

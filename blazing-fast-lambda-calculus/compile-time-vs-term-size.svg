@@ -1,0 +1,244 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 470" width="760" height="470" role="img" aria-labelledby="t d">
+<title id="t">Scalus JIT compile time against UPLC term size, before and after the fix</title>
+<desc id="d">89 contracts. Before the fix: median 21.9 s over the 80 that compiled within the 120 s timeout; 9 finished after it, in 135 to 197 s. After the fix: median 2.3 s, maximum 7.6 s.</desc>
+<style>
+  svg { --surface: #ffffff; --ink: #0b0b0b; --ink-2: #52514e; --grid: #e6e5e1; --axis: #8f8e89;
+        --s1: #2a78d6; --s2: #eb6834; font-family: ui-sans-serif, system-ui, sans-serif; }
+  @media (prefers-color-scheme: dark) {
+    svg { --surface: #000000; --ink: #f0efec; --ink-2: #c3c2b7; --grid: #2b2b29; --axis: #6f6e69;
+          --s1: #3987e5; --s2: #d95926; }
+  }
+  .title { font-size: 17px; font-weight: 600; fill: var(--ink); }
+  .sub { font-size: 13px; fill: var(--ink-2); }
+  .tick { font-size: 12px; fill: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .label { font-size: 13px; fill: var(--ink); }
+  .label2 { font-size: 12px; fill: var(--ink-2); }
+  .grid { stroke: var(--grid); stroke-width: 1; }
+  .axis { stroke: var(--axis); stroke-width: 1; }
+  .timeout { stroke: var(--axis); stroke-width: 1.5; stroke-dasharray: 5 4; }
+  .before { fill: var(--s1); stroke: var(--surface); stroke-width: 1.5; }
+  .before-late { fill: var(--surface); stroke: var(--s1); stroke-width: 2; }
+  .after { fill: var(--s2); stroke: var(--surface); stroke-width: 1.5; }
+</style>
+<text class="title" x="70" y="26">Scalus JIT: compile time of 89 contracts</text>
+<text class="sub" x="70" y="46">One dot per contract, fresh staging compiler per script, Apple M3 Max, October 2026</text>
+<circle class="before" cx="75" cy="68" r="5"/>
+<text class="label" x="86" y="72">Before the fix</text>
+<circle class="before-late" cx="203" cy="68" r="4.5"/>
+<text class="label" x="214" y="72">Before, finished after the timeout</text>
+<circle class="after" cx="461" cy="68" r="5"/>
+<text class="label" x="472" y="72">After the fix</text>
+<line class="grid" x1="70" x2="590" y1="412.0" y2="412.0"/>
+<text class="tick" x="62" y="416.0" text-anchor="end">1 s</text>
+<line class="grid" x1="70" x2="590" y1="373.1" y2="373.1"/>
+<text class="tick" x="62" y="377.1" text-anchor="end">2 s</text>
+<line class="grid" x1="70" x2="590" y1="321.7" y2="321.7"/>
+<text class="tick" x="62" y="325.7" text-anchor="end">5 s</text>
+<line class="grid" x1="70" x2="590" y1="282.8" y2="282.8"/>
+<text class="tick" x="62" y="286.8" text-anchor="end">10 s</text>
+<line class="grid" x1="70" x2="590" y1="243.9" y2="243.9"/>
+<text class="tick" x="62" y="247.9" text-anchor="end">20 s</text>
+<line class="grid" x1="70" x2="590" y1="192.5" y2="192.5"/>
+<text class="tick" x="62" y="196.5" text-anchor="end">50 s</text>
+<line class="grid" x1="70" x2="590" y1="153.6" y2="153.6"/>
+<text class="tick" x="62" y="157.6" text-anchor="end">100 s</text>
+<line class="grid" x1="70" x2="590" y1="114.7" y2="114.7"/>
+<text class="tick" x="62" y="118.7" text-anchor="end">200 s</text>
+<line class="axis" x1="70" x2="590" y1="412" y2="412"/>
+<line class="axis" x1="70.0" x2="70.0" y1="412" y2="417"/>
+<text class="tick" x="70.0" y="432" text-anchor="middle">0</text>
+<line class="axis" x1="243.3" x2="243.3" y1="412" y2="417"/>
+<text class="tick" x="243.3" y="432" text-anchor="middle">5k</text>
+<line class="axis" x1="416.7" x2="416.7" y1="412" y2="417"/>
+<text class="tick" x="416.7" y="432" text-anchor="middle">10k</text>
+<line class="axis" x1="590.0" x2="590.0" y1="412" y2="417"/>
+<text class="tick" x="590.0" y="432" text-anchor="middle">15k</text>
+<text class="sub" x="330.0" y="458" text-anchor="middle">UPLC term size, nodes</text>
+<text class="sub" transform="translate(16 252.0) rotate(-90)" text-anchor="middle">Compile time, log scale</text>
+<line class="timeout" x1="70" x2="590" y1="143.4" y2="143.4"/>
+<text class="label2" x="598" y="147.4">120 s timeout</text>
+<circle class="after" cx="124.5" cy="367.9" r="4.5"><title>guardrail-unsorted-large: 1571 nodes, 2.2 s after the fix</title></circle>
+<circle class="after" cx="124.5" cy="382.5" r="4.5"><title>guardrail-unsorted-small: 1571 nodes, 1.7 s after the fix</title></circle>
+<circle class="after" cx="124.7" cy="382.4" r="4.5"><title>guardrail-sorted-large: 1577 nodes, 1.7 s after the fix</title></circle>
+<circle class="after" cx="124.7" cy="387.1" r="4.5"><title>guardrail-sorted-small: 1577 nodes, 1.6 s after the fix</title></circle>
+<circle class="after" cx="129.1" cy="389.4" r="4.5"><title>coop-1: 1705 nodes, 1.5 s after the fix</title></circle>
+<circle class="after" cx="136.8" cy="384.4" r="4.5"><title>coop-6: 1926 nodes, 1.6 s after the fix</title></circle>
+<circle class="after" cx="136.8" cy="385.4" r="4.5"><title>coop-7: 1926 nodes, 1.6 s after the fix</title></circle>
+<circle class="after" cx="178.1" cy="381.7" r="4.5"><title>prism-1: 3119 nodes, 1.7 s after the fix</title></circle>
+<circle class="after" cx="181.6" cy="381.1" r="4.5"><title>game-sm-success_1-2: 3218 nodes, 1.7 s after the fix</title></circle>
+<circle class="after" cx="181.6" cy="380.8" r="4.5"><title>game-sm-success_1-4: 3218 nodes, 1.7 s after the fix</title></circle>
+<circle class="after" cx="181.6" cy="379.9" r="4.5"><title>game-sm-success_2-2: 3218 nodes, 1.8 s after the fix</title></circle>
+<circle class="after" cx="181.6" cy="383.0" r="4.5"><title>game-sm-success_2-4: 3218 nodes, 1.7 s after the fix</title></circle>
+<circle class="after" cx="181.6" cy="381.4" r="4.5"><title>game-sm-success_2-6: 3218 nodes, 1.7 s after the fix</title></circle>
+<circle class="after" cx="181.6" cy="381.8" r="4.5"><title>stablecoin_1-2: 3218 nodes, 1.7 s after the fix</title></circle>
+<circle class="after" cx="181.6" cy="381.9" r="4.5"><title>stablecoin_1-4: 3218 nodes, 1.7 s after the fix</title></circle>
+<circle class="after" cx="181.6" cy="379.1" r="4.5"><title>stablecoin_1-6: 3218 nodes, 1.8 s after the fix</title></circle>
+<circle class="after" cx="181.6" cy="381.2" r="4.5"><title>stablecoin_2-2: 3218 nodes, 1.7 s after the fix</title></circle>
+<circle class="after" cx="181.6" cy="381.3" r="4.5"><title>stablecoin_2-4: 3218 nodes, 1.7 s after the fix</title></circle>
+<circle class="after" cx="181.6" cy="386.7" r="4.5"><title>pubkey-1: 3220 nodes, 1.6 s after the fix</title></circle>
+<circle class="after" cx="188.3" cy="380.7" r="4.5"><title>uniswap-4: 3412 nodes, 1.7 s after the fix</title></circle>
+<circle class="after" cx="188.3" cy="382.4" r="4.5"><title>uniswap-6: 3412 nodes, 1.7 s after the fix</title></circle>
+<circle class="after" cx="197.7" cy="376.9" r="4.5"><title>auction_1-1: 3685 nodes, 1.9 s after the fix</title></circle>
+<circle class="after" cx="197.7" cy="375.7" r="4.5"><title>auction_1-4: 3685 nodes, 1.9 s after the fix</title></circle>
+<circle class="after" cx="197.7" cy="377.3" r="4.5"><title>auction_2-1: 3685 nodes, 1.9 s after the fix</title></circle>
+<circle class="after" cx="197.7" cy="374.9" r="4.5"><title>auction_2-5: 3685 nodes, 1.9 s after the fix</title></circle>
+<circle class="after" cx="199.0" cy="353.1" r="4.5"><title>coop-2: 3722 nodes, 2.9 s after the fix</title></circle>
+<circle class="after" cx="199.0" cy="354.1" r="4.5"><title>coop-3: 3722 nodes, 2.8 s after the fix</title></circle>
+<circle class="after" cx="214.9" cy="379.2" r="4.5"><title>token-account-2: 4181 nodes, 1.8 s after the fix</title></circle>
+<circle class="after" cx="218.8" cy="349.2" r="4.5"><title>coop-4: 4291 nodes, 3.1 s after the fix</title></circle>
+<circle class="after" cx="218.8" cy="349.4" r="4.5"><title>coop-5: 4291 nodes, 3.1 s after the fix</title></circle>
+<circle class="after" cx="225.2" cy="364.7" r="4.5"><title>token-account-1: 4477 nodes, 2.3 s after the fix</title></circle>
+<circle class="after" cx="225.2" cy="365.6" r="4.5"><title>uniswap-2: 4477 nodes, 2.3 s after the fix</title></circle>
+<circle class="after" cx="225.6" cy="366.4" r="4.5"><title>currency-1: 4488 nodes, 2.3 s after the fix</title></circle>
+<circle class="after" cx="225.6" cy="363.6" r="4.5"><title>future-increase-margin-1: 4488 nodes, 2.4 s after the fix</title></circle>
+<circle class="after" cx="225.6" cy="371.0" r="4.5"><title>future-pay-out-1: 4488 nodes, 2.1 s after the fix</title></circle>
+<circle class="after" cx="225.6" cy="365.8" r="4.5"><title>future-settle-early-1: 4488 nodes, 2.3 s after the fix</title></circle>
+<circle class="after" cx="226.3" cy="364.8" r="4.5"><title>uniswap-1: 4510 nodes, 2.3 s after the fix</title></circle>
+<circle class="after" cx="227.2" cy="365.4" r="4.5"><title>prism-3: 4536 nodes, 2.3 s after the fix</title></circle>
+<circle class="after" cx="232.0" cy="376.8" r="4.5"><title>crowdfunding-success-1: 4674 nodes, 1.9 s after the fix</title></circle>
+<circle class="after" cx="232.0" cy="375.9" r="4.5"><title>crowdfunding-success-2: 4674 nodes, 1.9 s after the fix</title></circle>
+<circle class="after" cx="232.0" cy="374.5" r="4.5"><title>crowdfunding-success-3: 4674 nodes, 2.0 s after the fix</title></circle>
+<circle class="after" cx="280.4" cy="364.9" r="4.5"><title>escrow-redeem_1-1: 6070 nodes, 2.3 s after the fix</title></circle>
+<circle class="after" cx="280.4" cy="365.4" r="4.5"><title>escrow-redeem_1-2: 6070 nodes, 2.3 s after the fix</title></circle>
+<circle class="after" cx="280.4" cy="364.5" r="4.5"><title>escrow-redeem_2-1: 6070 nodes, 2.3 s after the fix</title></circle>
+<circle class="after" cx="280.4" cy="366.4" r="4.5"><title>escrow-redeem_2-2: 6070 nodes, 2.3 s after the fix</title></circle>
+<circle class="after" cx="280.4" cy="365.3" r="4.5"><title>escrow-redeem_2-3: 6070 nodes, 2.3 s after the fix</title></circle>
+<circle class="after" cx="280.4" cy="366.2" r="4.5"><title>escrow-refund-1: 6070 nodes, 2.3 s after the fix</title></circle>
+<circle class="after" cx="281.7" cy="365.0" r="4.5"><title>future-increase-margin-2: 6106 nodes, 2.3 s after the fix</title></circle>
+<circle class="after" cx="281.7" cy="364.5" r="4.5"><title>future-increase-margin-3: 6106 nodes, 2.3 s after the fix</title></circle>
+<circle class="after" cx="281.7" cy="365.8" r="4.5"><title>future-pay-out-2: 6106 nodes, 2.3 s after the fix</title></circle>
+<circle class="after" cx="281.7" cy="366.1" r="4.5"><title>future-pay-out-3: 6106 nodes, 2.3 s after the fix</title></circle>
+<circle class="after" cx="281.7" cy="366.3" r="4.5"><title>future-settle-early-2: 6106 nodes, 2.3 s after the fix</title></circle>
+<circle class="after" cx="281.7" cy="372.1" r="4.5"><title>future-settle-early-3: 6106 nodes, 2.0 s after the fix</title></circle>
+<circle class="after" cx="286.5" cy="364.7" r="4.5"><title>vesting-1: 6246 nodes, 2.3 s after the fix</title></circle>
+<circle class="after" cx="377.4" cy="337.8" r="4.5"><title>ping-pong-1: 8868 nodes, 3.8 s after the fix</title></circle>
+<circle class="after" cx="377.4" cy="337.6" r="4.5"><title>ping-pong-2: 8868 nodes, 3.8 s after the fix</title></circle>
+<circle class="after" cx="377.4" cy="339.6" r="4.5"><title>ping-pong_2-1: 8868 nodes, 3.6 s after the fix</title></circle>
+<circle class="after" cx="391.3" cy="333.1" r="4.5"><title>prism-2: 9267 nodes, 4.1 s after the fix</title></circle>
+<circle class="after" cx="396.3" cy="333.9" r="4.5"><title>game-sm-success_1-1: 9413 nodes, 4.0 s after the fix</title></circle>
+<circle class="after" cx="396.3" cy="334.6" r="4.5"><title>game-sm-success_1-3: 9413 nodes, 4.0 s after the fix</title></circle>
+<circle class="after" cx="396.3" cy="334.0" r="4.5"><title>game-sm-success_2-1: 9413 nodes, 4.0 s after the fix</title></circle>
+<circle class="after" cx="396.3" cy="333.7" r="4.5"><title>game-sm-success_2-3: 9413 nodes, 4.0 s after the fix</title></circle>
+<circle class="after" cx="396.3" cy="335.1" r="4.5"><title>game-sm-success_2-5: 9413 nodes, 3.9 s after the fix</title></circle>
+<circle class="after" cx="403.3" cy="333.8" r="4.5"><title>auction_1-2: 9615 nodes, 4.0 s after the fix</title></circle>
+<circle class="after" cx="403.3" cy="334.5" r="4.5"><title>auction_1-3: 9615 nodes, 4.0 s after the fix</title></circle>
+<circle class="after" cx="403.3" cy="333.4" r="4.5"><title>auction_2-2: 9615 nodes, 4.1 s after the fix</title></circle>
+<circle class="after" cx="403.3" cy="333.6" r="4.5"><title>auction_2-3: 9615 nodes, 4.0 s after the fix</title></circle>
+<circle class="after" cx="403.3" cy="334.0" r="4.5"><title>auction_2-4: 9615 nodes, 4.0 s after the fix</title></circle>
+<circle class="after" cx="425.8" cy="325.3" r="4.5"><title>multisig-sm-01: 10264 nodes, 4.7 s after the fix</title></circle>
+<circle class="after" cx="425.8" cy="324.6" r="4.5"><title>multisig-sm-02: 10264 nodes, 4.7 s after the fix</title></circle>
+<circle class="after" cx="425.8" cy="326.0" r="4.5"><title>multisig-sm-03: 10264 nodes, 4.6 s after the fix</title></circle>
+<circle class="after" cx="425.8" cy="324.8" r="4.5"><title>multisig-sm-04: 10264 nodes, 4.7 s after the fix</title></circle>
+<circle class="after" cx="425.8" cy="325.6" r="4.5"><title>multisig-sm-05: 10264 nodes, 4.7 s after the fix</title></circle>
+<circle class="after" cx="425.8" cy="325.6" r="4.5"><title>multisig-sm-06: 10264 nodes, 4.7 s after the fix</title></circle>
+<circle class="after" cx="425.8" cy="324.2" r="4.5"><title>multisig-sm-07: 10264 nodes, 4.8 s after the fix</title></circle>
+<circle class="after" cx="425.8" cy="325.3" r="4.5"><title>multisig-sm-08: 10264 nodes, 4.7 s after the fix</title></circle>
+<circle class="after" cx="425.8" cy="325.4" r="4.5"><title>multisig-sm-09: 10264 nodes, 4.7 s after the fix</title></circle>
+<circle class="after" cx="425.8" cy="325.4" r="4.5"><title>multisig-sm-10: 10264 nodes, 4.7 s after the fix</title></circle>
+<circle class="after" cx="474.7" cy="314.3" r="4.5"><title>future-increase-margin-4: 11675 nodes, 5.7 s after the fix</title></circle>
+<circle class="after" cx="474.7" cy="313.8" r="4.5"><title>future-increase-margin-5: 11675 nodes, 5.8 s after the fix</title></circle>
+<circle class="after" cx="474.7" cy="313.3" r="4.5"><title>future-settle-early-4: 11675 nodes, 5.8 s after the fix</title></circle>
+<circle class="after" cx="477.4" cy="324.0" r="4.5"><title>uniswap-3: 11751 nodes, 4.8 s after the fix</title></circle>
+<circle class="after" cx="477.4" cy="323.9" r="4.5"><title>uniswap-5: 11751 nodes, 4.8 s after the fix</title></circle>
+<circle class="after" cx="563.5" cy="298.6" r="4.5"><title>stablecoin_1-1: 14235 nodes, 7.6 s after the fix</title></circle>
+<circle class="after" cx="563.5" cy="298.0" r="4.5"><title>stablecoin_1-3: 14235 nodes, 7.6 s after the fix</title></circle>
+<circle class="after" cx="563.5" cy="299.8" r="4.5"><title>stablecoin_1-5: 14235 nodes, 7.4 s after the fix</title></circle>
+<circle class="after" cx="563.5" cy="299.9" r="4.5"><title>stablecoin_2-1: 14235 nodes, 7.4 s after the fix</title></circle>
+<circle class="after" cx="563.5" cy="297.9" r="4.5"><title>stablecoin_2-3: 14235 nodes, 7.6 s after the fix</title></circle>
+<circle class="after" cx="474.7" cy="313.5" r="4.5"><title>future-pay-out-4: 11675 nodes, 5.8 s after the fix</title></circle>
+<circle class="before" cx="124.5" cy="318.9" r="4.5"><title>guardrail-unsorted-large: 1571 nodes, 5.3 s, before the fix</title></circle>
+<circle class="before" cx="124.5" cy="327.5" r="4.5"><title>guardrail-unsorted-small: 1571 nodes, 4.5 s, before the fix</title></circle>
+<circle class="before" cx="124.7" cy="327.9" r="4.5"><title>guardrail-sorted-large: 1577 nodes, 4.5 s, before the fix</title></circle>
+<circle class="before" cx="124.7" cy="331.5" r="4.5"><title>guardrail-sorted-small: 1577 nodes, 4.2 s, before the fix</title></circle>
+<circle class="before" cx="129.1" cy="318.8" r="4.5"><title>coop-1: 1705 nodes, 5.3 s, before the fix</title></circle>
+<circle class="before" cx="136.8" cy="308.6" r="4.5"><title>coop-6: 1926 nodes, 6.3 s, before the fix</title></circle>
+<circle class="before" cx="136.8" cy="309.7" r="4.5"><title>coop-7: 1926 nodes, 6.2 s, before the fix</title></circle>
+<circle class="before" cx="178.1" cy="263.7" r="4.5"><title>prism-1: 3119 nodes, 14.0 s, before the fix</title></circle>
+<circle class="before" cx="181.6" cy="257.8" r="4.5"><title>game-sm-success_1-2: 3218 nodes, 15.6 s, before the fix</title></circle>
+<circle class="before" cx="181.6" cy="257.8" r="4.5"><title>game-sm-success_1-4: 3218 nodes, 15.6 s, before the fix</title></circle>
+<circle class="before" cx="181.6" cy="257.4" r="4.5"><title>game-sm-success_2-2: 3218 nodes, 15.7 s, before the fix</title></circle>
+<circle class="before" cx="181.6" cy="257.0" r="4.5"><title>game-sm-success_2-4: 3218 nodes, 15.8 s, before the fix</title></circle>
+<circle class="before" cx="181.6" cy="256.3" r="4.5"><title>game-sm-success_2-6: 3218 nodes, 16.0 s, before the fix</title></circle>
+<circle class="before" cx="181.6" cy="255.5" r="4.5"><title>stablecoin_1-2: 3218 nodes, 16.3 s, before the fix</title></circle>
+<circle class="before" cx="181.6" cy="254.1" r="4.5"><title>stablecoin_1-4: 3218 nodes, 16.7 s, before the fix</title></circle>
+<circle class="before" cx="181.6" cy="256.3" r="4.5"><title>stablecoin_1-6: 3218 nodes, 16.0 s, before the fix</title></circle>
+<circle class="before" cx="181.6" cy="257.2" r="4.5"><title>stablecoin_2-2: 3218 nodes, 15.8 s, before the fix</title></circle>
+<circle class="before" cx="181.6" cy="254.6" r="4.5"><title>stablecoin_2-4: 3218 nodes, 16.5 s, before the fix</title></circle>
+<circle class="before" cx="181.6" cy="271.9" r="4.5"><title>pubkey-1: 3220 nodes, 12.1 s, before the fix</title></circle>
+<circle class="before" cx="188.3" cy="258.5" r="4.5"><title>uniswap-4: 3412 nodes, 15.4 s, before the fix</title></circle>
+<circle class="before" cx="188.3" cy="260.8" r="4.5"><title>uniswap-6: 3412 nodes, 14.8 s, before the fix</title></circle>
+<circle class="before" cx="197.7" cy="243.6" r="4.5"><title>auction_1-1: 3685 nodes, 20.1 s, before the fix</title></circle>
+<circle class="before" cx="197.7" cy="243.1" r="4.5"><title>auction_1-4: 3685 nodes, 20.3 s, before the fix</title></circle>
+<circle class="before" cx="197.7" cy="243.9" r="4.5"><title>auction_2-1: 3685 nodes, 20.0 s, before the fix</title></circle>
+<circle class="before" cx="197.7" cy="243.7" r="4.5"><title>auction_2-5: 3685 nodes, 20.1 s, before the fix</title></circle>
+<circle class="before" cx="199.0" cy="231.2" r="4.5"><title>coop-2: 3722 nodes, 25.1 s, before the fix</title></circle>
+<circle class="before" cx="199.0" cy="231.7" r="4.5"><title>coop-3: 3722 nodes, 24.9 s, before the fix</title></circle>
+<circle class="before" cx="214.9" cy="265.0" r="4.5"><title>token-account-2: 4181 nodes, 13.7 s, before the fix</title></circle>
+<circle class="before" cx="218.8" cy="232.8" r="4.5"><title>coop-4: 4291 nodes, 24.4 s, before the fix</title></circle>
+<circle class="before" cx="218.8" cy="232.3" r="4.5"><title>coop-5: 4291 nodes, 24.6 s, before the fix</title></circle>
+<circle class="before" cx="225.2" cy="219.5" r="4.5"><title>token-account-1: 4477 nodes, 30.9 s, before the fix</title></circle>
+<circle class="before" cx="225.2" cy="218.7" r="4.5"><title>uniswap-2: 4477 nodes, 31.4 s, before the fix</title></circle>
+<circle class="before" cx="225.6" cy="220.1" r="4.5"><title>currency-1: 4488 nodes, 30.6 s, before the fix</title></circle>
+<circle class="before" cx="225.6" cy="220.6" r="4.5"><title>future-increase-margin-1: 4488 nodes, 30.3 s, before the fix</title></circle>
+<circle class="before" cx="225.6" cy="219.1" r="4.5"><title>future-pay-out-1: 4488 nodes, 31.1 s, before the fix</title></circle>
+<circle class="before" cx="225.6" cy="220.0" r="4.5"><title>future-settle-early-1: 4488 nodes, 30.6 s, before the fix</title></circle>
+<circle class="before" cx="226.3" cy="220.4" r="4.5"><title>uniswap-1: 4510 nodes, 30.4 s, before the fix</title></circle>
+<circle class="before" cx="227.2" cy="221.3" r="4.5"><title>prism-3: 4536 nodes, 29.9 s, before the fix</title></circle>
+<circle class="before" cx="232.0" cy="259.0" r="4.5"><title>crowdfunding-success-1: 4674 nodes, 15.3 s, before the fix</title></circle>
+<circle class="before" cx="232.0" cy="257.8" r="4.5"><title>crowdfunding-success-2: 4674 nodes, 15.6 s, before the fix</title></circle>
+<circle class="before" cx="232.0" cy="258.9" r="4.5"><title>crowdfunding-success-3: 4674 nodes, 15.3 s, before the fix</title></circle>
+<circle class="before" cx="280.4" cy="240.0" r="4.5"><title>escrow-redeem_1-1: 6070 nodes, 21.4 s, before the fix</title></circle>
+<circle class="before" cx="280.4" cy="239.4" r="4.5"><title>escrow-redeem_1-2: 6070 nodes, 21.7 s, before the fix</title></circle>
+<circle class="before" cx="280.4" cy="239.6" r="4.5"><title>escrow-redeem_2-1: 6070 nodes, 21.6 s, before the fix</title></circle>
+<circle class="before" cx="280.4" cy="239.8" r="4.5"><title>escrow-redeem_2-2: 6070 nodes, 21.5 s, before the fix</title></circle>
+<circle class="before" cx="280.4" cy="238.1" r="4.5"><title>escrow-redeem_2-3: 6070 nodes, 22.2 s, before the fix</title></circle>
+<circle class="before" cx="280.4" cy="239.9" r="4.5"><title>escrow-refund-1: 6070 nodes, 21.5 s, before the fix</title></circle>
+<circle class="before" cx="281.7" cy="239.9" r="4.5"><title>future-increase-margin-2: 6106 nodes, 21.5 s, before the fix</title></circle>
+<circle class="before" cx="281.7" cy="238.5" r="4.5"><title>future-increase-margin-3: 6106 nodes, 22.0 s, before the fix</title></circle>
+<circle class="before" cx="281.7" cy="239.6" r="4.5"><title>future-pay-out-2: 6106 nodes, 21.6 s, before the fix</title></circle>
+<circle class="before" cx="281.7" cy="240.0" r="4.5"><title>future-pay-out-3: 6106 nodes, 21.4 s, before the fix</title></circle>
+<circle class="before" cx="281.7" cy="239.2" r="4.5"><title>future-settle-early-2: 6106 nodes, 21.7 s, before the fix</title></circle>
+<circle class="before" cx="281.7" cy="240.6" r="4.5"><title>future-settle-early-3: 6106 nodes, 21.2 s, before the fix</title></circle>
+<circle class="before" cx="286.5" cy="240.7" r="4.5"><title>vesting-1: 6246 nodes, 21.2 s, before the fix</title></circle>
+<circle class="before" cx="377.4" cy="183.1" r="4.5"><title>ping-pong-1: 8868 nodes, 59.2 s, before the fix</title></circle>
+<circle class="before" cx="377.4" cy="182.4" r="4.5"><title>ping-pong-2: 8868 nodes, 59.8 s, before the fix</title></circle>
+<circle class="before" cx="377.4" cy="182.4" r="4.5"><title>ping-pong_2-1: 8868 nodes, 59.9 s, before the fix</title></circle>
+<circle class="before" cx="391.3" cy="172.1" r="4.5"><title>prism-2: 9267 nodes, 72.0 s, before the fix</title></circle>
+<circle class="before" cx="396.3" cy="175.5" r="4.5"><title>game-sm-success_1-1: 9413 nodes, 67.8 s, before the fix</title></circle>
+<circle class="before" cx="396.3" cy="174.4" r="4.5"><title>game-sm-success_1-3: 9413 nodes, 69.1 s, before the fix</title></circle>
+<circle class="before" cx="396.3" cy="174.3" r="4.5"><title>game-sm-success_2-1: 9413 nodes, 69.2 s, before the fix</title></circle>
+<circle class="before" cx="396.3" cy="174.5" r="4.5"><title>game-sm-success_2-3: 9413 nodes, 68.9 s, before the fix</title></circle>
+<circle class="before" cx="396.3" cy="175.3" r="4.5"><title>game-sm-success_2-5: 9413 nodes, 68.0 s, before the fix</title></circle>
+<circle class="before" cx="403.3" cy="171.7" r="4.5"><title>auction_1-2: 9615 nodes, 72.5 s, before the fix</title></circle>
+<circle class="before" cx="403.3" cy="172.5" r="4.5"><title>auction_1-3: 9615 nodes, 71.5 s, before the fix</title></circle>
+<circle class="before" cx="403.3" cy="172.0" r="4.5"><title>auction_2-2: 9615 nodes, 72.1 s, before the fix</title></circle>
+<circle class="before" cx="403.3" cy="171.8" r="4.5"><title>auction_2-3: 9615 nodes, 72.3 s, before the fix</title></circle>
+<circle class="before" cx="403.3" cy="171.9" r="4.5"><title>auction_2-4: 9615 nodes, 72.3 s, before the fix</title></circle>
+<circle class="before" cx="425.8" cy="156.7" r="4.5"><title>multisig-sm-01: 10264 nodes, 94.7 s, before the fix</title></circle>
+<circle class="before" cx="425.8" cy="156.0" r="4.5"><title>multisig-sm-02: 10264 nodes, 95.8 s, before the fix</title></circle>
+<circle class="before" cx="425.8" cy="156.4" r="4.5"><title>multisig-sm-03: 10264 nodes, 95.2 s, before the fix</title></circle>
+<circle class="before" cx="425.8" cy="156.0" r="4.5"><title>multisig-sm-04: 10264 nodes, 95.8 s, before the fix</title></circle>
+<circle class="before" cx="425.8" cy="156.4" r="4.5"><title>multisig-sm-05: 10264 nodes, 95.1 s, before the fix</title></circle>
+<circle class="before" cx="425.8" cy="155.6" r="4.5"><title>multisig-sm-06: 10264 nodes, 96.5 s, before the fix</title></circle>
+<circle class="before" cx="425.8" cy="156.3" r="4.5"><title>multisig-sm-07: 10264 nodes, 95.4 s, before the fix</title></circle>
+<circle class="before" cx="425.8" cy="156.6" r="4.5"><title>multisig-sm-08: 10264 nodes, 94.9 s, before the fix</title></circle>
+<circle class="before" cx="425.8" cy="156.7" r="4.5"><title>multisig-sm-09: 10264 nodes, 94.7 s, before the fix</title></circle>
+<circle class="before" cx="425.8" cy="156.5" r="4.5"><title>multisig-sm-10: 10264 nodes, 95.0 s, before the fix</title></circle>
+<circle class="before-late" cx="474.7" cy="136.5" r="4.5"><title>future-increase-margin-4: 11675 nodes, 135.7 s, finished after the timeout</title></circle>
+<circle class="before-late" cx="474.7" cy="136.9" r="4.5"><title>future-increase-margin-5: 11675 nodes, 134.7 s, finished after the timeout</title></circle>
+<circle class="before-late" cx="474.7" cy="136.9" r="4.5"><title>future-settle-early-4: 11675 nodes, 134.7 s, finished after the timeout</title></circle>
+<circle class="before" cx="477.4" cy="163.9" r="4.5"><title>uniswap-3: 11751 nodes, 83.3 s, before the fix</title></circle>
+<circle class="before" cx="477.4" cy="163.8" r="4.5"><title>uniswap-5: 11751 nodes, 83.5 s, before the fix</title></circle>
+<circle class="before-late" cx="563.5" cy="116.3" r="4.5"><title>stablecoin_1-1: 14235 nodes, 194.4 s, finished after the timeout</title></circle>
+<circle class="before-late" cx="563.5" cy="116.2" r="4.5"><title>stablecoin_1-3: 14235 nodes, 194.7 s, finished after the timeout</title></circle>
+<circle class="before-late" cx="563.5" cy="116.0" r="4.5"><title>stablecoin_1-5: 14235 nodes, 195.6 s, finished after the timeout</title></circle>
+<circle class="before-late" cx="563.5" cy="115.9" r="4.5"><title>stablecoin_2-1: 14235 nodes, 196.1 s, finished after the timeout</title></circle>
+<circle class="before-late" cx="563.5" cy="115.6" r="4.5"><title>stablecoin_2-3: 14235 nodes, 196.9 s, finished after the timeout</title></circle>
+<circle class="before-late" cx="474.7" cy="136.5" r="4.5"><title>future-pay-out-4: 11675 nodes, 135.7 s, finished after the timeout</title></circle>
+<text class="label" x="598" y="236.9">Before</text>
+<text class="label2" x="598" y="252.9">median 21.9 s</text>
+<text class="label" x="598" y="362.8">After</text>
+<text class="label2" x="598" y="378.8">median 2.3 s</text>
+<line class="axis" x1="584" x2="594" y1="238.9" y2="238.9"/>
+<line class="axis" x1="584" x2="594" y1="364.8" y2="364.8"/>
+</svg>

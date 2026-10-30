@@ -5,6 +5,12 @@
         <link>https://lantr.io</link>
         <description>Insights and updates on blockchain development, smart contracts, and decentralized infrastructure from Lantr Engineering</description>
         <item>
+          <title>Blazing-Fast Lambda Calculus via Metaprogramming</title>
+          <link>https://lantr.io/blog/blazing-fast-lambda-calculus-scala-3-staging</link>
+          <description>How Scala 3 staging turns a lambda-calculus interpreter into a compiler, why the production version runs real Cardano contracts about three times faster than the Haskell reference VM, and the quadratic compile-time bug hidden behind a dollar sign. The written version of my ScalaDays 2026 talk.</description>
+          <pubDate>Fri, 30 Oct 2026 00:00:00 GMT</pubDate>
+        </item>
+<item>
           <title>Applying Functions with Sums of Products: The case/constr Trick and When It Actually Pays</title>
           <link>https://lantr.io/blog/plutus-v3-case-constr-function-application</link>
           <description>Plutus V3 lets you call a function through a case expression instead of nested applies, spending fewer execution units. Every major Cardano compiler now does it above two arguments. But that threshold is only half the calculation: the encoding is also bigger below seven arguments, and measurement shows five sites in six never repeat — so the decision needs a profile, not a rule of thumb.</description>
