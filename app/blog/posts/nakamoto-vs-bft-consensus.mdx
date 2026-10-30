@@ -1,0 +1,130 @@
+---
+title: Two Consensus Families, One Huge Difference
+publishedAt: '2026-05-07'
+summary: Nakamoto-style and BFT-style consensus respond differently when operators come under pressure. A look at finality, censorship, stake liquidity, and recovery—and why voting thresholds matter without telling the whole story.
+tags: blockchain, consensus, decentralization, cardano, ethereum, solana, bitcoin
+author: Alex Nemish
+draft: true
+---
+
+## What happens when governments pressure blockchain operators?
+
+Two broad consensus families frame this comparison.
+
+**Nakamoto-style consensus**, used by Bitcoin and Cardano, lets block producers extend a chain without first collecting a two-thirds vote. Bitcoin selects the valid chain with the most accumulated proof of work. Cardano's Ouroboros uses stake to select block producers and its own chain-selection rules. Neither requires a supermajority certificate for each block. Their security depends on an honest majority of the relevant resource and assumptions about network communication. [Bitcoin whitepaper](https://bitcoin.org/bitcoin.pdf); [Cardano consensus explained](https://docs.cardano.org/about-cardano/learn/consensus-explained).
+
+**Classical Byzantine fault-tolerant (BFT) consensus** uses a supermajority of voting power to commit blocks. Its familiar one-third fault bound means that roughly a third of voting power can prevent the required quorum by withholding votes. The exact boundary depends on the protocol: 33% is shorthand, not an exact universal cutoff. Voting power also need not match the number of validators. [Tendermint consensus documentation](https://docs.tendermint.com/v0.34/introduction/what-is-tendermint.html).
+
+Governments often disagree about which payments should be allowed, just as they disagree on policy at the UN. They may order blockchain operators under their jurisdiction to block certain transactions. If those operators control enough voting power—roughly a third—they can stall BFT finality by refusing to approve blocks containing those transactions or later blocks building on them. On Ethereum, new blocks can still appear, but settlement stalls for everyone on that branch.
+
+Nakamoto-style chains have more room to withstand this particular pressure. If censoring operators control a third of the mining power or stake, the honest majority can generally keep including and confirming transactions, provided the protocol's network and security assumptions hold. What matters is not just the number of operators, but how much power governments can pressure at once.
+
+This is a hypothetical attack scenario, not a claim that any particular group of countries controls that much stake. Mining pools and Cardano stake pools can face the same pressure.
+
+---
+
+## Finality: what does “confirmed” mean?
+
+### Bitcoin and Cardano: confidence grows with depth
+
+A block's first appearance is not a guarantee that it will remain in the accepted history. Later blocks increase confidence, but the required wait depends on the adversary and the risk a user is willing to accept.
+
+- **Bitcoin**: six confirmations take about an hour on average. That is a convention, not a protocol guarantee. A minority attacker can still reverse recent history with some probability; under the whitepaper's honest-majority model, that probability falls with confirmation depth. [Bitcoin whitepaper](https://bitcoin.org/bitcoin.pdf).
+- **Cardano**: there is no universal “two-minute finality” guarantee. Its security parameter of 2,160 blocks corresponds to about 12 hours at the expected block rate. The documented stability window uses a different expression, `3k/f`, which gives 36 hours with `k = 2160` and `f = 0.05` for one-second slots. These are different measures, not a 12–36-hour range caused by slot luck. Shorter acceptance times need an explicit risk assumption. [Settlement Speed proposal](https://cips.cardano.org/cps/CPS-0017); [Cardano confirmation documentation](https://docs.cardano.org/about-cardano/learn/chain-confirmation-versus-transaction-confirmation).
+
+### Ethereum: fork choice plus finality
+
+Ethereum combines LMD-GHOST, which chooses the chain head using validator votes, with Casper FFG, which finalizes checkpoints using votes representing at least two-thirds of the relevant stake. Calling the whole system Gasper is more precise than calling it Nakamoto consensus with an extra layer.
+
+Finalizing a checkpoint also commits to its ancestors. Under Casper's accountable-safety assumptions, conflicting finalized checkpoints imply that at least one-third of stake committed slashable offenses. That is a different guarantee from waiting for more blocks on a probabilistic chain. [Ethereum's Gasper documentation](https://ethereum.org/developers/docs/consensus-mechanisms/pos/gasper/).
+
+### Solana: distinguish processing, confirmation, and finalization
+
+Solana exposes three commitment levels: `processed`, `confirmed`, and `finalized`. A processed block can still be rolled back. Confirmation requires direct votes from more than two-thirds of active stake; finalization is the stronger commitment associated with maximum vote lockout. A short slot time is therefore not itself a finality guarantee. [Solana commitment documentation](https://solana.com/docs/rpc#configuring-state-commitment).
+
+### BFT finality is conditional too
+
+A BFT commit is intended to remain final while the protocol's safety assumptions hold. “Instant finality, no reorgs” hides both the time needed to reach agreement and the possibility that those assumptions fail. Fast finality also does not, by itself, establish how decentralized a network is.
+
+---
+
+## Censorship: leaving a transaction out versus blocking settlement
+
+These are two different actions:
+
+- **Filtering proposals**: an operator leaves a transaction out of blocks it produces, but accepts valid blocks from others that include it.
+- **Withholding consensus votes**: an operator refuses to approve those blocks and the history built on them.
+
+The one-third finality argument concerns the second action.
+
+### A minority of Nakamoto-style producers filtering transactions
+
+Suppose one-third of producers leave out a transaction and the remaining two-thirds are willing and able to include it. In a simple model with independent producer selection, adequate block space, and a transaction available to every honest producer, the expected wait for an eligible producer rises by a factor of 1.5.
+
+That calculation describes passive filtering. An attacker who also creates competing forks can cause more disruption. A minority has a nonzero chance of a successful reorganization; more than half of Bitcoin's hashpower lets an attacker reliably outpace the honest chain in the standard model. “Nothing bad happens below 51%” is not the security claim. [Bitcoin whitepaper](https://bitcoin.org/bitcoin.pdf).
+
+### Enough BFT voters withholding approval
+
+A coalition large enough to block the finality quorum can refuse to approve a history containing the targeted transaction. On Ethereum, this can leave blocks accumulating without finality. It does not let every other transaction on the same branch settle normally: finalizing a descendant would also finalize the targeted transaction's history.
+
+To keep finalizing while excluding the transaction, the coalition would need a competing history that omits it and enough support for that history to win. The power to delay finality alone does not establish that ability. [Ethereum attack and defense documentation](https://ethereum.org/developers/docs/consensus-mechanisms/pos/attack-and-defense/).
+
+### Block construction is another source of pressure
+
+Ethereum's MEV-Boost lets validators obtain proposed blocks from a market of builders through relays. That creates another place where transaction selection can be influenced. A proposer using a filtering relay may leave a transaction out of its own block while still attesting to another proposer's block that includes it. [Flashbots MEV-Boost documentation](https://docs.flashbots.net/flashbots-mev-boost/introduction).
+
+The inference is straightforward: a high share of filtering builders or relays can make inclusion harder, but that statistic alone does not demonstrate a finality attack. Builder concentration and consensus voting power need to be measured separately.
+
+The same care applies to operator counts. One organization may run many validators or pools. Different organizations may share a hosting provider or legal jurisdiction. A useful comparison must count independent control and identify shared dependencies, rather than treating every validator identity as an independent actor.
+
+---
+
+## Bonded versus liquid stake
+
+Consensus thresholds are only part of the comparison. It also matters how easily users can move their support away from an operator.
+
+Ethereum validators commit stake and face withdrawal delays and penalties, including slashing for specified conflicting votes. Solana also has a stake activation and deactivation process, but its published staking guidance describes slashing as nonautomatic. These mechanisms should not be treated as identical. [Ethereum solo staking](https://ethereum.org/staking/solo/); [Solana staking guidance](https://solana.com/staking).
+
+**Liquid staking tokens (LSTs)** add another distinction. A holder can sell a token such as Lido's stETH without waiting for a protocol withdrawal, subject to market liquidity, fees, and the available price. But selling the token transfers the claim to someone else; it does not necessarily remove the underlying stake from the operator. Redeeming through the protocol follows a withdrawal process. [Lido token documentation](https://docs.lido.fi/guides/lido-tokens-integration-guide/).
+
+Cardano delegation leaves ADA spendable in the owner's wallet. Changing delegation requires a transaction and takes effect through the stake-snapshot cycle, rather than changing block-production power immediately. There is no unstaking queue for spending delegated ADA. That is a useful property for users who want to retain control of their funds. [Cardano delegation documentation](https://docs.cardano.org/about-cardano/learn/delegation); [staking and snapshot cycle](https://developers.cardano.org/docs/developers/curriculum/staking-governance/staking/).
+
+The entry costs also need an honest comparison. Ethereum solo validation requires at least 32 ETH. Cardano's 500 ADA pool registration deposit is separate from pledge, which a stake pool operator (SPO) chooses. Neither number alone describes the cost of attracting enough stake, running infrastructure, or operating competitively. [Ethereum solo staking](https://ethereum.org/staking/solo/); [Cardano pool deposit](https://cardano.org/glossary/); [Cardano pledge documentation](https://docs.cardano.org/about-cardano/learn/pledging-rewards).
+
+Cardano does not slash stake for equivocation—signing conflicting histories. Its security instead relies on Ouroboros's assumptions about honest control of consensus stake. That resource includes delegated stake; an attacker need not buy a majority of all circulating ADA to control a majority of block-production power. [Cardano consensus explained](https://docs.cardano.org/about-cardano/learn/consensus-explained).
+
+My view is that spendable, noncustodial delegation is a meaningful advantage. It reduces one form of exit friction. It does not, on its own, prove that operators are more independent or that the network is harder to censor.
+
+---
+
+## Recovery: compare the same failure
+
+### Temporary loss of participation
+
+If some Bitcoin miners go offline, the others can continue producing blocks, initially more slowly. If Cardano pools go offline, their missed production opportunities can reduce chain growth. Continued security still depends on the remaining honest resource and the protocol's assumptions.
+
+A BFT chain can lose progress when too much voting power goes offline. But if enough honest validators return and communication recovers, a protocol such as Tendermint can resume through its normal consensus rounds. A temporary loss of quorum does not inherently require a human-selected fork or a coordinated reboot. [Tendermint consensus documentation](https://docs.tendermint.com/v0.34/introduction/what-is-tendermint.html).
+
+The important difference is what happens while those operators remain absent: continued chain growth may be possible for an honest-majority chain when a finality quorum is unavailable.
+
+### Persistent refusal to vote
+
+Ethereum has an additional recovery mechanism: the inactivity leak. During an extended loss of finality, validators missing the required participation lose balance until participating validators regain the necessary share of voting power. These are inactivity penalties, not slashing. The protocol measures votes, not whether an operator was censoring, disconnected, or following a legal order. [Ethereum attack and defense documentation](https://ethereum.org/developers/docs/consensus-mechanisms/pos/attack-and-defense/).
+
+### Software failures and conflicting histories
+
+Some incidents do require coordinated recovery. Solana's February 6, 2024 outage involved an infinite compilation loop, a software fix, and a validator restart; block production resumed after roughly five hours. That is evidence of an operational failure and its recovery process, not proof that every BFT quorum loss requires a restart. [Solana's incident report](https://solana.com/news/02-06-24-solana-mainnet-beta-outage-report).
+
+Likewise, a return to honest-majority control does not automatically refund a double-spend or undo the effects of an accepted reorganization. Recovery of block production and recovery from financial damage are different questions.
+
+---
+
+## The thesis
+
+A neutral settlement layer must work among people and governments that do not agree. That makes resistance to coordinated pressure a design requirement, not an edge case.
+
+For the particular threat of roughly a third of consensus power refusing to cooperate, Nakamoto-style chains have a meaningful advantage: an honest majority can generally continue including and confirming transactions under the protocol's assumptions. A BFT finality quorum may be unavailable under comparable pressure.
+
+The tradeoff is that those confirmations provide probabilistic assurance. BFT protocols offer an explicit finality decision under their own fault assumptions. Neither threshold alone determines decentralization, and neither family escapes the need to examine who controls its mining power or stake.
+
+For adversarial global finance, I would give substantial weight to the ability to keep settling transactions under political pressure. Bitcoin and Cardano make a strong case on that axis. The case becomes stronger when it acknowledges what the threshold comparison can—and cannot—prove.
