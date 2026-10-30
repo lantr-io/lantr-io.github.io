@@ -1,0 +1,501 @@
+---
+title: 'Blazing-Fast Lambda Calculus via Metaprogramming'
+author: 'Alexander Nemish'
+tags: scala scala3 staging metaprogramming jit compilers interpreters plutus uplc cardano scalus
+publishedAt: '2026-10-30'
+summary: 'How Scala 3 staging turns a lambda-calculus interpreter into a compiler, why the production version runs real Cardano contracts about three times faster than the Haskell reference VM, and the quadratic compile-time bug hidden behind a dollar sign. The written version of my ScalaDays 2026 talk.'
+---
+
+I gave this talk at ScalaDays 2026 in Berlin on 13 October. This post is the written version: the same story, with the full code, the data behind every chart, and two sets of benchmark numbers – the ones I showed on stage, and a newer public run.
+
+<YouTubeEmbed videoid="xwRdY8Ht-o0" />
+
+## TL;DR
+
+We take the textbook interpreter of a small lambda calculus and, with Scala 3 staging, turn it into a compiler that emits JVM code at runtime. The core of the idea is a few dozen lines. The production version in [Scalus](https://scalus.org), about two thousand lines, runs real Cardano smart contracts about three times faster than the Haskell reference VM. And the hardest part was neither speed nor semantics: it was a quadratic compile time hidden behind a `$`, and the fix is one rule – create each `Expr` where it will live.
+
+All the code from the talk is on GitHub at the tag [`scala-days-2026`](https://github.com/lantr-io/tiny-uplc-jit/tree/scala-days-2026). The slides are [here](/blazing-fast-lambda-calculus/blazing-fast-lambda-calculus-via-metaprogramming-scaladays-2026.pdf).
+
+## Act 1: the quest
+
+### A smart contract is a pure function
+
+Quick context, if you have never touched a blockchain. On Cardano a smart contract is a *validator*: a pure function of the transaction that either returns or fails. If it fails, the transaction is rejected.
+
+```scala
+// illustrative: the shape of a validator
+def validator(datum: Data, redeemer: Data, ctx: ScriptContext): Unit
+// returns → the transaction is valid · fails → it is rejected
+```
+
+Every node re-executes every validator, and that puts four demands on the language it runs in:
+
+- **Deterministic.** The same answer on every node, on every OS, forever.
+- **Metered.** Every step costs CPU and memory budget, paid in fees – otherwise anyone could submit an infinite loop.
+- **Correct.** Bugs lock real money, so we want a language we can reason about formally.
+- **Hot.** Off the main chain, the same scripts run over and over: in layer-2 protocols, in emulators and indexers, and in tests. Property-based testing of a contract means running one script thousands of times.
+
+The last word is why this post exists. The same code, again and again, is exactly the workload where a JIT shines.
+
+### Why lambda calculus
+
+Cardano's answer is Plutus Core: untyped lambda calculus, designed at IOG by a team that included Phil Wadler.
+
+<ZoomableImage src="/blazing-fast-lambda-calculus/phil-wadler-iohk-summit-2019.jpg" alt="Alex Nemish with Phil Wadler at the IOHK Summit 2019" />
+
+*Phil Wadler and me at the IOHK Summit 2019. Photo: Alexander Nemish.*
+
+Phil is one of the designers of Haskell and the author of [Propositions as Types](https://homepages.inf.ed.ac.uk/wadler/papers/propositions-as-types/propositions-as-types.pdf): a type is a proposition and a program is its proof. Lambda calculus is where logic and computation are the same thing, so if you want to prove things about programs, that is where you want to be.
+
+It is also tiny: three constructs and one reduction rule. And it is mechanized: the [Plutus Core metatheory](https://github.com/IntersectMBO/plutus/tree/master/plutus-metatheory) is formalized in Agda, and [PlutusCoreBlaster](https://github.com/input-output-hk/PlutusCoreBlaster) is a Lean 4 formalization with a CEK evaluator, for proofs about compiled scripts. On-chain it is untyped, so the chain does not need to trust a type checker.
+
+The price for all of this: it was not designed to be fast. That is our job.
+
+### Real compiler output: fib from Scala
+
+Here is a plain Scala `fib`, annotated with `@Compile` (imports left out):
+
+```scala
+@Compile object FibContract:
+  def fib(n: BigInt): BigInt = if n <= 1 then n else fib(n - 1) + fib(n - 2)
+```
+
+The Scalus compiler plugin turns it into this UPLC (optimized, common-subexpression elimination off so it reads like the Scala, generated names shortened):
+
+```
+[(lam fib [fib fib])
+  (lam fib
+    (lam n
+      (case [(builtin lessThanEqualsInteger) n (con integer 1)]
+        [(builtin addInteger)
+          [fib fib [(builtin subtractInteger) n (con integer 1)]]
+          [fib fib [(builtin subtractInteger) n (con integer 2)]]]
+        n)))]
+```
+
+Two things to notice. Recursion: UPLC has no `letrec`, so the function takes itself as an argument – `[fib fib]`. The talk opened with the program `(lam x [x x])`: self-application, which applies its argument to itself. Apply it to itself and it runs forever. Self-application is exactly how recursion compiles. And the conditional: Scala's `if` becomes `case` on a builtin `Bool`. `case` is lazy: `False` picks the first branch, `True` the second, and only the chosen branch is evaluated.
+
+Our goal: the smallest UPLC that runs exactly this program – and make it fast.
+
+### The smallest UPLC, as one Scala 3 enum
+
+In Scala 3 the whole language is one enum ([`Term.scala`](https://github.com/lantr-io/tiny-uplc-jit/blob/scala-days-2026/core/src/main/scala/uplc/Term.scala), trimmed):
+
+```scala
+enum Term:
+  case Var(name: String)
+  case LamAbs(name: String, body: Term)
+  case Apply(fun: Term, arg: Term)
+  case Constant(value: Const)
+  case Builtin(fn: DefaultFun)
+  case Case(scrutinee: Term, branches: List[Term])
+  case Error
+
+enum Const:
+  case Integer(value: BigInt)
+  case Bool(value: Boolean)
+```
+
+Exactly the constructs `fib` needs, plus five integer builtins: add, subtract, multiply, equals and less-than-or-equals. Four rules to remember:
+
+1. **Application is strict**: arguments are evaluated before the call.
+2. **`case` on a `Bool` is lazy**: only the chosen branch runs.
+3. **`Error` is the only way to fail**, so a validator either returns or errors.
+4. **Integers are `BigInt`.** UPLC integers are arbitrary precision. If we silently overflowed a `Long`, the same contract would mean different things on different VMs – a consensus bug.
+
+Exact semantics will be a recurring theme. Real Plutus V3 has more – `delay` and `force`, constructors, bytestrings, the `Data` type, about a hundred builtins – but they all follow the same patterns.
+
+### The CEK machine, on a napkin
+
+The [Plutus Core specification](https://plutus.cardano.intersectmbo.org/resources/plutus-core-spec.pdf) defines evaluation with a [CEK machine](https://en.wikipedia.org/wiki/CEK_Machine), from Felleisen and Friedman. Three registers: **C**ontrol, the term being evaluated; **E**nvironment, the values of its free variables; and **K**ontinuation, what to do with the result – an explicit stack of frames on the heap.
+
+The design goal for Plutus Core was that its semantics fit on a napkin. At PlutusFest 2018, IOHK took that literally and printed the CEK rules in gold on black napkins:
+
+<ZoomableImage src="/blazing-fast-lambda-calculus/plutusfest-2018-napkin.jpg" alt="The Plutus Core CEK machine rules printed on a napkin at PlutusFest 2018" />
+
+*The CEK machine on a napkin, PlutusFest 2018. Photo: Alexander Nemish.*
+
+Every line is one transition: `s ▷ M` means "compute `M` with stack `s`", `s ◁ V` means "return `V` to stack `s`". That is the whole machine. Because the continuation lives on the heap, it never overflows the JVM stack, however deep the recursion. Remember that – it comes back to bite us.
+
+Here is the machine in Scala ([`Cek.scala`](https://github.com/lantr-io/tiny-uplc-jit/blob/scala-days-2026/core/src/main/scala/uplc/Cek.scala), trimmed to the transition function):
+
+```scala
+@tailrec
+private def run(state: State, stack: List[Frame]): Value = state match
+  // ---- compute: decompose the term ----
+  case Compute(Var(x), env)       => run(Return(lookup(env, x)), stack)
+  case Compute(LamAbs(x, b), env) => run(Return(VLam(x, b, env)), stack)
+  case Compute(Constant(c), _)    => run(Return(VCon(c)), stack)
+  case Compute(Builtin(fn), _)    => run(Return(VBuiltin(fn, Nil)), stack)
+  case Compute(Apply(f, a), env)  => run(Compute(f, env), ApplyArg(a, env) :: stack)
+  case Compute(Case(s, bs), env)  => run(Compute(s, env), CaseFrame(bs, env) :: stack)
+  case Compute(Error, _)          => throw EvaluationError("(error) evaluated")
+
+  // ---- return: feed the value to the top frame ----
+  case Return(v) =>
+    stack match
+      case Nil                     => v
+      case ApplyArg(arg, env) :: k => run(Compute(arg, env), ApplyTo(v) :: k)
+      case ApplyTo(fun) :: k       => run(applyValue(fun, v), k)
+      case CaseFrame(bs, env) :: k => run(Compute(bs(branchIndex(v, bs.size)), env), k)
+```
+
+Two kinds of state. *Compute* looks at the shape of the term: a variable or a lambda returns immediately, and `Apply` and `Case` push a frame that says what to do later, then continue with the function or the scrutinee. *Return* pops a frame and decides: compute the argument, apply the function, or pick exactly one `case` branch – that is where the laziness of `case` comes from.
+
+Every case is one rule from the napkin, and `@tailrec` turns the whole thing into a loop. About eighty lines, obviously correct, never overflows. The problem: every run re-examines every node of the tree, allocates states and frames, and searches the environment by name.
+
+### The bet
+
+At the talk I asked the room to bet. Same algorithm – a CEK machine, the interpreter the Plutus specification describes – written twice:
+
+- **A.** The reference implementation in Haskell, `plutus-core`, tuned for years by people who really know GHC.
+- **B.** The same machine in Scala, on the JVM, with HotSpot's JIT behind it.
+
+Same 89 real contracts from a public benchmark, same machine, steady state. Which one is faster?
+
+Place your bet before you read on. On the benchmark run I showed in the talk, **Haskell won by 17 %**: 220 µs against 256 µs per script (geometric mean, flat-decode plus evaluation). The JVM by itself does not buy anything: the same interpreter in a different language is just the same interpreter.
+
+That was the answer on 13 October. Two weeks later the answer is B, in both timing modes of the [public benchmark](https://plutus-vm-bench.lantr.io) (run of 2026-10-27):
+
+| Scalus CEK against Haskell `plutus-core` | Scalus CEK | Haskell |
+|---|---:|---:|
+| Decode + eval | 268 µs | 711 µs |
+| Eval only | 171 µs | 276 µs |
+
+*AMD EPYC Milan, GraalVM 25, Scalus 1.4.1, geometric mean over 89 scripts.*
+
+Two things changed between the two answers. Scalus 1.4.1 rewrote the inner loop of its CEK machine (an environment with constant-time extension, and the machine state kept in local variables). And the benchmark moved to a new harness, with a different timing loop, a different machine, and a different way of decoding the scripts. The first run of the new harness, on 23 October with Scalus 1.4.0 – before the rewrite – hints at the split: the Scalus CEK already won decode plus eval, 400 µs against 703 µs, but still lost eval only, 291 µs against 272 µs. That run used a different server, so it is a hint, not a measurement. A clean A/B run on one machine is still to do.
+
+The point of the bet survives either way: whichever interpreter wins, it is still an interpreter. With the same JVM and Scala 3 metaprogramming – a few dozen lines for the core idea, about two thousand for the production JIT – we get about three times faster than that Haskell VM. Not a faster language – a different idea.
+
+## Act 2: the climb
+
+### What if we don't interpret at all?
+
+UPLC is lambda calculus. Scala has lambdas. The JVM is extremely good at running lambdas. What if, instead of interpreting, we translate UPLC lambdas into JVM lambdas and builtins into plain arithmetic – at runtime, when the script is loaded – and let the JVM's JIT compiler do the heavy lifting? We climb there in two steps.
+
+### Tier 1: a tree of closures
+
+If the CEK machine is tier zero, like the interpreter in HotSpot, here is the first step up, with no metaprogramming yet. We walk the term once and build a tree of Scala closures; each node becomes a function from the environment to a value ([`ClosureCompiler.scala`](https://github.com/lantr-io/tiny-uplc-jit/blob/scala-days-2026/core/src/main/scala/uplc/ClosureCompiler.scala), simplified):
+
+```scala
+type Code = Frame | Null => Any // built once, run many times
+
+private def compileTerm(term: Term, scope: List[String]): Code = term match
+  case Var(name) =>
+    val depth = scope.indexOf(name) // resolved at compile time
+    env => lookup(env, depth)
+  case LamAbs(name, body) =>
+    val bodyCode = compileTerm(body, name :: scope)
+    env => (arg: Any) => bodyCode(Frame(arg, env)) // a real JVM lambda
+  case Apply(fun, arg) =>
+    val funCode = compileTerm(fun, scope)
+    val argCode = compileTerm(arg, scope)
+    env =>
+      val f = funCode(env) // the function first, then the argument
+      Runtime.apply(f, argCode(env))
+  // … constants, builtins, case, error
+```
+
+Variable names become depths at compile time. A UPLC lambda becomes a real Scala lambda. Application is just a call, and saturated builtins become direct calls on `BigInt`. This classic technique already gives **16×** over our CEK machine on `fib 20`, on the stage laptop (the full table is below).
+
+Why isn't that the end? Because the interpreter is still there, just hidden. Every node is a call to `Function1.apply`, and at that call site the JVM sees hundreds of different closure classes – a megamorphic call it cannot inline. Variables still live in a runtime linked list. And the structure of the program is data the JVM cannot see. What we really want is for the program itself to become JVM code: generate well-typed Scala at runtime and compile it. That is exactly what Scala 3 staging gives us.
+
+### Tier 2: Scala 3 staging in two operators
+
+[Scala 3 staging](https://docs.scala-lang.org/scala3/reference/metaprogramming/staging.html) in one example. A *quote*, `'{ e }`, is the code of an expression: a value of type `Expr[T]`, not its result. A *splice*, `${ e }`, inserts generated code into a quote.
+
+```scala
+// x^n, with the loop unrolled at runtime
+def power(x: Expr[Double], n: Int)(using Quotes): Expr[Double] =
+  if n == 0 then '{ 1.0 }
+  else '{ $x * ${ power(x, n - 1) } }
+
+given staging.Compiler = staging.Compiler.make(getClass.getClassLoader)
+
+val cube: Double => Double =
+  staging.run('{ (x: Double) => ${ power('x, 3) } })
+// compiled: (x: Double) => x * (x * (x * 1.0))
+```
+
+(An illustrative example: imports and the build setup are left out.) `power` generates the multiplications for a known `n`: the loop runs at generation time, the multiplication at run time. `staging.run` runs the real Scala compiler inside your JVM, loads the bytecode and hands you a function. And crucially, the quotes are type-checked when you compile the generator, so you cannot generate ill-typed Scala. Compare that with string concatenation or ASM bytecode.
+
+This has a name. Yoshihiko Futamura showed in 1971 that specializing an interpreter to one fixed program is the same as compiling it – [the first Futamura projection](https://doi.org/10.1023/A:1010095604496) (reprinted in 1999). Scala has a long line of making it practical: Tiark Rompf and Martin Odersky's [Lightweight Modular Staging](https://doi.org/10.1145/1868294.1868314) in 2010, and the quotes and splices above, from Nicolas Stucki, Aggelos Biboudis and Martin Odersky's [2018 paper](https://doi.org/10.1145/3278122.3278139) that unified multi-stage programming and macros. The same quotes serve compile-time macros and run-time staging.
+
+So the plan: take the interpreter we already understand, and make it return code instead of values.
+
+### Staging: an interpreter that returns code
+
+Here is the core of the staged compiler ([`StagedJit.scala`](https://github.com/lantr-io/tiny-uplc-jit/blob/scala-days-2026/core/src/main/scala/uplc/StagedJit.scala), simplified):
+
+```scala
+private def gen(term: Term, env: Map[String, Expr[Any]])(using Quotes): Expr[Any] =
+  term match
+    case Var(name) => env(name) // a JVM local: no environment at runtime
+    case LamAbs(name, body) =>
+      '{ (arg: Any) => ${ gen(body, env.updated(name, 'arg)) } }
+    case Apply(fun, arg) =>
+      '{
+        val f = ${ gen(fun, env) }
+        Runtime.apply(f, ${ gen(arg, env) })
+      }
+    case Constant(c) => genConstant(c)
+    case Error       => '{ Runtime.fail() }
+    // … plus the two idioms below
+
+def compile(term: Term): () => Any = staging.run('{ () => ${ gen(term, Map.empty) } })
+```
+
+Look how close it is to the closure compiler, and to an interpreter. `gen` walks the term, but instead of returning a value, it returns code. A UPLC variable maps to the `Expr` of a Scala lambda parameter: at runtime it is a JVM local, captured natively by closures, and the environment disappears. A UPLC lambda becomes a quoted Scala lambda, with its body generated while the parameter is in scope. Hygiene comes for free: every quote creates a fresh symbol, so shadowing just works.
+
+### Pattern-match the idioms away
+
+The real wins come from recognising idioms. Two custom extractors ([`Patterns.scala`](https://github.com/lantr-io/tiny-uplc-jit/blob/scala-days-2026/core/src/main/scala/uplc/Patterns.scala)) find the shapes Scalus emits, and quotes turn each one into the Scala you would write by hand (simplified from `StagedJit.scala`):
+
+```scala
+// (case c else then) on a Bool ⇒ a native if: only one branch runs
+case IfThenElse(c, t, e) =>
+  '{ if ${ genBool(c, env) } then ${ gen(t, env) } else ${ gen(e, env) } }
+
+// [(builtin addInteger) a b] ⇒ BigInt arithmetic, no currying
+case SaturatedBuiltin(AddInteger, List(a, b)) =>
+  '{
+    val x = ${ gen(a, env) }
+    val y = ${ gen(b, env) }
+    Runtime.asInteger(x) + Runtime.asInteger(y)
+  }
+```
+
+Scalus compiles every `if`/`else` to `case` on a `Bool` with two branches; we turn it back into a native `if`. When the condition is a comparison, `genBool` emits a primitive `Boolean`: no boxing, no type check. Saturated builtin calls become plain `BigInt` arithmetic instead of curried function calls.
+
+Note the `val`s, and that each `gen` call sits *inside* its splice. Both are on purpose. The `val`s are about semantics – see "Fast and exactly the same" below. Where the `gen` calls sit is the twist of this story.
+
+### What the staged compiler writes for fib
+
+This is the actual output of `StagedJit.showCode` for the `fib` that Scalus compiled, lightly trimmed and renamed:
+
+```scala
+((fib: Any) => ((n: Any) =>
+  if ({ val x = n; val y = BigInt(1L); asInteger(x) <= asInteger(y) })
+  then n
+  else {
+    val x = {
+      val f = Runtime.apply(fib, fib) // [fib fib]
+      Runtime.apply(f, { val a = n; val b = BigInt(1L); asInteger(a) - asInteger(b) })
+    }
+    val y = {
+      val f = Runtime.apply(fib, fib)
+      Runtime.apply(f, { val a = n; val b = BigInt(2L); asInteger(a) - asInteger(b) })
+    }
+    asInteger(x) + asInteger(y)
+  }))
+```
+
+A Scala lambda taking `fib`, returning a lambda taking `n`. Scalus' `case` became a native `if` with a `BigInt` comparison. In the `else` branch, the self-application `[fib fib]` is a call, then the recursive call with `n - 1`; the same for `n - 2`; then an addition. There is no interpreter left. It is the code you would write by hand if you translated UPLC to Scala – except a program wrote it, at runtime, in tens of milliseconds. For a program this small, that is. Hold that thought.
+
+### Then the JVM finishes the job
+
+Four stages, and two of the compilers we did not write:
+
+1. **UPLC term**: the deserialized script.
+2. **`Expr[Any]`**: our generator builds it from quotes.
+3. **Bytecode**: `scalac`, running inside our process via staging.
+4. **Machine code**: HotSpot's C2, or Graal, once the code gets hot.
+
+The JVM profiles the hot code and compiles it to machine code. It inlines the small monomorphic lambdas into straight-line code, removes temporary allocations with escape analysis, and turns our runtime type checks into branches that are always predicted correctly. We wrote one tiny compiler and got two industrial-strength ones for free.
+
+The live demo compiles `fib` from Scala with Scalus, converts the UPLC to our mini-UPLC and races the engines:
+
+```
+$ sbt "scalusBridge/run 20"
+```
+
+| Engine | µs per run | Against the CEK machine |
+|---|---:|---:|
+| CEK machine | 6,387 | 1× |
+| Closure compiler | 389 | 16.4× |
+| Staged compiler | 183 | 35.0× |
+
+`fib 20` is 21,891 recursive calls and about 0.9 million CEK steps, so these are milliseconds, while real contracts take hundreds of microseconds. Every engine returns 6765. These are the toy engines on the stage laptop: Scala 3.9.0, Zulu JDK 25, 2 s warm-up and 3 s measurement, October 2026. Our toy CEK machine is deliberately simple, so 35× overstates the real-world gap. The honest real-world numbers come in Act 4.
+
+### Fast and exactly the same
+
+Making it fast is easy. Making it exactly the same as the reference is the job, because if two nodes disagree on a script, that is a consensus bug.
+
+- **Untyped means `Any`.** Every use checks its type at runtime, and must fail exactly where the CEK machine fails.
+- **Evaluation order.** All arguments are evaluated first, then checked. If you type-check the first argument before you evaluate the second, a program whose second argument loops forever behaves differently. That is what the `val`s in the builtin code are for.
+- **Lazy `case`, strict calls.** Only the chosen branch of a `case` runs, while every argument of a call runs, even if it is unused.
+- **Budget.** Plutus charges for every step. The production JIT in Scalus emits the same cost accounting into the generated code: the same result, the same failures and the same spent budget per cost category as the CEK machine. It passes the [Plutus conformance suite](https://github.com/IntersectMBO/plutus/tree/master/plutus-conformance).
+
+And one more: compiled code uses the JVM call stack. Non-tail recursion 100,000 deep is fine for the CEK machine, whose stack is on the heap, but both compilers blow up:
+
+```
+── sumTo 100000 ──
+CEK machine        (con integer 5000050000)
+Closure compiler   StackOverflowError!
+Staged compiler    StackOverflowError!
+```
+
+The Scalus JIT counts its call depth and stops at 25,000 nested calls, which fits a 64 MB thread stack. Called through `withFallback()`, it then evaluates the script again on the CEK machine from the start.
+
+How deep can a valid script go? The budget caps it. At epoch 664 (October 2026), a mainnet transaction may spend at most 16.5 million memory units, and every machine step costs 100, so a script runs at most 165,000 steps. A nested call needs at least 3 steps, so there are at most about 55,000 nested calls. We measured about 350 bytes per nested call with interpreted frames and about 30 bytes once JIT-compiled, so the worst case is about 19 MB. One caveat: we measured those frame sizes on a model of the generated code, and big scripts have bigger frames. That is why the JIT's own limit is conservative: a script nested deeper than 25,000 calls simply runs on the CEK machine.
+
+The rule behind all of this: keep the boring interpreter as the oracle, and test every engine against it – especially on programs that fail.
+
+## Act 3: the twist
+
+### Real scripts took minutes to compile
+
+`fib` compiled in tens of milliseconds. Then we pointed the Scalus JIT at every real contract in the benchmark.
+
+Median compile time: 22 seconds.
+
+Or, as we used to call it back in the Scala 2 days: fast.
+
+The biggest scripts blew through a two-minute timeout and finished in 135 to 197 seconds, and the time grew faster than the script did. Add the JVM warm-up the generated code needs – about 20 seconds before it reaches full speed – and the honest break-even was a median of 175,000 evaluations before the JIT beat the plain interpreter. Fine for a test suite, pointless for almost anything else. One more trap: a staging compiler that you keep alive keeps growing, so we used a fresh compiler per script.
+
+But 93 % of the time was not `scalac`. It was in our own generator, before `scalac` even started. So I decided to fix the compile times. I opened a terminal and said: "Claude, `--dangerously-skip-permissions`, figure out what's going on."
+
+A few hours later it came back and said: "scalac wasn't slow. You were."
+
+### The investigation
+
+Here is what it found.
+
+1. **Profile.** 93 % of the time is in our generator, building the expressions, not in the Scala compiler. My first guess was that unpickling the quotes was expensive. The profiler said: one percent. Over half of the samples were in two places that copy trees to change their owner.
+2. **Shape.** On log-log axes, compile time against script size has a slope of about 1.45: the time grows faster than the script. Something does extra work at every level.
+3. **Cause.** In Scala 3's quote system, every tree has an *owner*: the `val` or the lambda it was created inside. Our generator built each sub-expression first, as a plain value, and then spliced it into a quote under a new `val` or a new lambda. That expression now had the wrong owner, so the compiler fixed it the only safe way: it walked and copied the whole subtree to change the owner. One level up, we did it again, to a tree that contained the first copy.
+
+A node at depth `d` gets copied `d` times. Quadratic, and completely invisible in the source, hidden behind a `$`.
+
+### The fix: create an Expr where it will live
+
+The fix is almost embarrassing, and you have already seen it in the builtin code above. Here are the two generators side by side, for one case ([`StagingCostExperiment.scala`](https://github.com/lantr-io/tiny-uplc-jit/blob/scala-days-2026/core/src/test/scala/uplc/StagingCostExperiment.scala), trimmed, comments added):
+
+```scala
+// Before: quadratic. Children are built first…
+case Apply(Apply(Builtin(AddInteger), a), b) =>
+  val ea = gen(a, env)
+  val eb = gen(b, env)
+  '{
+    val x = $ea // …then re-owned here: the whole subtree is copied
+    val y = $eb
+    Runtime.asInteger(x) + Runtime.asInteger(y)
+  }
+```
+
+```scala
+// After: linear. Each child is generated inside the splice where it lives.
+case Apply(Apply(Builtin(AddInteger), a), b) =>
+  '{
+    val x = ${ gen(a, env) }
+    val y = ${ gen(b, env) }
+    Runtime.asInteger(x) + Runtime.asInteger(y)
+  }
+```
+
+Before: build the sub-expressions, then splice them in. After: call the generator inside the splice, so each expression is created directly where it will live, with the right owner from birth. Nothing to copy. For that to work, the generator takes the `Quotes` of the splice it runs in, not one captured at the top. The generated program is identical – same shape, same speed. Only the order in which we build it changed.
+
+In Scalus there were two copies: our own `changeOwner` on every lambda body, and the re-owning that staging does for every `Expr` spliced under a `val` or a closure. Both went away. The results on all 89 contracts:
+
+| Scalus JIT, 89 contracts | Before | After |
+|---|---:|---:|
+| Median compile | 21.89 s | 2.32 s |
+| Slowest compile | 197 s, after the timeout | 7.65 s |
+| Scripts that compiled within 120 s | 80 of 89 | 89 of 89 |
+| Our generator, share of compile | 93 % | 6 % |
+| Break-even against the CEK, median | 175,078 runs | 15,768 runs |
+
+*Scalus `480d81c0d` before the fix and `2eb9f3d61` after, Apple M3 Max, Zulu JDK 25 (C2), one fresh staging compiler per script.*
+
+Except for the slowest compile, the "Before" column covers only the 80 scripts that compiled within 120 s, so its medians are biased low. The other 9 finished in 135 to 197 s. The steady speed did not change: 3.9× the interpreter. `scalac` itself took about two seconds, before and after. Staging was never the slow part.
+
+<ZoomableImage src="/blazing-fast-lambda-calculus/compile-time-vs-term-size.svg" alt="Compile time of the Scalus JIT against UPLC term size, before and after the fix, for 89 contracts" />
+
+*Compile time against term size, one dot per contract, log scale. Data: [before](/blazing-fast-lambda-calculus/jit-compile-times-before.csv), [after](/blazing-fast-lambda-calculus/jit-compile-times-after.csv). Scalus JIT, fresh staging compiler per script, Apple M3 Max, Zulu JDK 25 (C2), Scala 3.3.8, October 2026.*
+
+While we were in there, we also found why a long-lived staging compiler keeps growing: every staging run got the same run id, so a compiler cache was never cleared. That one is fixed upstream in [scala/scala3#27335](https://github.com/scala/scala3/pull/27335).
+
+The rule to take home: **create each `Expr` where it will live.**
+
+## Act 4: lessons
+
+### Real-world numbers
+
+Here are two benchmark runs. The first is the one I showed in the talk, after the fix: the community [cross-language Plutus VM benchmark](https://github.com/SAIB-Inc/cardano-plutus-vm-benchmark), 89 real contracts – auctions, escrows, crowdfunding, a Uniswap clone – every VM built from source, on one machine, and all of them pass all 89.
+
+| Talk run: 2026-10-11, Apple M3 Max, SAIB harness | Flat-decode + eval, geometric mean, 89 scripts |
+|---|---:|
+| Scalus JIT | 71 µs |
+| `plutus-core` (Haskell) | 220 µs |
+| Scalus CEK | 256 µs |
+| `uplc-turbo` (Rust) | 363 µs |
+
+*Docker on an Apple M3 Max, GraalVM JDK 25, Scalus master of 2026-10-11 (`2eb9f3d61`), SAIB harness. The JIT row excludes compile time.*
+
+On that run the JIT was about three times faster than Haskell. Per contract against Haskell: the median contract was 4.4× faster, 72 of the 89 at least twice as fast, the best almost 9× faster. The JIT won on 78 of the 89; on the other 11, mostly the biggest scripts, Haskell was still faster. All of this is steady state, after compilation and warm-up.
+
+The second is the latest run of our [public Plutus VM benchmark](https://plutus-vm-bench.lantr.io), where anyone can check the numbers and the method:
+
+| Public run: 2026-10-27, AMD EPYC, Scalus 1.4.1 | Decode + eval | Eval only |
+|---|---:|---:|
+| Scalus JIT (experimental, not ranked) | – | 94 µs |
+| Scalus CEK | 268 µs | 171 µs |
+| Plutigo (Go) | 306 µs | 205 µs |
+| `amaru-uplc` (Rust) | 467 µs | 365 µs |
+| `plutus-core` (Haskell) | 711 µs | 276 µs |
+
+*A KVM guest on AMD EPYC Milan, Oracle GraalVM 25, Scalus 1.4.1, lantr harness, geometric mean over 89 scripts, [results of the 2026-10-27 run](https://github.com/lantr-io/plutus-vm-benchmark/tree/5f64541/results/2026-10-27).*
+
+`amaru-uplc` is the VM the talk called `uplc-turbo`. The JIT row times evaluation only: compile time is excluded, and so is decoding, because the JIT compiles each script before the timed loop. On evaluation only, the JIT is 2.9× faster than Haskell and 1.8× faster than the Scalus CEK, and seven scripts are slower on the JIT than on the CEK.
+
+Why do the two tables differ? Almost everything changed between them:
+
+- **The machine**: Docker on an Apple M3 Max (arm64) against a virtual AMD EPYC Milan (x86-64). Both runs used GraalVM 25.
+- **The harness**: a new timing loop, decode plus evaluation as a node does it, and a correctness gate that checks every result and its execution units against the Haskell VM. It runs every script as Plutus V3 at protocol version 11 with the mainnet cost model. The two harnesses also time Haskell's decoding differently: Haskell went from 220 µs to 711 µs while the Scalus CEK barely moved. So the two tables are not comparable row by row.
+- **The CEK machine**: Scalus 1.4.1 has the faster inner loop from Act 1.
+- **The JIT**: Scalus 1.4.1 has a rewritten JIT that charges exactly the same budget as the CEK machine, per cost category.
+- **JIT warm-up on the largest scripts**: each `stablecoin_*` script compiles to about 3,200 small methods. On the four virtual CPUs of a benchmark lane, the JVM needs 48–60 s to compile the hot ones – longer than the 30 s warm-up. The fix is to emit fewer, larger methods, and that is our next job.
+
+So, one machine at a time, the honest summary is: the staged JIT is about three times faster than the Haskell reference VM on these 89 contracts, and on some contracts it is still slower than an interpreter.
+
+### Where does a JIT pay? A cache for hot scripts
+
+Here are four weeks of Cardano mainnet: blocks 11,544,518 to 11,662,495, from 28 February to 28 March 2025 (epochs 543 to 548). That is 117,978 blocks and 311,393 script runs of 2,224 different scripts. Plutus V2 scripts did 89 % of the runs. Among them, the single most-run script did 12 %, the top 10 did 60 %, and the top 100 – 6 % of the 1,572 V2 scripts – did 93 %. In Plutus V1, the top 100 of 393 scripts did 95 % of the runs.
+
+We counted the runs with the block-validation test of Scalus, which replays every block and evaluates every script with Scalus ([`BlocksValidation.scala`](https://github.com/scalus3/scalus/blob/a72ca9001e46d37a76e505fdb8da401faa4c58b7/scalus-cardano-ledger-it/src/test/scala/scalus/testing/integration/BlocksValidation.scala)). On stage I called this one epoch and merged the three Plutus versions into one ranking; the figures here are the corrected ones.
+
+The usual power law, and exactly the shape a JIT wants: a few hot scripts, run over and over. On Cardano, scripts are immutable and addressed by their hash, so a compiled script is just a cache entry: compile once, key it by hash, and never invalidate it. The architecture is tiering, like the JVM itself: the interpreter answers immediately for cold scripts, and hot ones get compiled in the background and swapped in.
+
+And here I owe Phil Wadler a correction. He told me that what I had built is not really a JIT: it compiles a whole script before running it. He is right. On its own, it is a staged compiler, and the real JIT in the picture is HotSpot – which is why this post calls the toy engine a staged compiler. But put it behind an interpreter, compile only the scripts that get hot, and the system is a JIT. The unit is the script instead of the method.
+
+An honest caveat: Cardano nodes run the Haskell VM, so none of this speeds up layer-1 validation. The sweet spot is layer 2. [Hydrozoa](https://github.com/cardano-hydrozoa/hydrozoa), a state-channel protocol written in Scala 3, runs its own ledger and applications, like an order-book exchange, and evaluates the same few scripts all day. That is where a JIT about three times faster than the reference VM matters.
+
+### Pick the tier your workload pays for
+
+Not "always write a compiler". Pick the tier your workload pays for – the same idea as tiered compilation in HotSpot.
+
+| Engine | `fib 20` | Start-up | Use it for |
+|---|---:|---|---|
+| Interpreter (CEK) | 1× | none | The spec and the test oracle. Cold and one-off scripts. |
+| Closure compiler | 16× | milliseconds | Warm scripts. No metaprogramming needed. |
+| Staged compiler | 35× | seconds + warm-up | The hot few: one script, many runs. |
+
+The speed-ups are our toy engines on `fib 20`, on the stage laptop. On real contracts, the Scalus JIT against the Scalus CEK was about 3.6× on the talk benchmark run (71 µs against 256 µs), 3.9× in our compile-time measurements, and 1.8× on the public run.
+
+Three lessons on the way:
+
+1. **A staged compiler is an interpreter that returns code instead of values.** If you can write an interpreter, you can write a type-safe compiler in Scala 3.
+2. **Generate simple, monomorphic code and let the JVM do the clever optimizations.**
+3. **Create each `Expr` where it will live.**
+
+None of this is specific to blockchains. Any interpreter with hot inputs – business rules, query filters, your own DSL – is a compiler waiting to happen.
+
+## Links
+
+- Talk video: [YouTube](https://www.youtube.com/watch?v=xwRdY8Ht-o0)
+- Slides: [PDF](/blazing-fast-lambda-calculus/blazing-fast-lambda-calculus-via-metaprogramming-scaladays-2026.pdf)
+- Talk code: [lantr-io/tiny-uplc-jit at `scala-days-2026`](https://github.com/lantr-io/tiny-uplc-jit/tree/scala-days-2026) – the mini-UPLC, the CEK machine, the closure compiler, the staged compiler, tests and JMH benchmarks
+- The production JIT: [`scalus-uplc-jit-compiler`](https://github.com/scalus3/scalus/tree/v1.4.1/scalus-uplc-jit-compiler) in [Scalus](https://scalus.org)
+- Benchmark: [plutus-vm-bench.lantr.io](https://plutus-vm-bench.lantr.io)
+- The staging fix upstream: [scala/scala3#27335](https://github.com/scala/scala3/pull/27335)
