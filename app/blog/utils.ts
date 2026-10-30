@@ -9,6 +9,7 @@ type Metadata = {
   tags?: string
   author?: string
   authorTwitter?: string // the author's X handle, e.g. '@atlanter'
+  draft?: string // 'true': shown by `next dev` only, never built for production
 }
 
 function parseFrontmatter(fileContent: string) {
@@ -52,8 +53,14 @@ function getMDXData(dir) {
   })
 }
 
+// Every page, the blog index, the sitemap and the RSS feed read posts through here,
+// so leaving drafts out of a production build keeps them off every page of the site.
+const showDrafts = process.env.NODE_ENV === 'development'
+
 export function getBlogPosts(limit?: number) {
-  const posts = getMDXData(path.join(process.cwd(), 'app', 'blog', 'posts'))
+  const posts = getMDXData(path.join(process.cwd(), 'app', 'blog', 'posts')).filter(
+    (post) => showDrafts || post.metadata.draft !== 'true'
+  )
 
   return limit ? posts.slice(0, limit) : posts
 }
