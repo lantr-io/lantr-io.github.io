@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { CustomMDX } from 'app/components/mdx'
 import { formatDate, getBlogPosts } from 'app/blog/utils'
-import { baseUrl } from 'app/sitemap'
+import { baseUrl, postUrl } from 'app/sitemap'
 import { Breadcrumb } from 'app/components/breadcrumb'
 
 export async function generateStaticParams() {
@@ -26,16 +26,22 @@ export async function generateMetadata({ params }) {
     image,
   } = post.metadata
 
+  // A page's openGraph and twitter objects replace the layout's, not extend them,
+  // so the site-wide fields from layout.tsx are repeated here.
   return {
     title,
     description,
     keywords: post.metadata.tags?.split(/,\s*|[\s]+/).filter(Boolean),
+    alternates: { canonical: postUrl(post.slug) },
     openGraph: {
       title,
       description,
       type: 'article',
       publishedTime,
-      url: `${baseUrl}/blog/${post.slug}`,
+      url: postUrl(post.slug),
+      siteName: 'Lantr.io',
+      locale: 'en_US',
+      ...(post.metadata.author && { authors: [post.metadata.author] }),
       ...(image && {
         images: [
           {
@@ -48,6 +54,8 @@ export async function generateMetadata({ params }) {
       card: 'summary_large_image',
       title,
       description,
+      site: '@lantr_io',
+      creator: post.metadata.authorTwitter || '@lantr_io',
       ...(image && { images: [image] }),
     },
   }
@@ -77,12 +85,16 @@ export default async function Blog({ params }) {
             image: post.metadata.image
               ? `${baseUrl}${post.metadata.image}`
               : `${baseUrl}/opengraph-image.png`,
-            url: `${baseUrl}/blog/${post.slug}`,
+            url: postUrl(post.slug),
+            mainEntityOfPage: postUrl(post.slug),
             keywords: post.metadata.tags?.split(/,\s*|[\s]+/).filter(Boolean).join(', '),
             articleSection: post.metadata.tags?.split(/,\s*|[\s]+/)[0] || 'Technology',
             author: {
               '@type': 'Person',
               name: post.metadata.author || 'Lantr Engineering',
+              ...(post.metadata.authorTwitter && {
+                sameAs: `https://x.com/${post.metadata.authorTwitter.replace(/^@/, '')}`,
+              }),
             },
             publisher: {
               '@type': 'Organization',

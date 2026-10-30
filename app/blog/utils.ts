@@ -8,6 +8,7 @@ type Metadata = {
   image?: string
   tags?: string
   author?: string
+  authorTwitter?: string // the author's X handle, e.g. '@atlanter'
 }
 
 function parseFrontmatter(fileContent: string) {

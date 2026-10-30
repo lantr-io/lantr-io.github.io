@@ -1,4 +1,4 @@
-import { baseUrl } from 'app/sitemap'
+import { baseUrl, postUrl } from 'app/sitemap'
 import { getBlogPosts } from 'app/blog/utils'
 
 export const dynamic = 'force-static'
@@ -17,7 +17,7 @@ export async function GET() {
       (post) =>
         `<item>
           <title>${post.metadata.title}</title>
-          <link>${baseUrl}/blog/${post.slug}</link>
+          <link>${postUrl(post.slug)}</link>
           <description>${post.metadata.summary || ''}</description>
           <pubDate>${new Date(
             post.metadata.publishedAt
