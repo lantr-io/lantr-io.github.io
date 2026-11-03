@@ -3,4 +3,4 @@
 :HL["/_next/static/chunks/0jo-m3wc7i9lo.css","style"]
 :HL["/img/cardano-ddos-calculation.png","image"]
 :HL["/img/value-preservation.png","image"]
-0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"blog","param":null,"prefetchHints":0,"slots":{"children":{"name":"slug","param":{"type":"d","key":"cardano-fee-market-transaction-prioritisation","siblings":null},"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}}}},"staleTime":300,"buildId":"2VEuzF5Z5FiNHbFRm2p1k"}
+0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"blog","param":null,"prefetchHints":0,"slots":{"children":{"name":"slug","param":{"type":"d","key":"cardano-fee-market-transaction-prioritisation","siblings":null},"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}}}},"staleTime":300,"buildId":"WZEwwZJM5PqRl5OMei-NJ"}
