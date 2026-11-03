@@ -1,6 +1,7 @@
 import './global.css'
 import 'katex/dist/katex.min.css'
 import type { Metadata } from 'next'
+import Script from 'next/script'
 import { GeistMono } from 'geist/font/mono'
 import { Navbar } from './components/nav'
 import Footer from './components/footer'
@@ -43,6 +44,28 @@ export const metadata: Metadata = {
 
 const cx = (...classes) => classes.filter(Boolean).join(' ')
 
+// Google Analytics 4: the property the old Jekyll site reported to. Only the production build
+// loads it, so `pnpm dev` visits are not counted.
+const gaId = 'G-337WTHY5JH'
+const isProduction = process.env.NODE_ENV === 'production'
+
+function GoogleAnalytics() {
+  return (
+    <>
+      <Script
+        src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+        strategy="afterInteractive"
+      />
+      <Script id="google-analytics" strategy="afterInteractive">
+        {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '${gaId}');`}
+      </Script>
+    </>
+  )
+}
+
 export default function RootLayout({
   children,
 }: {
@@ -63,6 +86,7 @@ export default function RootLayout({
           {children}
           <Footer />
         </main>
+        {isProduction && <GoogleAnalytics />}
       </body>
     </html>
   )
